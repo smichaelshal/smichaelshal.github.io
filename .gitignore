@@ -1,5 +1,4 @@
 # Hugo build artifacts
-/public/
 /resources/_gen/
 /hugo_stats.json
 *.lock
