@@ -138,3 +138,8 @@ scriptsrc = [
 prefetchsrc = ["'self'"]
 # connect-src directive – defines valid targets for to XMLHttpRequest (AJAX), WebSockets or EventSource
 connectsrc = ["'self'", "https://www.google-analytics.com", "https://static.cloudflareinsights.com", "https://cloudflareinsights.com"]
+
+[module]
+[[module.imports]]
+[[module.imports]]
+path = "cj.rs/gohugo-asciinema"
