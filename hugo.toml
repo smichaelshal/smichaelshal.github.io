@@ -104,3 +104,6 @@ name = "LinkedIn"
 icon = "fa-brands fa-linkedin fa-2x"
 weight = 4
 url = "https://www.linkedin.com/in/michael-shalitin-460a00269/"
+
+[params.cloudflare]
+token = "316bf5f2576c4cb68b54c0b2a91cb739"
