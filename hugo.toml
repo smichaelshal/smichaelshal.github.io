@@ -21,3 +21,7 @@ enableEmoji = true
             block = true
             title = true
 
+[taxonomies]
+category = "categories"
+series = "series"
+tag = "tags"
