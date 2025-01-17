@@ -107,3 +107,31 @@ url = "https://www.linkedin.com/in/michael-shalitin-460a00269/"
 
 [params.cloudflare]
 token = "316bf5f2576c4cb68b54c0b2a91cb739"
+
+# If you want to implement a Content-Security-Policy, add this section
+[params.csp]
+childsrc = ["'self'"]
+fontsrc = ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net/"]
+formaction = ["'self'"]
+framesrc = ["'self'", "https://www.youtube.com"]
+imgsrc = ["'self'"]
+objectsrc = ["'none'"]
+stylesrc = [
+  "'self'",
+  "'unsafe-inline'",
+  "https://fonts.googleapis.com/",
+  "https://cdn.jsdelivr.net/",
+]
+scriptsrc = [
+  "'self'",
+  "'unsafe-inline'",
+  "default-src",
+  "'unsafe-eval'",
+  "https://www.google-analytics.com",
+  "https://cdn.jsdelivr.net/",
+  "https://static.cloudflareinsights.com",
+  "https://cloudflareinsights.com",
+]
+prefetchsrc = ["'self'"]
+# connect-src directive – defines valid targets for to XMLHttpRequest (AJAX), WebSockets or EventSource
+connectsrc = ["'self'", "https://www.google-analytics.com", "https://static.cloudflareinsights.com", "https://cloudflareinsights.com"]
