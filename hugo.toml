@@ -49,6 +49,7 @@ url = "posts/"
 [languages.he]
 languageName = ":israel:"
 languagedirection = "rtl"
+title = "Michael Shalitin"
 
 [languages.he.params]
 reading_speed = 300
