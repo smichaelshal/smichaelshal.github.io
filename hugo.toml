@@ -53,6 +53,9 @@ title = "Michael Shalitin"
 
 [languages.he.params]
 reading_speed = 300
+author = "Michael Shalitin"
+info = "Kernel developer"
+description = "Kernel developer"
 
 [[languages.he.menu.main]]
 name = "About"
