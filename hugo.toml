@@ -1,0 +1,4 @@
+baseURL = "https://smichaelshal.github.io"
+title = "Michael Shalitin"
+defaultContentLanguage = "en"
+enableEmoji = true
