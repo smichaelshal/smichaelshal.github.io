@@ -26,3 +26,14 @@ category = "categories"
 series = "series"
 tag = "tags"
 
+[languages.params]
+reading_speed = 300
+
+[languages.en]
+languageName = ":uk:"
+
+[languages.en.params]
+reading_speed = 300
+
+[pagination]
+pagerSize = 6
