@@ -92,3 +92,15 @@ customSCSS = []
 customJS = []
 # Custom remote JS files
 customRemoteJS = []
+
+[[params.social]]
+name = "Github"
+icon = "fa-brands fa-github fa-2x"
+weight = 1
+url = "https://github.com/smichaelshal/"
+
+[[params.social]]
+name = "LinkedIn"
+icon = "fa-brands fa-linkedin fa-2x"
+weight = 4
+url = "https://www.linkedin.com/in/michael-shalitin-460a00269/"
