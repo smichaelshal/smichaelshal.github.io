@@ -1,0 +1,40 @@
+# Hugo build artifacts
+/public/
+/resources/_gen/
+/hugo_stats.json
+
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Node modules
+node_modules/
+
+# Temporary files and backups
+*.swp
+*.bak
+*.tmp
+*.log
+
+# Python artifacts
+*.pyc
+*.pyo
+__pycache__/
+*.egg-info/
+*.eggs/
+.env
+*.venv
+
+# IDE/Editor configurations
+.vscode/
+.idea/
+*.iml
+
+# Git-related files
+*.orig
+
+# Other
+*.gz
+*.zip
+
