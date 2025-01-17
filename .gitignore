@@ -2,7 +2,7 @@
 /public/
 /resources/_gen/
 /hugo_stats.json
-
+*.lock
 
 # OS-generated files
 .DS_Store
