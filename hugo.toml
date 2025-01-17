@@ -2,3 +2,21 @@ baseURL = "https://smichaelshal.github.io"
 title = "Michael Shalitin"
 defaultContentLanguage = "en"
 enableEmoji = true
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.extensions]
+      [markup.goldmark.extensions.passthrough]
+        enable = true
+        [markup.goldmark.extensions.passthrough.delimiters]
+          block = [['\[', '\]'], ['$$', '$$']]
+          inline = [['\(', '\)']]
+      [markup.goldmark.renderer]
+        unsafe = true
+    [markup.highlight]
+    noClasses = false
+    [markup.goldmark.parser]
+      wrapStandAloneImageWithinParagraph = false
+        [markup.goldmark.parser.attribute]
+            block = true
+            title = true
