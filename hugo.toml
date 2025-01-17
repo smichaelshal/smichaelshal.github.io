@@ -35,5 +35,12 @@ languageName = ":uk:"
 [languages.en.params]
 reading_speed = 300
 
+[languages.he]
+languageName = ":israel:"
+languagedirection = "rtl"
+
+[languages.he.params]
+reading_speed = 300
+
 [pagination]
 pagerSize = 6
