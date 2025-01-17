@@ -2,6 +2,7 @@ baseURL = "https://smichaelshal.github.io"
 title = "Michael Shalitin"
 defaultContentLanguage = "en"
 enableEmoji = true
+theme = "hugo-coder"
 
 [markup]
   [markup.goldmark]
@@ -48,9 +49,13 @@ url = "posts/"
 [languages.he]
 languageName = ":israel:"
 languagedirection = "rtl"
+title = "Michael Shalitin"
 
 [languages.he.params]
 reading_speed = 300
+author = "Michael Shalitin"
+info = "Kernel developer"
+description = "Kernel developer"
 
 [[languages.he.menu.main]]
 name = "About"
@@ -64,3 +69,72 @@ url = "posts/"
 
 [pagination]
 pagerSize = 6
+
+[params]
+author = "Michael Shalitin"
+# license = '<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA-4.0</a>'
+description = "Michael Shalitin personal website"
+keywords = "blog,developer,personal"
+info = ["Kernel developer"]
+dateFormat = "January 2, 2006"
+since = 2025
+# Git Commit in Footer, uncomment the line below to enable it
+commit = "https://github.com/luizdepra/hugo-coder/tree/"
+# Right To Left, shift content direction for languages such as Arabic
+# rtl = false
+colorScheme = "dark"
+# Hide the toggle button, along with the associated vertical divider
+hideColorSchemeToggle = false
+# Series see also post count
+maxSeeAlsoItems = 5
+# Custom CSS
+customCSS = []
+# Custom SCSS, file path is relative to Hugo's asset folder (default: {your project root}/assets)
+customSCSS = []
+# Custom JS
+customJS = []
+# Custom remote JS files
+customRemoteJS = []
+
+[[params.social]]
+name = "Github"
+icon = "fa-brands fa-github fa-2x"
+weight = 1
+url = "https://github.com/smichaelshal/"
+
+[[params.social]]
+name = "LinkedIn"
+icon = "fa-brands fa-linkedin fa-2x"
+weight = 4
+url = "https://www.linkedin.com/in/michael-shalitin-460a00269/"
+
+[params.cloudflare]
+token = "316bf5f2576c4cb68b54c0b2a91cb739"
+
+# If you want to implement a Content-Security-Policy, add this section
+[params.csp]
+childsrc = ["'self'"]
+fontsrc = ["'self'", "https://fonts.gstatic.com", "https://cdn.jsdelivr.net/"]
+formaction = ["'self'"]
+framesrc = ["'self'", "https://www.youtube.com"]
+imgsrc = ["'self'"]
+objectsrc = ["'none'"]
+stylesrc = [
+  "'self'",
+  "'unsafe-inline'",
+  "https://fonts.googleapis.com/",
+  "https://cdn.jsdelivr.net/",
+]
+scriptsrc = [
+  "'self'",
+  "'unsafe-inline'",
+  "default-src",
+  "'unsafe-eval'",
+  "https://www.google-analytics.com",
+  "https://cdn.jsdelivr.net/",
+  "https://static.cloudflareinsights.com",
+  "https://cloudflareinsights.com",
+]
+prefetchsrc = ["'self'"]
+# connect-src directive – defines valid targets for to XMLHttpRequest (AJAX), WebSockets or EventSource
+connectsrc = ["'self'", "https://www.google-analytics.com", "https://static.cloudflareinsights.com", "https://cloudflareinsights.com"]
