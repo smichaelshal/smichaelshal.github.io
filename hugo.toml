@@ -1,3 +1,66 @@
-baseURL = 'https://example.org/'
-languageCode = 'en-us'
-title = 'My New Hugo Site'
+baseURL = "https://smichaelshal.github.io"
+title = "Michael Shalitin"
+defaultContentLanguage = "en"
+enableEmoji = true
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.extensions]
+      [markup.goldmark.extensions.passthrough]
+        enable = true
+        [markup.goldmark.extensions.passthrough.delimiters]
+          block = [['\[', '\]'], ['$$', '$$']]
+          inline = [['\(', '\)']]
+      [markup.goldmark.renderer]
+        unsafe = true
+    [markup.highlight]
+    noClasses = false
+    [markup.goldmark.parser]
+      wrapStandAloneImageWithinParagraph = false
+        [markup.goldmark.parser.attribute]
+            block = true
+            title = true
+
+[taxonomies]
+category = "categories"
+series = "series"
+tag = "tags"
+
+[languages.params]
+reading_speed = 300
+
+[languages.en]
+languageName = ":uk:"
+
+[languages.en.params]
+reading_speed = 300
+
+[[languages.en.menu.main]]
+name = "About"
+weight = 1
+url = "about/"
+
+[[languages.en.menu.main]]
+name = "Blog"
+weight = 2
+url = "posts/"
+
+[languages.he]
+languageName = ":israel:"
+languagedirection = "rtl"
+
+[languages.he.params]
+reading_speed = 300
+
+[[languages.he.menu.main]]
+name = "About"
+weight = 1
+url = "about/"
+
+[[languages.he.menu.main]]
+name = "Blog"
+weight = 2
+url = "posts/"
+
+[pagination]
+pagerSize = 6
