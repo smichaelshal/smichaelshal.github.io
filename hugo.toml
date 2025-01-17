@@ -2,6 +2,7 @@ baseURL = "https://smichaelshal.github.io"
 title = "Michael Shalitin"
 defaultContentLanguage = "en"
 enableEmoji = true
+theme = "hugo-coder"
 
 [markup]
   [markup.goldmark]
