@@ -1,3 +1,8 @@
 baseURL = 'https://example.org/'
 languageCode = 'en-us'
 title = 'My New Hugo Site'
+
+[module]
+[[module.imports]]
+[[module.imports]]
+path = "cj.rs/gohugo-asciinema"
