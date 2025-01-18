@@ -1,0 +1,226 @@
+{
+    "skylake_decode.webp" : {
+        "url": "https://en.wikichip.org/wiki/intel/microarchitectures/skylake_(client)",
+        "desc": "microarchitectures skylake (client)"
+    },
+    "acq-rel-barriers_preshing_acquire_and_release_semantics.png" : {
+        "url": "https://preshing.com/20120913/acquire-and-release-semantics/",
+        "desc": "Acquire and Release Fences"
+    },
+    "platform-fences_preshing_acquire_and_release_semantics.png" : {
+        "url": "https://preshing.com/20120913/acquire-and-release-semantics/",
+        "desc": "Acquire and Release Semantics"
+    },
+    "Figure_1_LDAR_ordering_requirements.svg" : {
+        "url": "https://developer.arm.com/documentation/102336/0100/Load-Acquire-and-Store-Release-instructions",
+        "desc": "Load-Acquire and Store-Release instructions"
+    },
+    "Figure_2_STLR_ordering_requirements.svg" : {
+        "url": "https://developer.arm.com/documentation/102336/0100/Load-Acquire-and-Store-Release-instructions",
+        "desc": "Load-Acquire and Store-Release instructions"
+    },
+    "'Figure_3_Protecting_a_critical_code_section_with_an_LDAR-STLR_pair.svg" : {
+        "url": "https://developer.arm.com/documentation/102336/0100/Load-Acquire-and-Store-Release-instructions",
+        "desc": "Load-Acquire and Store-Release instructions"
+    },
+    "Figure_5_Load-AcquirePC_instructions.svg" : {
+        "url": "https://developer.arm.com/documentation/102336/0100/Load-Acquire-and-Store-Release-instructions",
+        "desc": "Load-Acquire and Store-Release instructions"
+    },
+    "Figure_4_Sequentially_consistent_ordering_requirements.svg" : {
+        "url": "https://developer.arm.com/documentation/102336/0100/Load-Acquire-and-Store-Release-instructions",
+        "desc": "Load-Acquire and Store-Release instructions"
+    },
+    "Table_C8-2_Barrier_response_transaction_constraints.png": {
+        "url": "https://developer.arm.com/documentation/ihi0022/e/",
+        "desc": "AMBA AXI and ACE Protocol Specification"
+    },
+    "Figure_C8-1_Domain_boundaries.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0022/e/",
+        "desc": "AMBA AXI and ACE Protocol Specification"
+    },
+    "Figure_C8-2 Bi-section_boundaries.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0022/e/",
+        "desc": "AMBA AXI and ACE Protocol Specification"
+    },
+    "Figure_C8-3_Barrier_transaction_timing.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0022/e/",
+        "desc": "AMBA AXI and ACE Protocol Specification"
+    },
+    "Fig_11_The_write-to-read_causality_pattern_wrc_with_lightweight_fence_and_ppo_(forbidden)_.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig_12_The_pattern_isa2_with_lighweight_fence_and_ppo_twice_(forbidden)_.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Split-Pipelined-transactions.png" : {
+        "url": "https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf",
+        "desc": "A Primer on Memory Consistency and Cache Coherence Second Edition"
+    },
+    "Figure_B5_5_ReadNoSnp_transaction_flow.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0050/latest/",
+        "desc": "AMBA CHI Architecture Specification"
+    },
+    "Figure_B5_6_ReadUnique_with_partial_data_snoop_response.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0050/latest/",
+        "desc": "AMBA CHI Architecture Specification"
+    },
+    "Figure_B5_7_ReadClean_with_partial_data_snoop_response.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0050/latest/",
+        "desc": "AMBA CHI Architecture Specification"
+    },
+    "Figure_B5_11_MakeUnique_without_memory_update.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0050/latest/",
+        "desc": "AMBA CHI Architecture Specification"
+    },
+    "Figure_B5_12_CleanUnique_with_memory_update.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0050/latest/",
+        "desc": "AMBA CHI Architecture Specification"
+    },
+    "Figure_B5_15_WriteNoSnp_with_separate_responses_from_Home_Node_to_Request_Node.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0050/latest/",
+        "desc": "AMBA CHI Architecture Specification"
+    },
+    "Figure_B5_16_WriteUniquePtl_with_snoop 1.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0050/latest/",
+        "desc": "AMBA CHI Architecture Specification"
+    },
+    "Figure_B5_17_WriteBackFull_transaction_flow.png" : {
+        "url": "https://developer.arm.com/documentation/ihi0050/latest/",
+        "desc": "AMBA CHI Architecture Specification"
+    },
+    "figure01_IRIW+addrs1_Simplifying_ARM_Concurrency_Multicopy-Atomic_Axiomatic_and_Operational_Models_for_ARMv8.png" : {
+        "url": "https://www.cl.cam.ac.uk/~pes20/armv8-mca/armv8-mca-draft.pdf",
+        "desc": "Simplifying ARM Concurrency: Multicopy-Atomic Axiomatic and Operational Models for ARMv8"
+    },
+    "figure02_Flowing_topology_Simplifying_ARM_Concurrency_Multicopy-Atomic_Axiomatic_and_Operational_Models_for_ARMv8.png" : {
+        "url": "https://www.cl.cam.ac.uk/~pes20/armv8-mca/armv8-mca-draft.pdf",
+        "desc": "Simplifying ARM Concurrency: Multicopy-Atomic Axiomatic and Operational Models for ARMv8"
+    },
+    "fig03_CoFF.png" : {
+        "url": "https://inria.hal.science/hal-02509910/document",
+        "desc": "ARMv8-A system semantics: instruction fetch in relaxed architectures"
+    },
+    "Figure_11_11_Point_of_Coherency.svg" : {
+        "url": "https://developer.arm.com/documentation/den0024/a/Caches/Point-of-coherency-and-unification",
+        "desc": "Point of coherency and unification"
+    },
+    "Figure_11_12_Point_of_Unification.svg" : {
+        "url": "https://developer.arm.com/documentation/den0024/a/Caches/Point-of-coherency-and-unification",
+        "desc": "Point of coherency and unification"
+    },
+    "ARM-memory-subsystem.png" : {
+        "url": "https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html",
+        "desc": "A Strong Formal Model of Linux-Kernel Memory Ordering"
+    },
+    "co.png" : {
+        "url": "https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/Examples.html",
+        "desc": "The Linux-Kernel Memory Model by Example"
+    },
+    "Fig_9_Cumulativity_of_fences_A-cumulativity.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig_10_Strong_A-cumulativity_of_fences.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig_9_Cumulativity_of_fences_B-cumulativity.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig_11_The_write_to_read_causality_pattern_wrc_with_lightweight_fence_and_ppo_(forbidden).png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig_8_The_message_passing_pattern_mp_with_lightweight_fence_and_ppo_(forbidden).png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig__12__The_pattern_isa2_with_lighweight_fence_and_ppo_twice_(forbidden)_.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig_14_The_store_buffering_pattern_sb_with_full_fences_(forbidden).png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig_17_Fences_for_Power_and_ARM.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig__20__The_independent_reads_from_independent_writes_pattern_iriw_with_full_fences_(forbidden)_.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Test_WRC+data+ sync.png" : {
+        "url": "https://www.cl.cam.ac.uk/~pes20/ppc-supplemental/pldi105-sarkar.pdf",
+        "desc": "Understanding POWER Multiprocessors"
+    },
+    "Figure_1_Block_diagram_of_pipeline_model.png" : {
+        "url": "https://arxiv.org/pdf/2310.13212",
+        "desc": "Facile: Fast, Accurate, and Interpretable Basic-Block Throughput Prediction"
+    },
+    "Figure_5_3_Example_of_out-of-order_instruction_issue.png" : {
+        "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
+        "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
+    },
+    "Figure_2_3_Sample_programs_to_illustrate_sequential_consistency.png" : {
+        "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
+        "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
+    },
+    "Figure_2_7_Reordering_of_operations_arising_from_distribution_of_memory_and_network_resources.png" : {
+        "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
+        "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
+    },
+    "Fig_1_A_multithreaded_program_implementing_a_message_passing_pattern_.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig_2_Control-flow_semantics_for_the_message_passing_pattern_of_Figure_1_.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Fig_3_One_possible_dataflow_semantics_for_the_control-flow_semantics_given_in_Figure_2_.png" : {
+        "url": "https://inria.hal.science/hal-01081364/document",
+        "desc": "Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory"
+    },
+    "Figure_2_3_Sample_programs_to_illustrate_sequential_consistency.png" : {
+        "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
+        "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
+    },
+    "rf.png" : {
+        "url": "https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/Examples.html",
+        "desc": "The Linux-Kernel Memory Model by Example"
+    },
+    "co.png" : {
+        "url": "https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/Examples.html",
+        "desc": "The Linux-Kernel Memory Model by Example"
+    },
+    "fr.png" : {
+        "url": "https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/Examples.html",
+        "desc": "The Linux-Kernel Memory Model by Example"
+    },
+    "fig02_W+F+branches.png" : {
+        "url": "https://inria.hal.science/hal-02509910/document",
+        "desc": "ARMv8-A system semantics: instruction fetch in relaxed architectures"
+    },
+    "Exclusive_State_Machine.png" : {
+        "url": "https://developer.arm.com/documentation/107565/0101/Memory-system/Exclusive-accesses?lang=en",
+        "desc": "Exclusive accesses"
+    },
+    "Figure_2_10_Program_segments_before_and_after_register_allocation.png" : {
+        "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
+        "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
+    },
+    "Figure_5_39_Effect_of_register_allocation.png" : {
+        "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
+        "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
+    },
+    "Figure_5_40_Example_to_illustrate_the_termination_condition.png": {
+        "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
+        "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
+    }
+}
