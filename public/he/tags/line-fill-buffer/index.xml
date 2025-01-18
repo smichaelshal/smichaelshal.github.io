@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Line-Fill-Buffer on Michael Shalitin</title>
+    <link>https://smichaelshal.github.io/he/tags/line-fill-buffer/</link>
+    <description>Recent content in Line-Fill-Buffer on Michael Shalitin</description>
+    <generator>Hugo</generator>
+    <language>he</language>
+    <lastBuildDate>Sun, 18 Aug 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://smichaelshal.github.io/he/tags/line-fill-buffer/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Line fill buffer</title>
+      <link>https://smichaelshal.github.io/he/posts/processor-components/line-fill-buffer/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/processor-components/line-fill-buffer/</guid>
+      <description>&lt;p&gt;כשהנתונים שנכתבים לכתובת באזור זיכרון Write-Back ה-stores נמצאים ב-store buffer, הם נשארים שם עד שה-store מבצע פרישה. לאחר הפרישה, הנתונים נכתבים ל-L1 Data Cache אם השורה קיימת ויש לה הרשאת כתיבה. אם לא, ה-Line Fill Buffer (LFB) מוקצה לטיפול בכתיבה במקרה של store miss. ה-LFB מקבל בסופו של דבר את העותק העדכני של שורת ה-cache, כך שניתן להתקין אותה ב-L1 Data Cache ולבצע את הכתיבה של נתוני ה-store ל-cache. פרטים נוספים לגבי מיזוג, buffering, סדרי עדיפויות ו&amp;quot;קיצורי דרך&amp;quot; אינם תמיד ברורים, אך אחת מהפרשנויות היא ש-LFBs פועלים כ-buffers בגודל cache, שבהם מתמזגים נתוני ה-store לפני שליחתם ל-L1 Data Cache.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

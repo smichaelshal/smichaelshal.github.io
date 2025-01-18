@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Exclusive · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  Load Lock/Store Conditional (LL/SC)
+  
+    
+    Link to heading
+  
+
+
+  Load-Lock/Store-Conditional
+  
+    
+    Link to heading
+  
+
+ה-Load-Lock ו-Store-Conditional נקרא גם Load-Link/Store-Conditional הן צמד הוראות המשמשות ב-multithreading כדי להשיג סנכרון בין thread-ים.
+ההוראה Load-Lock (או בקיצור LL) משמשת לקרוא את הערך הנוכחי במיקום זיכרון,  ההוראה רושמת באופן פנימי (למשל ב-arm המידע נשמר ב- exclusive monitors) את מיקום הזיכרון לצורך גישה בלעדית, בעוד שההוראה Store-Conditional (או בקיצור SC) נועדה לשמור ערך חדש באותו מיקום זיכרון, אך רק אם לא התרחשו שינויים באותו מיקום זיכרון מאז ההוראת ה-LL התואמת הקודמת.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Exclusive">
+  <meta name="twitter:description" content="Load Lock/Store Conditional (LL/SC) Link to heading Load-Lock/Store-Conditional Link to heading ה-Load-Lock ו-Store-Conditional נקרא גם Load-Link/Store-Conditional הן צמד הוראות המשמשות ב-multithreading כדי להשיג סנכרון בין thread-ים.
+ההוראה Load-Lock (או בקיצור LL) משמשת לקרוא את הערך הנוכחי במיקום זיכרון, ההוראה רושמת באופן פנימי (למשל ב-arm המידע נשמר ב- exclusive monitors) את מיקום הזיכרון לצורך גישה בלעדית, בעוד שההוראה Store-Conditional (או בקיצור SC) נועדה לשמור ערך חדש באותו מיקום זיכרון, אך רק אם לא התרחשו שינויים באותו מיקום זיכרון מאז ההוראת ה-LL התואמת הקודמת.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/atomic/exclusive/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Exclusive">
+  <meta property="og:description" content="Load Lock/Store Conditional (LL/SC) Link to heading Load-Lock/Store-Conditional Link to heading ה-Load-Lock ו-Store-Conditional נקרא גם Load-Link/Store-Conditional הן צמד הוראות המשמשות ב-multithreading כדי להשיג סנכרון בין thread-ים.
+ההוראה Load-Lock (או בקיצור LL) משמשת לקרוא את הערך הנוכחי במיקום זיכרון, ההוראה רושמת באופן פנימי (למשל ב-arm המידע נשמר ב- exclusive monitors) את מיקום הזיכרון לצורך גישה בלעדית, בעוד שההוראה Store-Conditional (או בקיצור SC) נועדה לשמור ערך חדש באותו מיקום זיכרון, אך רק אם לא התרחשו שינויים באותו מיקום זיכרון מאז ההוראת ה-LL התואמת הקודמת.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-08-11T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-08-11T00:00:00+00:00">
+    <meta property="article:tag" content="Atomic">
+    <meta property="article:tag" content="Ll/Sc">
+    <meta property="article:tag" content="Arm">
+    <meta property="article:tag" content="Exclusive">
+    <meta property="article:tag" content="Exclusive-Monitor">
+    <meta property="article:tag" content="Asm">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/atomic/x86-lock/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/atomic/atomic/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/atomic/exclusive/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/atomic/exclusive/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/atomic/exclusive/">
+              Exclusive
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-08-11T00:00:00Z">
+                אוגוסט 11, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                2041 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/atomic/">Atomic</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/atomic/">Atomic</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/ll/sc/">Ll/Sc</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/arm/">Arm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/exclusive/">Exclusive</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/exclusive-monitor/">Exclusive-Monitor</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/asm/">Asm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="load-lockstore-conditional-llsc">
+  Load Lock/Store Conditional (LL/SC)
+  <a class="heading-link" href="#load-lockstore-conditional-llsc">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="load-lockstore-conditional">
+  Load-Lock/Store-Conditional
+  <a class="heading-link" href="#load-lockstore-conditional">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Load-Lock ו-Store-Conditional נקרא גם Load-Link/Store-Conditional הן צמד הוראות המשמשות ב-multithreading כדי להשיג סנכרון בין thread-ים.</p>
+<p>ההוראה Load-Lock (או בקיצור LL) משמשת לקרוא את הערך הנוכחי במיקום זיכרון,  ההוראה רושמת באופן פנימי (למשל ב-arm המידע נשמר ב- exclusive monitors) את מיקום הזיכרון לצורך גישה בלעדית, בעוד שההוראה Store-Conditional (או בקיצור SC) נועדה לשמור ערך חדש באותו מיקום זיכרון, אך רק אם לא התרחשו שינויים באותו מיקום זיכרון מאז ההוראת ה-LL התואמת הקודמת.</p>
+<p>אם התבצע שינוי כלשהו במיקום הזיכרון מאז ההוראה LL, ההוראה SC תיכשל באופן מובטח, גם אם הערך שנקרא על ידי LL נשמר כפי שהיה. בכך, השימוש בצמד ההוראות LL/SC מספק אבטחת סנכרון חזקה יותר מאשר הוראת CAS, שלא מזהה שינויים אם הערך הישן הוחזר (<a href="https://en.wikipedia.org/wiki/ABA_problem"  class="external-link" target="_blank" rel="noopener">בעיית ABA</a>).</p>
+<p>עם זאת, ביישומים מעשיים, הוראות LL/SC עשויות להיכשל גם כאשר לא התרחשו עדכונים במקביל לאותו מיקום זיכרון. כל אירוע חריג בין ההוראות, כמו context switch, ביצוע הוראת LL נוספת, או אפילו בפלטפורמות רבות, ביצוע פעולות load או store נוספות, עלול לגרום לכישלון שגוי של ההוראה SC. יישומים ישנים יותר עלולים להיכשל גם אם יש עדכונים שמועברים דרך ערוץ הזיכרון. תופעה זו נחשבת ל-LL/SC חלש על ידי חוקרים, מכיוון שהיא מפרה את העבודה של מספר אלגוריתמים תיאורטיים המתבססים על LL/SC. חולשה זו היא יחסית, ולפעמים ניתן להשתמש ביישומים חלשים עבור אלגוריתמים מסוימים.</p>
+<p>במקרים שבהם מתבצע שימוש בהוראות SC והיא נכשלת צריך לחזור על כל רצף ההוראות LL/SC כדי לנסות שוב.</p>
+<p>חשוב לציין שהוראות LL/SC תואמות בעיקר לארכיטקטורות RISC כמו ARM או MIPS.</p>
+<h3 id="השוואה-בין-llsc-ל-cas">
+  השוואה בין LL/SC ל-CAS
+  <a class="heading-link" href="#%d7%94%d7%a9%d7%95%d7%95%d7%90%d7%94-%d7%91%d7%99%d7%9f-llsc-%d7%9c-cas">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>למרות זאת, צמד ההוראות LL/SC ניתן להשוואה להוראת CAS במובן שניתן לממש כל פרימיטיבי של סנכרון בעזרת אחת מהן.</p>
+<p>בדרך כלל, מעבדים עוקבים אחרי הכתובת שנקראה בהוראת LL ב-cache line או ביחידה אחרת. כל שינוי בחלק כלשהו של cache line (בין אם על ידי הוראת SC של ליבת מעבד אחרת או פשוט על ידי פעולה רגילה של Store) מספיק כדי לגרום להוראת SC להיכשל.</p>
+<p>לרוב הפלטפורמות, ההוראות LL/SC מסופקות בגרסה חלשה (weak), מה שאומר שהן לא תמיד מספקות את הביצועים האופטימליים.</p>
+<p>ל-LL/SC יש שני יתרונות עיקריים על פני CAS כאשר מדובר בתכנון ארכיטקטורת load–store:</p>
+<ol>
+<li>
+<p><strong>הפרדת קריאה וכתיבה:</strong> בהוראות LL/SC, הקריאה והכתיבה הן הוראות נפרדות, מה שתואם לפילוסופיית התכנון ולארכיטקטורת ה-pipeline של המעבד.</p>
+</li>
+<li>
+<p><strong>שימוש בשני רגיסטרים בלבד:</strong> שתי ההוראות (LL ו-SC) דורשות שימוש בשני רגיסטרים בלבד (אחד לכתובת ואחד לערך), דבר שמתאים טבעית לארכיטקטורות עם שני אופרנדים נפוצים. לעומת זאת, הוראת CAS דורשת שלושה רגיסטרים (אחד לכתובת, אחד לערך ישן ואחד לערך חדש) ומכילה תלות בין הערך שנקרא לערך שנכתב. עבור ארכיטקטורת x86, שהיא ארכיטקטורת CISC, אין דרישה זו, אך שבבים מודרניים עשויים לתרגם הוראת CAS למיקרו-פעולות נפרדות של LL/SC בתוך המעבד.</p>
+</li>
+</ol>
+<h3 id="מימוש-הוראות-llsc">
+  מימוש הוראות LL/SC
+  <a class="heading-link" href="#%d7%9e%d7%99%d7%9e%d7%95%d7%a9-%d7%94%d7%95%d7%a8%d7%90%d7%95%d7%aa-llsc">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כאשר מבוצעת הוראת LL, הערך שנמצא במיקום הזיכרון נטע באותו הזמן לרגיסטר של המעבד. כחלק מהליך זה, הערך נטען גם ל-cache L1d של המעבד. הוראת SC שנעשית מאוחר יותר תצליח רק אם הערך ב-L1d לא שונה. איך המעבד מזהה את השינוי הזה? התשובה טמונה בפרוטוקול MESI. אם מעבד אחר מבצע שינוי במיקום הזיכרון, העותק של הערך ב-L1d של המעבד הראשון מתבטל. כאשר המעבד הראשון מבצע את הוראת SC, הוא יגלה שעליו לטעון מחדש את הערך לתוך L1d, דבר שהמעבד צריך לזהות ולבצע באופן אוטומטי.</p>
+<p>באופן כללי, יישום הוראות LL/SC כמעט ואינו דורש משאבים נוספים כאשר נעשה שימוש בפרוטוקול קוהרנטיות cache כמו MESI.</p>
+<h2 id="גישות-בלעדיות-exclusive-accesses">
+  גישות בלעדיות (Exclusive Accesses)
+  <a class="heading-link" href="#%d7%92%d7%99%d7%a9%d7%95%d7%aa-%d7%91%d7%9c%d7%a2%d7%93%d7%99%d7%95%d7%aa-exclusive-accesses">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>במעבדי Arm מסורתיים, השימוש בדגל נעילה (כמו במימוש של מנעולים כמו mutex) נעשה באמצעות הוראת <code>SWP</code>. הוראה זו מאפשרת גישה אטומית לקריאה ולכתיבה של הדגל, ומונעת מצב בו שני תהליכים ינעו את המשאב במקביל. כדי לשפר את המנגנון הזה, הוצגו הוראות גישה בלעדיות בצמדים כגון <code>LDREX</code>/<code>STREX</code>, <code>LDREXB</code>/<code>STREXB</code>, ו-<code>LDREXH</code>/<code>STREXH</code>.</p>
+<p>הוראות Load-Exclusive ו-Store-Exclusive פועלות כצמד להבטחת גישה אטומית לזיכרון בכתובת מסוימת. השימוש הנפוץ בצמד הוראות זה, כאשר ניגשים לכתובת זיכרון x שאינה invalid, פועל כך:</p>
+<ol>
+<li>
+<p>הוראת Load-Exclusive: הוראה זו קוראת ערך מכתובת הזיכרון x ומסמנת אותה לגישה בלעדית.</p>
+</li>
+<li>
+<p>הוראות Store-Exclusive: הוראה זו מנסה לכתוב ערך חזרה לכתובת הזיכרון x, אך היא תצליח רק אם אף מעבד, תהליך אחר או thread לא ביצע כתיבה לכתובת x מאז הפעולה של Load-Exclusive. לאחר ניסיון הכתיבה, ההוראה מחזירה ביט סטטוס שמציין אם הכתיבה הצליחה.</p>
+</li>
+</ol>
+<p>הוראת Load-Exclusive מסמנת בלוק קטן של זיכרון לצורך גישה בלעדית, כשהגודל של הבלוק המסומן נקבע על פי יישום המערכת. כל פעולה של Store-Exclusive לכתובת כלשהי בתוך אותו בלוק מסומן תבטל את הסימון.</p>
+<h3 id="דוגמה-ב-arm-להוראות-בלעדיות">
+  דוגמה ב-arm להוראות בלעדיות
+  <a class="heading-link" href="#%d7%93%d7%95%d7%92%d7%9e%d7%94-%d7%91-arm-%d7%9c%d7%94%d7%95%d7%a8%d7%90%d7%95%d7%aa-%d7%91%d7%9c%d7%a2%d7%93%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ההוראה <code>ldxrb</code> היא פעולת טעינה בלעדית בגודל של byte לרגיסטר. ההוראה מבצעת קריאה של byte מכתובת בזיכרון, שמצוין על ידי הכתובת <code>[x0]</code>, ומעבירה את המידע שנקרא לרגיסטר <code>w9</code>.</p>
+<p>ההוראה <code>stxrb</code> היא פעולת אחסון בלעדית בגודל של byte. ההוראה מבצעת כתיבה של byte שנמצא ברגיסטר <code>w8</code> לכתובת בזיכרון שמסומנת על ידי <code>[x0]</code>. עם זאת, הפעולה <code>stxrb</code> תצליח רק אם תוכן הזיכרון בכתובת <code>[x0]</code> לא שונה מאז שבוצעה הוראת <code>ldxrb</code>.</p>
+<p>האם הכתיבה הצליחה או נכשלה מתועד ברגיסטר <code>w10</code>. אם הכתיבה הייתה מוצלחת, הרגיסטר יכיל את הערך 0, ואם היא נכשלה, הוא יכיל את הערך 1.</p>
+<p>הוראות <code>ldxrb</code> ו-<code>stxrb</code> משמשות יחד ליצירת צמד פעולות לצורך ביצוע רצף בלעדי.</p>
+<h2 id="exclusive-monitor">
+  exclusive monitor
+  <a class="heading-link" href="#exclusive-monitor">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>המוניטור הבלעדי הוא הרכיב שאחראי על שמירת המידע על פעולות exclusives, והוא פועל כמו מכונת מצבים עם שני שלבים: לאחר האיפוס, היא נמצאת במצב Open. כאשר מבוצעת הוראת <code>LDREX</code>, מכונת המצבים עוברת למצב Exclusive. הוראת <code>STREX</code> תוכל לכתוב בהצלחה למיקום הזיכרון (שסומן כדגל נעילה) רק אם מכונת המצבים נמצאת במצב בלעדי.</p>
+<figure>
+    <img src="/posts/atomic/exclusive/Exclusive_State_Machine.png"class="dark-image"
+    ><figcaption class="image-title">Exclusive State Machine from Exclusive accesses (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>הכתיבה הבלעדית באמצעות הוראת <code>STREX</code> עלולה להיכשל במצבים הבאים:</p>
+<ul>
+<li>הוראת <code>LDREX</code> לא בוצעה לפני הוראת <code>STREX</code>.</li>
+<li>הוראת <code>CLREX</code> בוצעה, מה שמנקה את המצב הבלעדי.</li>
+<li>התרחשה פעולת context switch, שכתוצאה ממנה נמחק המצב הבלעדי.</li>
+</ul>
+<p>הוראות הגישה הבלעדיות מאפשרות יצירת פעולות אטומיות בתוכנה והן אינן מחייבות את החומרה לנעול את bus הזיכרון, מה שמפחית משמעותית את ההשפעה על זמן התגובה ל-interrupt.</p>
+<h3 id="מיקום-מערכת-המוניטור-הבלעדי">
+  מיקום מערכת המוניטור הבלעדי
+  <a class="heading-link" href="#%d7%9e%d7%99%d7%a7%d7%95%d7%9d-%d7%9e%d7%a2%d7%a8%d7%9b%d7%aa-%d7%94%d7%9e%d7%95%d7%a0%d7%99%d7%98%d7%95%d7%a8-%d7%94%d7%91%d7%9c%d7%a2%d7%93%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>במערכות מרובות ליבות טיפוסיות, ישנם כמה מוניטורים בלעדיים. כל ליבה במערכת מצוידת במוניטור מקומי, ולעיתים יש גם מוניטור גלובלי אחד או יותר. השימוש במוניטור ספציפי תלוי במאפייני השיתוף של זיכרון ובנתוני ה-cache הקשורים למיקום המשמש להוראות load או store בלעדיות.</p>
+<p>החומרה של כל ליבה כוללת מוניטור מקומי שצופה בפעולות הליבה. כאשר הליבה מבצעת גישת load בלעדית, המוניטור המקומי מתעד זאת. לאחר מכן, כאשר הליבה מנסה לבצע גישת store בלעדית, המוניטור המקומי בודק אם התקיימה קודם לכן גישת load בלעדית מתאימה. אם לא, פעולת ה-store תיכשל. הארכיטקטורה מאפשרת לכל מימוש להגדיר את רמת הבדיקות שהמוניטור מבצע.</p>
+<h3 id="המוניטור-המקומי-והגלובלי-במערכת-מרובת-ליבות">
+  המוניטור המקומי והגלובלי במערכת מרובת ליבות
+  <a class="heading-link" href="#%d7%94%d7%9e%d7%95%d7%a0%d7%99%d7%98%d7%95%d7%a8-%d7%94%d7%9e%d7%a7%d7%95%d7%9e%d7%99-%d7%95%d7%94%d7%92%d7%9c%d7%95%d7%91%d7%9c%d7%99-%d7%91%d7%9e%d7%a2%d7%a8%d7%9b%d7%aa-%d7%9e%d7%a8%d7%95%d7%91%d7%aa-%d7%9c%d7%99%d7%91%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>המוניטור המקומי בליבה משמש כאשר מיקום הזיכרון המשמש לגישה הבלעדית מסומן כלא Shareable, כלומר, כאשר thread-ים פועלים על אותה ליבה בלבד. המוניטור המקומי יכול גם לטפל בגישות מסומנות כניתנות לשיתוף פנימי, לדוגמה, כאשר mutex מגן על משאב משותף בין thread-ים ב-SMP הפועלים על כל ליבה בתוך אותו תחום שיתוף. כאשר thread-ים פועלים על ליבות שונות שאינן קוהרנטיות, מיקום ה-mutex המסומן כ-normal ו-non-cacheable ידרוש שימוש במוניטור גישה גלובלי.</p>
+<p>לא בכל מערכת יש מוניטור גלובלי, או שלעיתים הוא זמין רק עבור אזורי כתובת מסוימים. אם מתבצעת גישה בלעדית למיקום שבו אין מוניטור מתאים, התנהגות המערכת מוגדרת לפי המימוש, ויש כמה אפשרויות לתגובה:</p>
+<ul>
+<li>ההוראה עשויה לגרום ל-External Abort.</li>
+<li>ההוראה יכולה לגרום ל- MMU fault.</li>
+<li>ההוראה יכולה להיות מטופלת כפקודת <code>NOP</code>.</li>
+<li>ההוראה הבלעדית יכולה להיות מטופלת כהוראת <code>LDR</code>/<code>STR</code> רגילה, כאשר הערך המוחזק ברגיסטר תוצאת הוראת ה-store הבלעדית הופך לבלתי ידוע.</li>
+</ul>
+<h3 id="ה-exclusive-monitor-הגלובלי">
+  ה-exclusive monitor הגלובלי
+  <a class="heading-link" href="#%d7%94-exclusive-monitor-%d7%94%d7%92%d7%9c%d7%95%d7%91%d7%9c%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כשהוראת Load-Exclusive מבוצעת על זיכרון Shareable, היא מבצעת קריאת ערך מהזיכרון, ומסמנת את כתובת הזיכרון הפיזית כגישה בלעדית עבור המעבד המבקש. בנוסף, פעולה זו עשויה לגרום להסרת סימן הגישה הבלעדי מכתובת זיכרון אחרת שסומנה קודם לכן על ידי אותו מעבד.</p>
+<p>הוראת Store-Exclusive מבצעת store מותנה בזיכרון, והיא תצליח רק אם התנאים הבאים מתקיימים:</p>
+<ul>
+<li>הכתובת הפיזית אליה ניגש המעבד מסומנת כגישה בלעדית עבור אותו מעבד.</li>
+<li>גם המוניטור המקומי וגם המוניטור הגלובלי של המעבד נמצאים במצב של גישה בלעדית.</li>
+</ul>
+<p>אם הכתובת שמסומנת כגישה בלעדית עבור מעבד אחר, מצב המוניטור הגלובלי של אותו מעבד ישתנה למצב של Open Access.</p>
+<p>אם הכתובת אינה מסומנת כגישה בלעדית עבור המעבד המבקש, הכתיבה לא תצליח והמצב של המוניטור הגלובלי לא ישתנה ויישאר במצב Open Access עבור המעבד המבקש.</p>
+<p>במקרה של הצלחה ערך של 0 יוחזר לרגיסטר היעד והמצב הסופי של המוניטור הגלובלי עבור המעבד יהיה תלוי מימוש.</p>
+<p>במקרה של כישלון ערך של 1 יוחזר לרגיסטר היעד.</p>
+<p>ניתן להסתמך על כך שזוג ההוראות Load-Exclusive ו-Store-Exclusive יצליחו בסופו של דבר רק אם הן מבוצעות על אותו מרחב כתובות וירטואלי.</p>
+<p>כשיש exception והמעבד חוזר ממנו, המוניטור המקומי מנוקה באופן אוטומטי. כתוצאה מכך, אין צורך בביצוע הוראת <code>CLREX</code> כחלק מתהליך של ה-context switch במרבית המקרים.</p>
+<h3 id="דוגמאות-לביצוע-של-המוניטור-הגלובלי">
+  דוגמאות לביצוע של המוניטור הגלובלי
+  <a class="heading-link" href="#%d7%93%d7%95%d7%92%d7%9e%d7%90%d7%95%d7%aa-%d7%9c%d7%91%d7%99%d7%a6%d7%95%d7%a2-%d7%a9%d7%9c-%d7%94%d7%9e%d7%95%d7%a0%d7%99%d7%98%d7%95%d7%a8-%d7%94%d7%92%d7%9c%d7%95%d7%91%d7%9c%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-exclusive monitor נדרש להקליט את פרטי הטרנזקציה עבור הרצף הבלעדי, כך שהוא יודע את טווח הזיכרון אליו ניגשים ואת זהות המעבד שמבצע את הגישה.</p>
+<p>בקטע הזה נעבוד עם מערכת המכילה 2 מעבדים והגישות לזיכרון נעשות במקומות shareable עם אפשרות לגישה בלעדית.</p>
+<h4 id="2--גישות-מוצלחות">
+  2  גישות מוצלחות
+  <a class="heading-link" href="#2--%d7%92%d7%99%d7%a9%d7%95%d7%aa-%d7%9e%d7%95%d7%a6%d7%9c%d7%97%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הסעיף הזה מתאר דוגמה לשני רצפי גישה בלעדיים מוצלחים.</p>
+<p>הטבלה הבאה מתארת ​​את הטרנזקציות השונות ברצף. כל הטרנזקציות בטבלה הן גישה בלעדית:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Transaction number</th>
+          <th>Read or write</th>
+          <th>CPU ID</th>
+          <th>Address</th>
+          <th>Result</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>R</td>
+          <td>0</td>
+          <td><code>0xA000</code></td>
+          <td>-</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>R</td>
+          <td>1</td>
+          <td><code>0xB000</code></td>
+          <td>success</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>W</td>
+          <td>0</td>
+          <td><code>0xA000</code></td>
+          <td>-</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>W</td>
+          <td>1</td>
+          <td><code>0xB000</code></td>
+          <td>success</td>
+      </tr>
+  </tbody>
+</table>
+<p>רצף הטרנזקציות המוצג בטבלה הקודמת מתקדם באופן הבא:</p>
+<ol>
+<li>מעבד עם המזהה<code>0</code> מבצע קריאה בלעדית מהכתובת <code>0xA000</code>. המוניטור הבלעדי שומר את המזהה והכתובת של הטרנזקציה הזו בטבלה שלו.</li>
+<li>מעבד אחר עם המזהה <code>1</code> מבצע קריאה חדשה בלעדית מהכתובת <code>0xB000</code>. שוב, המוניטור שומר את הפרטים של הטרנזקציה החדשה הזו בטבלה. ברגע זה בדוגמה שלנו קיימים שני רצפים בלעדיים נפרדים.</li>
+<li>המעבד עם מזהה <code>0</code> עושה כתיבה לכתובת <code>0xA000</code>. המוניטור הבלעדי בודק את הפרטים של הטרנזקציה הזו בטבלה, ובגלל הרשומה הקיימת עם מזהה <code>0</code> וכתובת <code>0xA000</code>,  הגישה מצליחה (מזוהה בטבלה על ידי SUCCESS) המשמעות היא שאף מעבד אחר לא ניגש למיקום הזיכרון הזה, והזיכרון מעדכן אותו בערך החדש שהוא מקבל. המוניטור מסיר את המזהה והכתובת עבור טרנזקציה הזאת מהטבלה שלו, מכיוון שרצף הגישה הבלעדי עבור מיקום כתובת זה הושלם כעת.</li>
+<li>לבסוף, המעבד  עם מזהה <code>1</code> מבצע כתיבה חדשה בלעדית לכתובת <code>0xB000</code>. המוניטור בודק את הפרטים של הטרנזקציה הזו בטבלה שלו. שהוא רואה רשומה קיימת עם מזהה <code>1</code> וכתובת <code>0xB000</code>, והגישה מצליחה. המשמעות היא שאף מעבד אחר לא ניגש למיקום הזיכרון הזה, והזיכרון מעדכן אותו בערך החדש שהתקבל. שוב, המוניטור הסיר את המזהה והכתובת עבור טרנזקציה זו מהטבלה שלו, מכיוון שרצף הגישה הבלעדי עבור מיקום כתובת זה הושלם כעת.</li>
+</ol>
+<h4 id="גישה-אחת-מצליחה-ואחת-נכשלת">
+  גישה אחת מצליחה ואחת נכשלת
+  <a class="heading-link" href="#%d7%92%d7%99%d7%a9%d7%94-%d7%90%d7%97%d7%aa-%d7%9e%d7%a6%d7%9c%d7%99%d7%97%d7%94-%d7%95%d7%90%d7%97%d7%aa-%d7%a0%d7%9b%d7%a9%d7%9c%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הסעיף הזה מתאר דוגמה לשני רצפי גישה בלעדיים, כאשר הראשון מצליח והשני נכשל.</p>
+<p>הטבלה הבאה מתארת ​​את הטרנזקציות השונות ברצף לדוגמה. כל הטרנזקציות בטבלה הן גישה בלעדית:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Transaction number</th>
+          <th>Read or write</th>
+          <th>CPU ID</th>
+          <th>Address</th>
+          <th>Result</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>1</td>
+          <td>R</td>
+          <td>0</td>
+          <td>0xA000</td>
+          <td>-</td>
+      </tr>
+      <tr>
+          <td>2</td>
+          <td>R</td>
+          <td>1</td>
+          <td>0xA000</td>
+          <td>SUCCESS</td>
+      </tr>
+      <tr>
+          <td>3</td>
+          <td>W</td>
+          <td>0</td>
+          <td>0xA000</td>
+          <td>-</td>
+      </tr>
+      <tr>
+          <td>4</td>
+          <td>W</td>
+          <td>1</td>
+          <td>0xA000</td>
+          <td>FAILED</td>
+      </tr>
+  </tbody>
+</table>
+<p>רצף הטרנזקציות המוצג בטבלה הקודמת מתקדם באופן הבא (שלבים 1 ו-3 זההים למקרה הקודם):</p>
+<ol>
+<li>המעבד  עם מזהה <code>0</code> מבצע קריאה בלעדית מהכתובת <code>0xA000</code>. המוניטור שומר את המזהה והכתובת בטבלה שלו.</li>
+<li>מעבד אחר עם המזהה <code>1</code> מבצע קריאה חדשה בלעדית מאותה כתובת כמו הטרנזקציה הראשונה, <code>0xA000</code>.</li>
+<li>המעבד עם מזהה <code>0</code> עושה כתיבה לכתובת <code>0xA000</code>. המוניטור הבלעדי בודק את הפרטים של הטרנזקציה הזו בטבלה, ובגלל הרשומה הקיימת עם מזהה <code>0</code> וכתובת <code>0xA000</code>,  הגישה מצליחה (מזוהה בטבלה על ידי SUCCESS) המשמעות היא שאף מעבד אחר לא ניגש למיקום הזיכרון הזה, והזיכרון מעדכן אותו בערך החדש שהוא מקבל. המוניטור מסיר את המזהה והכתובת עבור טרנזקציה הזאת מהטבלה שלו, מכיוון שרצף הגישה הבלעדי עבור מיקום כתובת זה הושלם כעת.</li>
+<li>לבסוף, המעבד עם מזהה <code>1</code>  מבצע שוב טרנזקציה חדשה בלעדית כתיבה לכתובת <code>0xA000</code>. המוניטור בודק את הפרטים של הטרנזקציה הזו בטבלה שלו. לא מוצא רשומות עם הכתובת <code>0xA000</code>, ולכן הגישה נכשלת (מזוהה בטבלה על ידי FAILED). וזה אומר שבוצעה פעולת כתיבה קודמת במיקום זיכרון זה אשר עדכנה את הנתונים. במקרה זה, הזיכרון לא יכול לעדכן את מיקום הזיכרון בערך החדש. מצב זה הוא כשל גישה בלעדי. במקרה זה, על המעבד להפעיל מחדש את רצף הגישה הבלעדי המלא, החל בקריאה הבלעדית ולאחר מכן בכתיבה הבלעדית שוב.</li>
+</ol>
+<h3 id="ה-granularity-של-המוניטור-הבלעדי-erg">
+  ה-Granularity של המוניטור הבלעדי (ERG)
+  <a class="heading-link" href="#%d7%94-granularity-%d7%a9%d7%9c-%d7%94%d7%9e%d7%95%d7%a0%d7%99%d7%98%d7%95%d7%a8-%d7%94%d7%91%d7%9c%d7%a2%d7%93%d7%99-erg">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Exclusives Reservation Granule (ERG) הוא מידת הפירוט שבה המוניטור הבלעדי עוקב אחרי גישות. גודל ה-ERG מוגדר לפי המימוש, אך בדרך כלל הוא שווה לגודל של cache line. זהו המרחק המינימלי בין כתובות שעל המוניטור להבחין ביניהן. הצבת שני mutex-ים בתוך אותו ERG עלולה לגרום ל-false sharing, כלומר, הוראת <code>STXR</code> על mutex אחד יכולה לנקות את התג הבלעדי של mutex אחר באותו ERG. מצב כזה לא ימנע מהתוכנה לפעול בצורה נכונה מבחינה ארכיטקטונית, אך הוא עשוי לפגוע ביעילותה.</p>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://lwn.net/Articles/256433/">https://lwn.net/Articles/256433/</a>
+    </li>
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Load-link/store-conditional">https://en.wikipedia.org/wiki/Load-link/store-conditional</a>
+    </li>
+  
+    <li>
+      <a href="https://homepages.inf.ed.ac.uk/s1343145/USENIX2020.pdf">https://homepages.inf.ed.ac.uk/s1343145/USENIX2020.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://arxiv.org/pdf/2207.09341.pdf">https://arxiv.org/pdf/2207.09341.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/107565/0101/Memory-system/Exclusive-accesses?lang=en">https://developer.arm.com/documentation/107565/0101/Memory-system/Exclusive-accesses?lang=en</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/ddi0487/latest/">https://developer.arm.com/documentation/ddi0487/latest/</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/den0024/a/Multi-core-processors/Multi-processing-systems/Exclusive-monitor-system-location">https://developer.arm.com/documentation/den0024/a/Multi-core-processors/Multi-processing-systems/Exclusive-monitor-system-location</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/102202/0300/Atomic-accesses">https://developer.arm.com/documentation/102202/0300/Atomic-accesses</a>
+    </li>
+  
+    <li>
+      <a href="https://krinkinmu.github.io/2024/04/20/arm-synchronization.html">https://krinkinmu.github.io/2024/04/20/arm-synchronization.html</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-atomic" dir="rtl">        רואה עוד ב atomic
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-atomic">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/atomic/x86-lock/">x86 Lock</a>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/atomic/atomic/">Atomic</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

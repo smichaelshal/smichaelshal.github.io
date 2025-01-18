@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Memory-Barrier on Michael Shalitin</title>
+    <link>https://smichaelshal.github.io/he/tags/memory-barrier/</link>
+    <description>Recent content in Memory-Barrier on Michael Shalitin</description>
+    <generator>Hugo</generator>
+    <language>he</language>
+    <lastBuildDate>Sun, 03 Nov 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://smichaelshal.github.io/he/tags/memory-barrier/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>AMBA ACE Barrier</title>
+      <link>https://smichaelshal.github.io/he/posts/barriers/amba-ace-barrier/</link>
+      <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/barriers/amba-ace-barrier/</guid>
+      <description>&lt;h3 id=&#34;טרנזקציות-מחסום-בפרוטוקול-ace&#34;&gt;&#xA;  טרנזקציות מחסום בפרוטוקול ACE&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%91%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c-ace&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h3&gt;&#xA;&lt;p&gt;פרוטוקול ACE תומך בטרנזקציות מחסום אשר משמשות להבטחת סדר והבחנה של טרנזקציות במערכת. המחסומים מסייעים ביצירת יחסי סדר בין פעולות, כדי להבטיח ביצועים ותאימות צפויה בין רכיבי המערכת.&lt;/p&gt;&#xA;&lt;p&gt;לצורך שימוש בטרנזקציות מחסום, רכיב מאסטר משתמש במאפייני דומיין השיתוף כדי להגדיר עם אילו רכיבים אחרים יש צורך לסנכרן את המחסום וכדי להקים יחסי סדר מוגדרים. הגדרת הדומיין של טרנזקציית המחסום מגדירה את מידת הפצת המחסום במערכת, ואילו מאפייני המחסום עצמם מכתיבים את יחסי הסדר הנדרשים.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Acquire Release</title>
+      <link>https://smichaelshal.github.io/he/posts/barriers/acquire-release/</link>
+      <pubDate>Sat, 02 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/barriers/acquire-release/</guid>
+      <description>&lt;h1 id=&#34;מבוא&#34;&gt;&#xA;  מבוא&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#%d7%9e%d7%91%d7%95%d7%90&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h1&gt;&#xA;&lt;p&gt;ההוראות מסוג load-acquire ו-store-release, כוללות מחסומים מובנים חד-כיווניים, המאפשרים דרישות סדר חלשות ממחסומים כלליים. הן משפיעות על הסדר של גישה לזיכרון מפורש שצוינו שנמצא בכל צד של הוראת מחסום הזיכרון. אופי זה מאפשר ביצועים משופרים בזכות אופטימיזציות מיקרו-ארכיטקטוניות ומצמצם את השפעת הביצועים לעומת מחסום זיכרון כללי.&lt;/p&gt;&#xA;&lt;p&gt;כאשר הסדר הנדרש נתמך על ידי load-acquire או store-release, מומלץ להשתמש בהן במקום במחסום כללי כדי לשפר את היעילות.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>mb</title>
+      <link>https://smichaelshal.github.io/he/posts/barriers/mb/</link>
+      <pubDate>Sat, 12 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/barriers/mb/</guid>
+      <description>&lt;h2 id=&#34;מבוא&#34;&gt;&#xA;  מבוא&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#%d7%9e%d7%91%d7%95%d7%90&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h2&gt;&#xA;&lt;p&gt;מחסום זיכרון הוא הוראה המיועדת לאכוף מגבלות סדר על פעולות זיכרון המבוצעות לפני ואחרי הוראת המחסום. זה מתבטא בכך שפעולות זיכרון שביצוען סודר לפני המחסום יבוצעו לפני כל פעולות זיכרון שניתן להן לאחר המחסום.&lt;/p&gt;&#xA;&lt;p&gt;חשיבות האכיפה שהמחסומים מספקים נובעת מהעובדה שמעבדים והתקנים אחרים במערכת עשויים לנצל מגוון טכניקות לשיפור ביצועים, כמו שינוי סדר ההוראות, דחייה ושילוב של פעולות זיכרון, ביצוע loads ספקולטיביות, חיזוי ספקולטיבי של branch-ים ושימוש בסוגים שונים של cache. מחסומי זיכרון נועדו לעקוף או לדכא את הטכניקות הללו או את השפעותיהם, כך שהקוד יכול לשלוט בצורה צפויה באינטראקציות בין מספר מעבדים או בין מעבד למכשירים.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

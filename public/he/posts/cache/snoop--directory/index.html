@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Snoop &amp; Directory · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  פרוטוקול Snooping
+  
+    
+    Link to heading
+  
+
+מנגנון Snooping הוא מנגנון שבו כל אחד מה-cache-ים במערכת עוקב אחרי שורות כתובת מסוימות כדי לזהות אם שורות זיכרון ששמורות ב-cache שלו נגישות או משתנות על ידי מעבדים אחרים. פרוטוקולי קוהרנטיות כמו פרוטוקולי invalidate ופרוטוקולי update משתמשים במנגנון זה.
+פרוטוקול snooping מתבסס על bus משותף שמחבר בין כל ה-cache-ים לבין הזיכרון הראשי. כאשר מעבד מבצע כתיבה ל-cache שלו, הוא משדר את הכתובת של הבלוק שעבר שינוי אל ה-bus. מעבדים אחרים שברשותם עותק של אותו הבלוק ב-cache יכולים לבחור לבטל את העותק או לעדכן אותו, תלוי בגרסת הפרוטוקול שנמצאת בשימוש פרוטוקול מבוסס invalidate או מבוסס update). היתרון העיקרי של פרוטוקול זה הוא הפשטות והמהירות שלו, אך הוא מגיע עם מספר חסרונות:">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Snoop & Directory">
+  <meta name="twitter:description" content="פרוטוקול Snooping Link to heading מנגנון Snooping הוא מנגנון שבו כל אחד מה-cache-ים במערכת עוקב אחרי שורות כתובת מסוימות כדי לזהות אם שורות זיכרון ששמורות ב-cache שלו נגישות או משתנות על ידי מעבדים אחרים. פרוטוקולי קוהרנטיות כמו פרוטוקולי invalidate ופרוטוקולי update משתמשים במנגנון זה.
+פרוטוקול snooping מתבסס על bus משותף שמחבר בין כל ה-cache-ים לבין הזיכרון הראשי. כאשר מעבד מבצע כתיבה ל-cache שלו, הוא משדר את הכתובת של הבלוק שעבר שינוי אל ה-bus. מעבדים אחרים שברשותם עותק של אותו הבלוק ב-cache יכולים לבחור לבטל את העותק או לעדכן אותו, תלוי בגרסת הפרוטוקול שנמצאת בשימוש פרוטוקול מבוסס invalidate או מבוסס update). היתרון העיקרי של פרוטוקול זה הוא הפשטות והמהירות שלו, אך הוא מגיע עם מספר חסרונות:">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/cache/snoop--directory/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Snoop & Directory">
+  <meta property="og:description" content="פרוטוקול Snooping Link to heading מנגנון Snooping הוא מנגנון שבו כל אחד מה-cache-ים במערכת עוקב אחרי שורות כתובת מסוימות כדי לזהות אם שורות זיכרון ששמורות ב-cache שלו נגישות או משתנות על ידי מעבדים אחרים. פרוטוקולי קוהרנטיות כמו פרוטוקולי invalidate ופרוטוקולי update משתמשים במנגנון זה.
+פרוטוקול snooping מתבסס על bus משותף שמחבר בין כל ה-cache-ים לבין הזיכרון הראשי. כאשר מעבד מבצע כתיבה ל-cache שלו, הוא משדר את הכתובת של הבלוק שעבר שינוי אל ה-bus. מעבדים אחרים שברשותם עותק של אותו הבלוק ב-cache יכולים לבחור לבטל את העותק או לעדכן אותו, תלוי בגרסת הפרוטוקול שנמצאת בשימוש פרוטוקול מבוסס invalidate או מבוסס update). היתרון העיקרי של פרוטוקול זה הוא הפשטות והמהירות שלו, אך הוא מגיע עם מספר חסרונות:">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-09-16T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-09-16T00:00:00+00:00">
+    <meta property="article:tag" content="Cache">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Memory">
+    <meta property="article:tag" content="Coherence-Protocol">
+    <meta property="article:tag" content="Cache-Coherence">
+    <meta property="article:tag" content="Amba">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/multi-copy-atomicity/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/cache-maintenance/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/cache-coherence/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/cache/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/cache/snoop--directory/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/cache/snoop--directory/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/cache/snoop--directory/">
+              Snoop &amp; Directory
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-09-16T00:00:00Z">
+                ספטמבר 16, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                1657 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/cache/">Cache</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory/">Memory</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/coherence-protocol/">Coherence-Protocol</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache-coherence/">Cache-Coherence</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba/">Amba</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba-chi/">Amba-Chi</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/snooping/">Snooping</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="פרוטוקול-snooping">
+  פרוטוקול Snooping
+  <a class="heading-link" href="#%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c-snooping">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>מנגנון Snooping הוא מנגנון שבו כל אחד מה-cache-ים במערכת עוקב אחרי שורות כתובת מסוימות כדי לזהות אם שורות זיכרון ששמורות ב-cache שלו נגישות או משתנות על ידי מעבדים אחרים. פרוטוקולי קוהרנטיות כמו פרוטוקולי invalidate ופרוטוקולי update משתמשים במנגנון זה.</p>
+<p>פרוטוקול snooping מתבסס על bus משותף שמחבר בין כל ה-cache-ים לבין הזיכרון הראשי. כאשר מעבד מבצע כתיבה ל-cache שלו, הוא משדר את הכתובת של הבלוק שעבר שינוי אל ה-bus. מעבדים אחרים שברשותם עותק של אותו הבלוק ב-cache יכולים לבחור לבטל את העותק או לעדכן אותו, תלוי בגרסת הפרוטוקול שנמצאת בשימוש פרוטוקול מבוסס invalidate או מבוסס update). היתרון העיקרי של פרוטוקול זה הוא הפשטות והמהירות שלו, אך הוא מגיע עם מספר חסרונות:</p>
+<ul>
+<li>ה-bus עלול להפוך לצוואר בקבוק ככל שמספר המעבדים והגישה ל-cache-ים גדלים.</li>
+<li>הפרוטוקול דורש שכל ה-cache-ים יעקבו כל הזמן אחר תעבורת ה-bus, דבר המוביל לצריכת חשמל ורוחב פס מוגבר.</li>
+<li>פרוטוקול זה אינו מתאים למערכות מבוזרות, שבהן ה-bus מוחלף ברשת תקשורת.</li>
+</ul>
+<p>למרות החסרונות, הפרוטוקול עדיין מתאים לשימוש במערכות עם מספר קטן של מעבדים, שבהן הפשטות שלו עדיפה על מגבלותיו. כמו כן, הוא שימושי במערכות בזמן אמת או ביישומים שבהם יש צורך בגישה מהירה ועם latency נמוך לנתונים משותפים.</p>
+<h3 id="קוהרנטיות-בפרוטוקולי-snooping">
+  קוהרנטיות בפרוטוקולי snooping
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%91%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c%d7%99-snooping">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>פרוטוקולי snooping מבוססים על עיקרון מרכזי אחד: כל בקרי הקוהרנטיות עוקבים אחר בקשות הקוהרנטיות (snoop) בסדר אחיד, ופועלים בצורה מתואמת לשמירה על קוהרנטיות הנתונים במערכת. על ידי כך שכל הבקשות המתקבלות עבור בלוק נתון יופיעו לפי סדר קבוע, הפרוטוקול מאפשר לבקרי הקוהרנטיות המבוזרים לעדכן את מצבם באופן נכון, תוך התאמה למכונת המצבים המשותפת המתארת את המצב של בלוק ה-cache בכל רגע נתון.</p>
+<p>בפרוטוקולי snooping מסורתיים, כל בקשה משודרת לכל בקרי הקוהרנטיות במערכת, כולל הבקר שיזם את הבקשה. בקשות אלה נשלחות לרוב דרך רשת שידור מסודרת, כמו bus, שמבטיחה שכל בקרי הקוהרנטיות יקבלו את הבקשות באותו סדר בדיוק. כלומר, נוצרת מערכת של סדר כולל לבקשות הקוהרנטיות, המבטיחה שכל בקר קוהרנטיות יצפה באותה סדרה של פעולות באותו רצף.</p>
+<p>הסדר הכולל הזה מאפשר לכל בקר קוהרנטיות לעדכן בצורה מדויקת את המצב של בלוק ה-cache, מאחר שההחלטות מתבססות על אותה סדרת פעולות לכל הבקרים, ללא קשר למיקומם או לפעולות אחרות שמתרחשות במקביל במערכת.</p>
+<h3 id="כיצד-snooping-תלוי-בסדר-כולל-של-בקשות-קוהרנטיות">
+  כיצד Snooping תלוי בסדר כולל של בקשות קוהרנטיות
+  <a class="heading-link" href="#%d7%9b%d7%99%d7%a6%d7%93-snooping-%d7%aa%d7%9c%d7%95%d7%99-%d7%91%d7%a1%d7%93%d7%a8-%d7%9b%d7%95%d7%9c%d7%9c-%d7%a9%d7%9c-%d7%91%d7%a7%d7%a9%d7%95%d7%aa-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>פרוטוקולי Snooping מסורתיים מבוססים על קיומו של סדר כולל של כל בקשות הקוהרנטיות במערכת. הסדר הזה מאפשר לכל בקר קוהרנטיות לקבוע מתי בקשה מסוימת התקבלה, בהתבסס על סדר snooping לוגי שמסנכרן בין כל הבקרים.</p>
+<p>היכולת של פרוטוקול snooping לזהות באופן עקיף את סדר הגעת הבקשות היא מה שמייחד אותו מפרוטוקולי directory, שבהם נדרש מעקב מפורש אחר כל בקשה.</p>
+<p>כדי ליישם את הדרישה הזאת לסדר כולל, רשת interconnect בפרוטוקול snooping צריכה לארגן את כל בקשות הקוהרנטיות בסדר קבוע. מאחר שבקרים שונים יכולים להוציא בקשות בו-זמנית, הרשת חייבת לטפל בתעדוף וסידור הבקשות בנקודת הסדרה (serialization point). כאשר בקר קוהרנטיות שולח בקשת קוהרנטיות, רשת interconnect ממיינת את הבקשה, משדרת אותה לכל הבקרים, והבקר ששלח את הבקשה לומד מה סדר ההגעה שלה על ידי צפייה בזרם הבקשות שהוא מקבל.</p>
+<p>למשל, מערכת המבוססת על bus משתמשת ב-bus עצמו לשידור מסודר של כל בקשות הקוהרנטיות. כל בקשה שנשלחת עוברת לכל הבקרים בסדר אחיד, מה שמקל על שמירת קוהרנטיות.</p>
+<p>אולם, הדרישה לרשת שידור מסודרת עבור פרוטוקולי snooping הופכת את המימוש ליקר ולא יעיל בהשוואה לרשתות פשוטות וזולות יותר שיכולות לשרת פרוטוקולי directory. בפרט, במערכות גדולות עם מספר רב של ליבות, snooping יוצר צוואר בקבוק, הן מבחינת רוחב הפס של הרשת הנדרשת לשידור הבקשות, והן מבחינת העומס על בקרי הקוהרנטיות שצריכים לעקוב אחרי כל הבקשות. בשל כך, מערכות בעלות scalability דורשות פרוטוקול קוהרנטיות יעיל יותר, והצורך הזה הוביל לפיתוח פרוטוקולי directory.</p>
+<p>עם זאת, snooping עדיין יכול להיות חלק מהפתרון גם במערכות גדולות. אחת הטכניקות היעילות ל-scalability היא &ldquo;הפרד ומשול&rdquo;. לדוגמה, במערכת הכוללת שבבים מרובי ליבות, ניתן להשתמש בפרוטוקול snooping לשמירה על קוהרנטיות בתוך כל שבב, בעוד שפרוטוקול directory מטפל בקוהרנטיות בין השבבים. גישה זו מאפשרת לשלב בין היתרונות של שתי השיטות.</p>
+<h2 id="פרוטוקול-מבוסס-directory">
+  פרוטוקול מבוסס Directory
+  <a class="heading-link" href="#%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c-%d7%9e%d7%91%d7%95%d7%a1%d7%a1-directory">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>בפרוטוקול מבוסס directory, ישנו רכיב מרכזי או מבוזר הנקרא directory, אשר אחראי לניהול המעקב אחר מצבם ומיקומם של כל בלוקי ה-cache במערכת. כאשר מעבד מבקש לקרוא או לכתוב בלוק מסוים ב-cache, הוא שולח בקשה ל-directory. ה-directory בודק את המידע על הבלוק ומחליט אם לאשר או לדחות את הבקשה, ובמידת הצורך, מאמת את התקשורת בין המעבד המבקש למעבדים אחרים שמחזיקים עותקים של הבלוק.</p>
+<p>ה-directory פועל כמעין מתווך, וכל מעבד שמעוניין לטעון ערך מהזיכרון הראשי ל-cache שלו חייב לבקש רשות מה-directory.</p>
+<p>כאשר ערך בזיכרון משתנה על ידי אחד מהמעבדים, ה-directory מעדכן את שאר ה-cache-ים שמחזיקים עותקים של אותו ערך, או לחלופין מבטל את תוקף העותקים שלהם, בהתאם לפרוטוקול הקוהרנטיות הנדרש. בכך ה-directory מבטיח שכל ה-cache-ים במערכת יישארו מסונכרנים וימנעו ממצבים של חוסר קוהרנטיות בנתונים.</p>
+<p>פרוטוקול זה מצליח להתגבר על חלק מהמגבלות של פרוטוקול snooping:</p>
+<ul>
+<li><strong>הפחתת עומס תעבורה</strong>: התעבורה ב-bus או ברשת מצטמצמת, מכיוון שרק המעבדים הרלוונטיים מעורבים בכל פעולה, ולא כל המעבדים במערכת כמו ב-snooping.</li>
+<li><strong>שיפור scalability</strong>: ה-directory יכול להיות מבוזר על פני מספר צמתים, מה שמאפשר תמיכה במערכות גדולות יותר עם מספר רב של מעבדים.</li>
+<li><strong>גמישות</strong>: ניתן ליישם מדיניות שונות עבור אזורי זיכרון שונים, בהתאם לצורכי היישום.</li>
+</ul>
+<p>עם זאת, ישנם גם חסרונות לפרוטוקול מבוסס directory:</p>
+<ul>
+<li><strong>נקודת כשל מרכזית</strong>: במערכות עם directory מרכזי, הרכיב מהווה נקודת תורפה בודדת. אם ה-directory הופך לבלתי זמין, בין אם עקב תקלת חומרה או בעיה אחרת, הדבר עלול לשבש את פעולתה של המערכת כולה.</li>
+</ul>
+<h3 id="קוהרנטיות-בפרוטוקולי-directory">
+  קוהרנטיות בפרוטוקולי Directory
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%91%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c%d7%99-directory">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>פרוטוקולי directories נוצרו במטרה להתמודד עם המגבלות של פרוטוקולי snooping מבחינת scalability. בפרוטוקולי snooping מסורתיים, כל הבקשות מועברות דרך רשת חיבורית מסודרת, וכל בקרי הקוהרנטיות חייבים לעקוב ולעבד את כל הבקשות, מה שיוצר עומס כבד במערכות גדולות. לעומת זאת, פרוטוקולי directories מציעים גישה שונה שמבוססת על עקיפה, המאפשרת להימנע מהצורך ברשת שידור מסודרת ומהחובה שכל בקר cache יטפל בכל בקשה.</p>
+<p>ה-directory עוקב אחרי ה-cache-ים המחזיקים בכל בלוק, ובאילו מצבים הם מחזיקים אותו (למשל, מצבי MESI). כאשר בקר cache רוצה לבצע בקשת קוהרנטיות, כמו בקשה לקריאת נתונים, הוא שולח את הבקשה ישירות ל-directory בהודעת unicast.</p>
+<p>ה-directory בודק את מצב הבלוק המבוקש כדי לקבוע כיצד להמשיך. לדוגמה, אם ה-directory מזהה שהבלוק נמצא בבעלות של ליבה אחרת, נניח Core 2, הוא ינתב את הבקשה ישירות ל-Core 2, ויבקש מליבת Core 2 לשלוח עותק של הבלוק ל-cache המבקש. לאחר קבלת ההודעה, ה-cache של Core 2 ישיב עם הנתונים ל-cache שביצע את הבקשה.</p>
+<p>הבדל מעניין בין פרוטוקולי directories לבין פרוטוקולי snooping הוא באופן הטיפול הבסיסי בבקשות. בעוד ש-snooping מסתמך על כך שכל הבקרים יתעדו את כל הבקשות ברשת מסודרת, פרוטוקולי directories עובדים בצורה ממוקדת יותר, כאשר כל בקשה מטופלת ישירות על ידי ה-directory והרכיבים הרלוונטיים, מה שמאפשר למערכת להיות scalability ויעילה יותר.</p>
+<h4 id="פרוטוקול-directory">
+  פרוטוקול Directory
+  <a class="heading-link" href="#%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c-directory">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>בפרוטוקול directory, ה-directory אחראית לניהול מצב כל בלוק נתונים במערכת. כל בקשת קוהרנטיות שמגיעות מבקרי cache נשלחות ישירות ל-directory, אשר בוחנת את מצב הבלוק ומביאה החלטות בהתאם. בהתאם למצב, ה-directory עשויה או להגיב לבקשה בעצמה, או להעביר את הבקשה לבקרי קוהרנטיות נוספים, שיגיבו לאחר מכן.</p>
+<p>טרנזקציות קוהרנטיות בפרוטוקול directory נוגעות בדרך כלל לשני סוגי שלבים:</p>
+<ol>
+<li><strong>שני שלבים</strong>: שלב בקשת unicast ולאחר מכן תגובת unicast.</li>
+<li><strong>שלושה שלבים</strong>: שלב בקשת unicast, שלב שבו הבקשה מועברת ל-K בקרי קוהרנטיות (כאשר K הוא מספר השותפים המהווים את ה-cache הנדרש), ולאחר מכן תגובות מ-K הבקרים.</li>
+</ol>
+<p>בחלק מהפרוטוקולים קיימת גם אפשרות של שלב רביעי, לדוגמה, אם ה-directory מעורבת בתגובות עקיפות או אם המבקש מודיע ל-directory על סיום הטרנזקציה.</p>
+<p>בניגוד לכך, בפרוטוקולי snooping, כל מצב הבלוק מופץ בין כל בקרי הקוהרנטיות במערכת. מכיוון שאין כאן מרכז ניהול של מצב בלוק, כל בקשה קוהרנטית נשלחת לכל הבקרים, מה שדורש שידור של הבקשה לכל בקר, ולאחר מכן קבלת תגובה unicast. כך, טרנזקציות קוהרנטיות ב-snooping כוללות תמיד שני שלבים: שלב בקשת שידור ושלב תגובה unicast.</p>
+<p>כמו כן, גם בפרוטוקול directory, יש צורך להגדיר מתי וכיצד טרנזקציות קוהרנטיות מסודרות ביחס לטרנזקציות אחרות. ברוב פרוטוקולי ה-directory, הסדר של טרנזקציה נקבע לפי הסדר שבו הבקשות מסודרות ב-directory. כאשר מספר בקרי קוהרנטיות שולחים בקשות בו-זמנית, ה-directory קובעת את סדר העיבוד של הבקשות.</p>
+<p>כאשר ישנן שתי בקשות מתחרות ל-directory, הרשת קובעת איזו בקשה תעובד קודם. ההתנהלות עם הבקשה השנייה תלויה בפרוטוקול הספציפי של ה-directory ובסוג הבקשות המתחרות. האפשרויות כוללות:</p>
+<ul>
+<li><strong>עיבוד מיד לאחר הבקשה הראשונה</strong>: הבקשה השנייה מעובדת ברצף לאחר הראשונה.</li>
+<li><strong>שמירה בהמתנה</strong>: הבקשה השנייה נשמרת ב-directory עד להשלמת הבקשה הראשונה.</li>
+<li><strong>אישור שלילי (NACK)</strong>: ה-directory שולחת הודעת אישור שלילי למבקש, שמאלץ להנפיק מחדש את בקשתו.</li>
+</ul>
+<p>השימוש ב-directory כנקודת סידור (ordering point) מדגיש הבדל מרכזי נוסף בין פרוטוקולי directory לפרוטוקולי snooping:</p>
+<p>בפרוטוקולי snooping המסורתיים, הסדר הכולל של טרנזקציות נקבע על ידי סידור כל הבקשות ברשת השידור המסודרת לחלוטין. הסדר הכולל הזה אינו רק מבטיח שכל בקשה לבלוק נתון תעובד לפי סדר הגעתה, אלא גם מקל על ביצוע מודל עקביות זיכרון.</p>
+<p>כאשר בקשת קוהרנטיות נשלחת, היא מועברת לכולם באותו סדר, כך שכאשר בקר snooping מקבל את בקשת ה-ReadUnique (בפרוטוקול AMBA CHI) שלו, הוא יכול להסיק ש-cache-ים האחרים יבטלו את התוקף של הבלוקים במצב share אצלם. זה מאפשר לו לדעת מתי להתחיל עידן קוהרנטיות חדש.</p>
+<p>לעומת זאת, בפרוטוקולי directory, הסדר של טרנזקציות קובע ה-directory, כדי להבטיח שבקשות סותרות יעובדו לפי סדר הגעתן בכל הצמתים. היעדר הסדר הכולל ברשת השידור פירושו שבקר בפרוטוקול directory נדרש ליישם אסטרטגיה נוספת כדי לקבוע מתי הבקשה שלו הוסדרה, ולמעשה, מתי הוא יכול להתחיל בעידן הקוהרנטיות שלו. מכיוון שרוב פרוטוקולי ה-directory אינם משתמשים בשידור מסודר לחלוטין, אין סדר גלובלי שניתן לעקוב אחריו. במקום זאת, כל בקשה צריכה להיות מסודרת באופן אינדיבידואלי ביחס לכל ה-cache-ים שיכולים להחזיק עותק של הבלוק. במקרה של בקשת ReadUnique, כל בקר cache שמחזיק עותק משותף חייב לשלוח הודעת אישור (Ack) מפורשת לאחר שהוא עיבד את הבקשה וסילק את התוקף מהעותקים שלו, על מנת להודיע למבקש שהבקשה שלו הוסדרה.</p>
+<p>השוואת פרוטוקולי directory ו-snooping מדגישה את הפשרה הבסיסית ביניהם. פרוטוקול directory מציע scalability גבוהה יותר, כלומר הוא דורש פחות רוחב פס, אך זאת במחיר של רמת עקיפה גבוהה יותר. בפרוטוקולי directory, חלק מהטרנזקציות כוללות שלושה שלבים, בניגוד לשני שלבים בפרוטוקולי snooping, מה שמגביר את ההשהיה של חלק מהטרנזקציות הקוהרנטיות.</p>
+<p>בפרוטוקול directory, קליטת הודעה יכולה להניע את בקר הקוהרנטיות לשלוח הודעה נוספת. באופן כללי, אם אירוע A (כגון קליטת הודעות) יכול לגרום לאירוע B (כגון שליחת הודעות), ושני האירועים הללו דורשים הקצאת משאבים (כמו קישורי רשת ו-buffer-ים), יש להיזהר מהתמודדות עם מצב של deadlock שעלול להתרחש אם נוצרות תלות מעגלית במשאבים, שבה כל רכיב מחכה למשאב שנמצא בבעלות רכיב אחר.</p>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://www.linkedin.com/advice/3/what-trade-offs-between-snooping-directory-based">https://www.linkedin.com/advice/3/what-trade-offs-between-snooping-directory-based</a>
+    </li>
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Cache_coherence">https://en.wikipedia.org/wiki/Cache_coherence</a>
+    </li>
+  
+    <li>
+      <a href="https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf">https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-cache" dir="rtl">        רואה עוד ב cache
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-cache">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/cache/multi-copy-atomicity/">Multi-copy atomicity</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/cache/cache-maintenance/">Cache maintenance</a>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/cache/cache-coherence/">Cache coherence</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/cache/cache/">Cache</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

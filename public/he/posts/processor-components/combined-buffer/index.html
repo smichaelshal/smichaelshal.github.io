@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Combined buffer · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  מבוא
+  
+    
+    Link to heading
+  
+
+בגלל שלקריאה וכתיבה לזיכרון חיצוני עלולה להיות זמן השהייה ממושך, מעבדים יכולים לצמצם את מספר ההעברות על ידי מיזוג מספר כתיבות (stores) לטרנזקציה אחת גדולה יותר. על ידי כך, המעבד מבצע את הכתיבות כפעולה אחת מרוכזת, מה שמפחית את העומס על ה-bus ושיפור היעילות של הגישה לזיכרון החיצוני.
+שילוב כתיבה הוא אופטימיזציה שמטרתה לצמצם את כמות ההעברות בין ה-cache למכשירים, במיוחד במצבים שבהם עלויות ההעברה גבוהות משמעותית מהגישה המקומית ל-RAM. לדוגמה, בכרטיסים גרפיים, שעלויות ההעברה למכשירים גבוהות הרבה יותר. לכן, יש להימנע מהעברות מיותרות. אם יש צורך להעביר שורת cache שלמה רק בגלל שכתיבה אחת שונתה, זו פעולה בזבזנית, במיוחד אם הפעולה הבאה משנה מילה נוספת באותה השורה. בהתאם לכך, שילוב כתיבה אוסף מספר שינויים לפני שכותב את שורת ה-cache למכשיר. במצבים אידיאליים, כל מילה בשורת ה-cache משתנה אחת אחרי השנייה ורק לאחר שהמילה האחרונה השתנתה, שורת ה-cache נכתבת למכשיר.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Combined buffer">
+  <meta name="twitter:description" content="מבוא Link to heading בגלל שלקריאה וכתיבה לזיכרון חיצוני עלולה להיות זמן השהייה ממושך, מעבדים יכולים לצמצם את מספר ההעברות על ידי מיזוג מספר כתיבות (stores) לטרנזקציה אחת גדולה יותר. על ידי כך, המעבד מבצע את הכתיבות כפעולה אחת מרוכזת, מה שמפחית את העומס על ה-bus ושיפור היעילות של הגישה לזיכרון החיצוני.
+שילוב כתיבה הוא אופטימיזציה שמטרתה לצמצם את כמות ההעברות בין ה-cache למכשירים, במיוחד במצבים שבהם עלויות ההעברה גבוהות משמעותית מהגישה המקומית ל-RAM. לדוגמה, בכרטיסים גרפיים, שעלויות ההעברה למכשירים גבוהות הרבה יותר. לכן, יש להימנע מהעברות מיותרות. אם יש צורך להעביר שורת cache שלמה רק בגלל שכתיבה אחת שונתה, זו פעולה בזבזנית, במיוחד אם הפעולה הבאה משנה מילה נוספת באותה השורה. בהתאם לכך, שילוב כתיבה אוסף מספר שינויים לפני שכותב את שורת ה-cache למכשיר. במצבים אידיאליים, כל מילה בשורת ה-cache משתנה אחת אחרי השנייה ורק לאחר שהמילה האחרונה השתנתה, שורת ה-cache נכתבת למכשיר.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/processor-components/combined-buffer/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Combined buffer">
+  <meta property="og:description" content="מבוא Link to heading בגלל שלקריאה וכתיבה לזיכרון חיצוני עלולה להיות זמן השהייה ממושך, מעבדים יכולים לצמצם את מספר ההעברות על ידי מיזוג מספר כתיבות (stores) לטרנזקציה אחת גדולה יותר. על ידי כך, המעבד מבצע את הכתיבות כפעולה אחת מרוכזת, מה שמפחית את העומס על ה-bus ושיפור היעילות של הגישה לזיכרון החיצוני.
+שילוב כתיבה הוא אופטימיזציה שמטרתה לצמצם את כמות ההעברות בין ה-cache למכשירים, במיוחד במצבים שבהם עלויות ההעברה גבוהות משמעותית מהגישה המקומית ל-RAM. לדוגמה, בכרטיסים גרפיים, שעלויות ההעברה למכשירים גבוהות הרבה יותר. לכן, יש להימנע מהעברות מיותרות. אם יש צורך להעביר שורת cache שלמה רק בגלל שכתיבה אחת שונתה, זו פעולה בזבזנית, במיוחד אם הפעולה הבאה משנה מילה נוספת באותה השורה. בהתאם לכך, שילוב כתיבה אוסף מספר שינויים לפני שכותב את שורת ה-cache למכשיר. במצבים אידיאליים, כל מילה בשורת ה-cache משתנה אחת אחרי השנייה ורק לאחר שהמילה האחרונה השתנתה, שורת ה-cache נכתבת למכשיר.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-08-18T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-08-18T00:00:00+00:00">
+    <meta property="article:tag" content="Buffer">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Arm">
+    <meta property="article:tag" content="Combined">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/store-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/decoder/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/fetch/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/invalidate-queue/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/line-fill-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/reorder-buffer/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/processor-components/combined-buffer/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/processor-components/combined-buffer/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/processor-components/combined-buffer/">
+              Combined buffer
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-08-18T00:00:00Z">
+                אוגוסט 18, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                460 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/processor-components/">Processor-Components</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/buffer/">Buffer</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/arm/">Arm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/combined/">Combined</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="מבוא">
+  מבוא
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%95%d7%90">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>בגלל שלקריאה וכתיבה לזיכרון חיצוני עלולה להיות זמן השהייה ממושך, מעבדים יכולים לצמצם את מספר ההעברות על ידי מיזוג מספר כתיבות (stores) לטרנזקציה אחת גדולה יותר. על ידי כך, המעבד מבצע את הכתיבות כפעולה אחת מרוכזת, מה שמפחית את העומס על ה-bus ושיפור היעילות של הגישה לזיכרון החיצוני.</p>
+<p>שילוב כתיבה הוא אופטימיזציה שמטרתה לצמצם את כמות ההעברות בין ה-cache למכשירים, במיוחד במצבים שבהם עלויות ההעברה גבוהות משמעותית מהגישה המקומית ל-RAM. לדוגמה, בכרטיסים גרפיים, שעלויות ההעברה למכשירים גבוהות הרבה יותר. לכן, יש להימנע מהעברות מיותרות. אם יש צורך להעביר שורת cache שלמה רק בגלל שכתיבה אחת שונתה, זו פעולה בזבזנית, במיוחד אם הפעולה הבאה משנה מילה נוספת באותה השורה. בהתאם לכך, שילוב כתיבה אוסף מספר שינויים לפני שכותב את שורת ה-cache למכשיר. במצבים אידיאליים, כל מילה בשורת ה-cache משתנה אחת אחרי השנייה ורק לאחר שהמילה האחרונה השתנתה, שורת ה-cache נכתבת למכשיר.</p>
+<p>כתיבה משולבת (write-combining) היא טכניקת אופטימיזציה שמאגדת מספר שינויים ומבצעת אותם רק לאחר מספר גישות לכתיבה, כלומר, מחסלת את התקורה הכרוכה בהעברות רבות לכל שינוי בודד של שורת ה-cache. טכניקה זו מיישמת כתיבה דחויה, כך שכתיבה מתבצעת רק לאחר מספר כתיבות (ובמקרה האידיאלי, לאחר הכתיבה האחרונה של השינוי), ואז מעבירה את השינויים לזיכרון הראשי. זהו נוהג נפוץ במיוחד בכתיבה למכשירים חיצוניים שאינם RAM, כמו GPU.</p>
+<h2 id="ה-write-combining-buffer">
+  ה-Write Combining Buffer
+  <a class="heading-link" href="#%d7%94-write-combining-buffer">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>ה-Write Combining Buffer הוא חלק ממערכת הזיכרון, אשר מטרתו לאגד מספר כתיבות קטנות (לדוגמה, כתיבה של 8 בתים) ולשלב אותן לטרנזקציה אחת גדולה יותר (למשל שורת cache של 64 בתים) לפני שליחתה למערכת הזיכרון. הכתיבות שהיצטברו ב-buffer אינן ספקולטיביות, כלומר הן חלק מהפרוטוקול של קוהרנטיות ה-cache (כלומר הן כפופות לחוקי הפרוטוקול והן צריכות להיות קוהרנטיות). מטרת השימוש ב-write combining buffer היא לצמצם את רוחב הפס הנדרש ל-bus ולשפר את היעילות.</p>
+<p>בדרך כלל, ה-write combining buffer משמש לצורך כתיבה שאינה ניתנת ל-cache (כתיבה שהיא uncached) למכשירי קלט/פלט, כגון כרטיסים גרפיים. במכשירי קלט/פלט, כמו כרטיסים גרפיים, יש לעיתים צורך לבצע קבוצת כתיבות לרגיסטרים של המכשיר. כתיבה זו מתבצעת בעזרת write combining buffer, אשר מאפשר לארוז את הכתיבות הקטנות לטרנזקציות גדולות יותר, ובכך לשלוח אותן בבת אחת מעבר ל-cache בצורה יעילה יותר.</p>
+<h2 id="גישה-לזיכרון-gathering-ב-arm">
+  גישה לזיכרון Gathering ב-Arm
+  <a class="heading-link" href="#%d7%92%d7%99%d7%a9%d7%94-%d7%9c%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f-gathering-%d7%91-arm">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>ב-ARM יש מספר מאפיינים שאפשר להגדיר לזיכרון מסוג Device, ואחד מהם הוא Gathering.
+בזיכרון רגיל (זיכרון שלא מוגדר כ-Device) גישות יכולות להתבצע ב-gathering.</p>
+<p>התכנסות (Gathering - G) או אי התכנסות (Non-Gathering - nG) קובעים אם ניתן למזג מספר גישות לזיכרון לטרנזקציה אחת עבור אזור זיכרון מסוים.</p>
+<ul>
+<li>
+<p>כאשר הכתובת מסומנת כ-Non-Gathering (nG), כל גישה לכתובת זו חייבת להתאים בדיוק למספר ולגודל של הגישות המפורטות בקוד. כלומר, אין אפשרות למזג מספר גישות שונות לטרנזקציה אחת.</p>
+</li>
+<li>
+<p>כאשר הכתובת מסומנת כ-Gathering (G), המעבד יכול למזג מספר גישות לטרנזקציה אחת. לדוגמה, המעבד יכול למזג כתיבה של שני בתים לכתיבה אחת של חצי מילה, ובכך לייעל את ביצוע הכתיבות על ידי צמצום מספר ההעברות הדרושות.</p>
+</li>
+</ul>
+<hr>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://lwn.net/Articles/252125/">https://lwn.net/Articles/252125/</a>
+    </li>
+  
+    <li>
+      <a href="https://stackoverflow.com/questions/11105827/what-is-a-store-buffer">https://stackoverflow.com/questions/11105827/what-is-a-store-buffer</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/den0024/a/Memory-Ordering">https://developer.arm.com/documentation/den0024/a/Memory-Ordering</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/100941/0101/Memory-types">https://developer.arm.com/documentation/100941/0101/Memory-types</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-processor-components" dir="rtl">        רואה עוד ב processor-components
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-processor-components">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/store-buffer/">Store buffer</a>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/decoder/">Decoder</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/fetch/">Fetch</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/invalidate-queue/">Invalidate queue</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/line-fill-buffer/">Line fill buffer</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

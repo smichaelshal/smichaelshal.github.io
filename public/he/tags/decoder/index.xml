@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Decoder on Michael Shalitin</title>
+    <link>https://smichaelshal.github.io/he/tags/decoder/</link>
+    <description>Recent content in Decoder on Michael Shalitin</description>
+    <generator>Hugo</generator>
+    <language>he</language>
+    <lastBuildDate>Sun, 18 Aug 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://smichaelshal.github.io/he/tags/decoder/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Decoder</title>
+      <link>https://smichaelshal.github.io/he/posts/processor-components/decoder/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/processor-components/decoder/</guid>
+      <description>&lt;p&gt;מעבדים מבצעים הוראות באמצעות טכניקת ה-pipeline, שבה כל הוראה עוברת סדרת שלבים: תחילה היא מפוענחת, לאחר מכן מתבצע הכנת הפרמטרים, ולבסוף ההוראה מבוצעת. כאשר ה-pipeline ארוך, זה אומר שאם מתרחשת תקלה ב-pipeline (כלומר, כאשר זרימת ההוראות עוצרת), לוקח זמן להחזיר אותו למצב של פעולה רגילה. תקלות ב-pipeline יכולות להתרחש כאשר קשה לחזות את מיקום ההוראה הבאה או כאשר לוקח זמן רב לטעון את ההוראה הבאה מהזיכרון.&lt;/p&gt;&#xA;&lt;p&gt;ב-pipeline, ה&amp;quot;טריק&amp;quot; הוא להתחיל לפענח את ההוראה הבאה עוד לפני שההוראה הנוכחית עזבה את המעבד, בדומה לפס ייצור. כך, מפענח הכתובות נשאר בתפקוד רציף ולא נותר ללא עבודה.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

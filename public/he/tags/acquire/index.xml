@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Acquire on Michael Shalitin</title>
+    <link>https://smichaelshal.github.io/he/tags/acquire/</link>
+    <description>Recent content in Acquire on Michael Shalitin</description>
+    <generator>Hugo</generator>
+    <language>he</language>
+    <lastBuildDate>Sat, 02 Nov 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://smichaelshal.github.io/he/tags/acquire/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Acquire Release</title>
+      <link>https://smichaelshal.github.io/he/posts/barriers/acquire-release/</link>
+      <pubDate>Sat, 02 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/barriers/acquire-release/</guid>
+      <description>&lt;h1 id=&#34;מבוא&#34;&gt;&#xA;  מבוא&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#%d7%9e%d7%91%d7%95%d7%90&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h1&gt;&#xA;&lt;p&gt;ההוראות מסוג load-acquire ו-store-release, כוללות מחסומים מובנים חד-כיווניים, המאפשרים דרישות סדר חלשות ממחסומים כלליים. הן משפיעות על הסדר של גישה לזיכרון מפורש שצוינו שנמצא בכל צד של הוראת מחסום הזיכרון. אופי זה מאפשר ביצועים משופרים בזכות אופטימיזציות מיקרו-ארכיטקטוניות ומצמצם את השפעת הביצועים לעומת מחסום זיכרון כללי.&lt;/p&gt;&#xA;&lt;p&gt;כאשר הסדר הנדרש נתמך על ידי load-acquire או store-release, מומלץ להשתמש בהן במקום במחסום כללי כדי לשפר את היעילות.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

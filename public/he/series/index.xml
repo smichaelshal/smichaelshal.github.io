@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Series on Michael Shalitin</title>
+    <link>https://smichaelshal.github.io/he/series/</link>
+    <description>Recent content in Series on Michael Shalitin</description>
+    <generator>Hugo</generator>
+    <language>he</language>
+    <lastBuildDate>Thu, 12 Dec 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://smichaelshal.github.io/he/series/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Memory-Models</title>
+      <link>https://smichaelshal.github.io/he/series/memory-models/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/series/memory-models/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Barriers</title>
+      <link>https://smichaelshal.github.io/he/series/barriers/</link>
+      <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/series/barriers/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Arm</title>
+      <link>https://smichaelshal.github.io/he/series/arm/</link>
+      <pubDate>Mon, 07 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/series/arm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Optimization-Techniques</title>
+      <link>https://smichaelshal.github.io/he/series/optimization-techniques/</link>
+      <pubDate>Sat, 05 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/series/optimization-techniques/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Processor-Components</title>
+      <link>https://smichaelshal.github.io/he/series/processor-components/</link>
+      <pubDate>Sat, 05 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/series/processor-components/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Cache</title>
+      <link>https://smichaelshal.github.io/he/series/cache/</link>
+      <pubDate>Sun, 22 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/series/cache/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Coherence-Protocol</title>
+      <link>https://smichaelshal.github.io/he/series/coherence-protocol/</link>
+      <pubDate>Sat, 07 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/series/coherence-protocol/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Atomic</title>
+      <link>https://smichaelshal.github.io/he/series/atomic/</link>
+      <pubDate>Sun, 01 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/series/atomic/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Compiler</title>
+      <link>https://smichaelshal.github.io/he/series/compiler/</link>
+      <pubDate>Sat, 24 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/series/compiler/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

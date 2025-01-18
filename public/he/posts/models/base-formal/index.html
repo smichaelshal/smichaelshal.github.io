@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Base Formal · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  יחסי סדר
+  
+    
+    Link to heading
+  
+
+מודלי זיכרון עוסקים בקביעת סדר, לרוב סדר זמני שבו אירועים מתרחשים, אך לא בהכרח רק בכך. לדוגמה, ניתן להתייחס גם לסדר ההוראות בקוד המקור של תוכנית. המודל SC מניח כי המעבדים מבצעים את ההוראות באותו סדר שבו הן מופיעות בקוד המקור, דבר שמדגיש את חשיבות הסדר. בנוסף לכך, הסדר ממלא תפקיד מרכזי במודלי זיכרון שונים.
+רעיון מקביל לסדר הוא הרעיון של מחזורים (cycle) - סידור אירועים פוסל מחזורים, שכן לא ניתן לסדר אירועים כך שאירוע X יופיע לפני Y, אירוע Y לפני Z, ואירוע Z יופיע לפני X, שכן זה יגרום לכך ש-X יופיע לפני עצמו, מה שאינו אפשרי.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Base Formal">
+  <meta name="twitter:description" content="יחסי סדר Link to heading מודלי זיכרון עוסקים בקביעת סדר, לרוב סדר זמני שבו אירועים מתרחשים, אך לא בהכרח רק בכך. לדוגמה, ניתן להתייחס גם לסדר ההוראות בקוד המקור של תוכנית. המודל SC מניח כי המעבדים מבצעים את ההוראות באותו סדר שבו הן מופיעות בקוד המקור, דבר שמדגיש את חשיבות הסדר. בנוסף לכך, הסדר ממלא תפקיד מרכזי במודלי זיכרון שונים.
+רעיון מקביל לסדר הוא הרעיון של מחזורים (cycle) - סידור אירועים פוסל מחזורים, שכן לא ניתן לסדר אירועים כך שאירוע X יופיע לפני Y, אירוע Y לפני Z, ואירוע Z יופיע לפני X, שכן זה יגרום לכך ש-X יופיע לפני עצמו, מה שאינו אפשרי.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/models/base-formal/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Base Formal">
+  <meta property="og:description" content="יחסי סדר Link to heading מודלי זיכרון עוסקים בקביעת סדר, לרוב סדר זמני שבו אירועים מתרחשים, אך לא בהכרח רק בכך. לדוגמה, ניתן להתייחס גם לסדר ההוראות בקוד המקור של תוכנית. המודל SC מניח כי המעבדים מבצעים את ההוראות באותו סדר שבו הן מופיעות בקוד המקור, דבר שמדגיש את חשיבות הסדר. בנוסף לכך, הסדר ממלא תפקיד מרכזי במודלי זיכרון שונים.
+רעיון מקביל לסדר הוא הרעיון של מחזורים (cycle) - סידור אירועים פוסל מחזורים, שכן לא ניתן לסדר אירועים כך שאירוע X יופיע לפני Y, אירוע Y לפני Z, ואירוע Z יופיע לפני X, שכן זה יגרום לכך ש-X יופיע לפני עצמו, מה שאינו אפשרי.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-10-18T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-10-18T00:00:00+00:00">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Memory">
+    <meta property="article:tag" content="Cache">
+    <meta property="article:tag" content="Ordering">
+    <meta property="article:tag" content="Linux">
+    <meta property="article:tag" content="Kernel">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/lkmm-code-examples/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/lkmm/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/dependency/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/herd7/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/models/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/ordering/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/models/base-formal/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/models/base-formal/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/models/base-formal/">
+              Base Formal
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-10-18T00:00:00Z">
+                אוקטובר 18, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                2546 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/memory-models/">Memory-Models</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory/">Memory</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/ordering/">Ordering</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/linux/">Linux</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/kernel/">Kernel</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/barrier/">Barrier</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory-model/">Memory-Model</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/formal/">Formal</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/herd7/">Herd7</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cat/">Cat</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="יחסי-סדר">
+  יחסי סדר
+  <a class="heading-link" href="#%d7%99%d7%97%d7%a1%d7%99-%d7%a1%d7%93%d7%a8">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>מודלי זיכרון עוסקים בקביעת סדר, לרוב סדר זמני שבו אירועים מתרחשים, אך לא בהכרח רק בכך. לדוגמה, ניתן להתייחס גם לסדר ההוראות בקוד המקור של תוכנית. המודל SC מניח כי המעבדים מבצעים את ההוראות באותו סדר שבו הן מופיעות בקוד המקור, דבר שמדגיש את חשיבות הסדר. בנוסף לכך, הסדר ממלא תפקיד מרכזי במודלי זיכרון שונים.</p>
+<p>רעיון מקביל לסדר הוא הרעיון של מחזורים (cycle) - סידור אירועים פוסל מחזורים, שכן לא ניתן לסדר אירועים כך שאירוע X יופיע לפני Y, אירוע Y לפני Z, ואירוע Z יופיע לפני X, שכן זה יגרום לכך ש-X יופיע לפני עצמו, מה שאינו אפשרי.</p>
+<h3 id="יחסי-סדר-בתוכנית-po-ו-po-loc">
+  יחסי סדר בתוכנית: po ו-po-loc
+  <a class="heading-link" href="#%d7%99%d7%97%d7%a1%d7%99-%d7%a1%d7%93%d7%a8-%d7%91%d7%aa%d7%95%d7%9b%d7%a0%d7%99%d7%aa-po-%d7%95-po-loc">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הקשר <code>po</code>, הוא הסדר שבו ההוראות מופיעות בזרם ההוראות של מעבד מסוים ונשלחות ליחידת הביצוע שלו. זהו סדר התוכנית הבסיסי שמכתיב את יחסי התלות בין ההוראות במהלך ביצוע.
+אפשר לדמיין זאת כסדר שבו הצהרות מתבצעות בקוד המקור לאחר טיפול במבנים כמו branch-ים ולולאות.</p>
+<p>לכן, נאמר ש-X הוא po-לפני Y (נכתב <code>X -&gt;po Y</code>) אם ההוראה X מופיעה לפני Y בזרם ההוראות של אותו מעבד.</p>
+<p>זהו יחס שמתקיים בתוך אותו מעבד בלבד; שתי הוראות שרצות על מעבדים שונים אינן מקושרות באמצעות יחס po. בנוסף, זהו יחס מסודר מטבעו ולכן לא יכול להכיל מחזורים.</p>
+<p>היחס po-loc הוא תת-קבוצה של po. הוא מתאר יחס בין שתי גישות לזיכרון, כאשר הראשונה מתבצעת לפני השנייה בסדר התוכנית, ושתיהן מתייחסות לאותו מיקום זיכרון (אותו משתנה) (מכאן התוספת <code>-loc</code>: יש שימוש ביחס <code>loc</code>).</p>
+<h3 id="יחס-rf">
+  יחס rf
+  <a class="heading-link" href="#%d7%99%d7%97%d7%a1-rf">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>היחס rf מייצג את הקשר בין אירוע כתיבה לאירוע קריאה, כאשר הערך שהקריאה טוענת (load) הוא אותו הערך שנכתב על ידי הכתיבה (store). כלומר, ניתן לומר שה-load קורא מה-store. היחס מסומן בצורה הבאה: <code>W -&gt;rf R</code>, שבה R מייצג את הקריאה שמבצעת את טעינת הערך ש-W שמר.</p>
+<p>קיימת הבחנה בין שני סוגים של יחסים read-from:</p>
+<ol>
+<li>קריאה פנימית (rfi): כאשר ה-load וה-store מתבצעים על אותו מעבד.</li>
+<li>קריאה חיצונית (rfe): כאשר ה-load וה-store מתבצעים על מעבדים שונים.</li>
+</ol>
+<h4 id="אילוץ-זמני-של-rf">
+  אילוץ זמני של rf
+  <a class="heading-link" href="#%d7%90%d7%99%d7%9c%d7%95%d7%a5-%d7%96%d7%9e%d7%a0%d7%99-%d7%a9%d7%9c-rf">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>קשר<code>rf</code> מעיד על אילוץ זמני (temporal constraint), בהיעדר אופטימיזציות כגון ספקולציות ערך, יש צורך שהקריאה תתרחש לאחר הכתיבה שסיפקה את ערך הקריאה (זה קורה בהנחה שהיקום הוא סיבתי וצריך שהסיבה תקדים את התוצאה).</p>
+<p>נקודה חשובה היא שכתיבה למשתנה אינה יכולה לגרום לשינוי מידי בערך הנראה לעין. זאת נובע מכך שהמהירות של אור היא סופית ושהאטומים עצמם אינם בגודל אפס.  במקום שהשינוי יתרחש באופן מיידי, הוא יתפשט במערכת, להמחשת הרעיון בואו נבדוק את התמונה למטה כאשר הזמן מתקדם משמאל לימין:</p>
+<figure>
+    <img src="/posts/models/base-formal/rf.png"class="dark-image"
+    ><figcaption class="image-title">rf from The Linux-Kernel Memory Model by Example (mirrors.edge.kernel.org)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>כתוצאה מכך, כאשר קריאה ממשתנה משותף מחזירה את הערך שנשמר בכתיבה, נוצר קשר <code>rf</code> בין הכתיבה לאותה קריאה. משמעות הדבר היא שהקריאה חייבת להתבצע לאחר הכתיבה, ובכך קובע הקשר <code>rf</code> את הסדר הזמני בין האירועים הללו.</p>
+<p>ככל שיהיו יותר קישורי <code>rf</code> בקוד שלך, תצטרך לארגן את הקוד שלך בצורה פחות מורכבת.</p>
+<h3 id="קוהרנטיות-ויחס-סדר-קוהרנטיות-co-coi-ו-coe">
+  קוהרנטיות ויחס סדר קוהרנטיות: co, coi ו-coe
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%95%d7%99%d7%97%d7%a1-%d7%a1%d7%93%d7%a8-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-co-coi-%d7%95-coe">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>קוהרנטיות היא עיקרון מרכזי במערכות מרובות מעבדים, המחייב שכל המעבדים יראו תצוגה עקבית של תוכן הזיכרון המשותף. במילים אחרות, יש לוודא שכל המעבדים מסכימים על סדר כתיבות למיקומים בזיכרון המשותף. עיקרון זה מחייב שסדר הכתיבות למיקום מסוים בזיכרון יוגדר בסדר גלובלי אחד, אשר מוסכם על כל המעבדים במערכת. סדר זה נקרא סדר הקוהרנטיות (coherence order), והוא חייב להיות עקבי גם עם סדר התוכנית לגישות לאותו מיקום זיכרון.</p>
+<p>הקשר <code>co</code> מקשר בין כל פעולות הכתיבה לאותו משתנה, והוא מגדיר את הסדר שבו כל כתיבה מחליפה את הכתיבה הקודמת לה.</p>
+<p>בפשטות, עבור כל משתנה בזיכרון (נניח x), סדר הקוהרנטיות (co) מתאר את הסדר שבו פעולות ה-store מחליפות זו את זו עבור אותו מיקום בזיכרון.
+לדוגמה: פעולת הכתיבה הראשונה קובעת את הערך ההתחלתי של x ולאחר מכן, הכתיבה הבאה מחליפה את הערך הזה, ולבסוף הכתיבה האחרונה בסדר תחליף את הערך הנוכחי.</p>
+<p>סדר הקוהרנטיות יכול להיחשב כסדר שבו פעולות ה-store מגיעות למיקום x בזיכרון, או בצורה יותר ממוקדת בחומרה, הסדר שבו הן נכתבות ל-cache line של x.</p>
+<p>הסדר הקוהרנטי בין כל שתי פעולות כתיבה מתואר על ידי הקשר <code>co</code>. לדוגמה, אם יש שתי פעולות כתיבה <code>W1</code> ו-<code>W2</code> לאותו מיקום בזיכרון, והכתיבה <code>W1</code> התרחשה לפני <code>W2</code>, היחס מסומן  בצורה הבאה:
+<code>W1 -&gt;co W2</code></p>
+<p>שפירושו הוא שפעולת הכתיבה <code>W1</code> קודמת לכתיבה <code>W2</code> בסדר הקוהרנטיות, כלומר הערך שנכתב על ידי <code>W1</code> יוחלף ישירות או בעקיפין על ידי הערך שנכתב על ידי <code>W2</code>.</p>
+$$
+\begin{aligned}
+W_{A}\to_{\text{co}} W_{B} \\
+W_{B}\to_{\text{co}} W_{C} \\
+\Downarrow \\
+W_{A}\to_{\text{co}} W_{C} \\
+\end{aligned}
+$$<h4 id="אילוץ-זמני-של-co">
+  אילוץ זמני של co
+  <a class="heading-link" href="#%d7%90%d7%99%d7%9c%d7%95%d7%a5-%d7%96%d7%9e%d7%a0%d7%99-%d7%a9%d7%9c-co">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הקשר <code>co</code> אינו מצביע על אילוץ זמני כלשהו. למעשה, קיימת אפשרות שכתיבה שהתרחשה מוקדם יותר תחליף כתיבה שהתרחשה מאוחר יותר, כפי שמדגים האיור להלן:</p>
+<figure>
+    <img src="/posts/models/base-formal/co.png"class="dark-image"
+    ><figcaption class="image-title">co from The Linux-Kernel Memory Model by Example (mirrors.edge.kernel.org)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>הערה בקשר לתמונה:
+התמונה מציגה מקרה שיכול לקהתרחש רק במערכות שבן הפרוטוקול קוהרנטיות רגוע יותר ממה שהיינו מצפים ולכן אפשרי ששני מעבדים קוראים ערכים שונים של אותו מיקום זיכרון.</p>
+<p>כפי שניתן לראות באיור, הכתיבה של הערך 2 התרחשה מוקדם יותר בזמן, אך היא הצליחה לדרוס את הכתיבה המאוחרת של הערך 1. תוצאה זו מתאפשרת בשל הזמן הנדרש לערכים הכתובים להתפשט במערכת, מה שמוביל לכך שהמערכת מחליטה בשלב מאוחר יותר איזו מהכתיבות היא זו שמנצחת.</p>
+<h3 id="from-read-fr">
+  from read (fr)
+  <a class="heading-link" href="#from-read-fr">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הקשר <code>fr</code> (קיצור של from-read) מתאר את הקשר שבין פעולת קריאה לפעולות כתיבה שבוצעו מאוחר מדי מכדי להשפיע על הערך שהקריאה מחזירה. כלומר, פעולות הכתיבה מתבצעות לאחר שהקריאה כבר מתבצעת, ולכן אין להן השפעה על תוצאת הקריאה. במילים אחרות הוא מתאר את המצב שבו פעולת טעינה (load) קוראת ערך שנדרס על ידי פעולת כתיבה.</p>
+<p>בצורה פורמלית יותר, נוכל לומר: <code>R -&gt;fr W</code> כאשר הערך ש-<code>R</code> קורא ערך שנדרס (בעקיפין או ישירות) על ידי <code>W</code>, או ש-<code>R</code> קורא מ-store מוקדם יותר מ-<code>W</code> בסדר הקוהרנטיות.</p>
+<p>כדי להמחיש את הרעיון, נשתמש בדוגמה בקוד דמוי מבחן לקמוס:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln">1</span><span class="cl"><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nf">P0</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">	<span class="kt">int</span> <span class="n">r1</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl">	<span class="n">r1</span> <span class="o">=</span> <span class="nf">READ_ONCE</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">8</span><span class="cl">	<span class="nf">WRITE_ONCE</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">9</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>במקרה זה, הערך שנטען מ-x יהיה 0 (בהנחה שיש קוהרנטיות cache), והוא מוחלף על ידי הערך 2 לאחר הכתיבה. כלומר, יש קישור fr בין הקריאה <code>READ_ONCE()</code> לכתיבה <code>WRITE_ONCE()</code>. אם בקוד היו פעולות כתיבה נוספות מאוחרות יותר ל-x, היו גם קישורי fr מהקריאה <code>READ_ONCE()</code> לאותן כתיבות.</p>
+<p>בדומה ליחסים rf, rfi ו-rfe, גם יחס fr מחולק ל-fri (כאשר ה-load וה-store מתבצעים על אותו מעבד) ול-fre (כאשר הם מתבצעים על מעבדים שונים).</p>
+<p>חשוב לציין שיחס fr נקבע כולו על בסיס יחסי rf ו-co; הוא אינו עצמאי. בהינתן אירוע קריאה <code>R</code> ואירוע כתיבה <code>W</code> לאותו מיקום בזיכרון, יהיה לנו <code>R -&gt;fr W</code> אם ורק אם הכתיבה שממנה <code>R</code> קוראת היא קודמת (ב-co) ל-W.</p>
+<h4 id="מאפיינים-עיקריים-של-יחס-fr">
+  מאפיינים עיקריים של יחס <code>fr</code>:
+  <a class="heading-link" href="#%d7%9e%d7%90%d7%a4%d7%99%d7%99%d7%a0%d7%99%d7%9d-%d7%a2%d7%99%d7%a7%d7%a8%d7%99%d7%99%d7%9d-%d7%a9%d7%9c-%d7%99%d7%97%d7%a1-fr">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<ul>
+<li><strong>קישור מקריאה לכתיבה:</strong> יחס <code>fr</code> תמיד מקשר קריאה מסוימת עם כתיבה, בתנאי שזו מתבצעת מאוחר מדי מכדי להשפיע על הערך שנקרא על ידי הקריאה.</li>
+<li><strong>אותו משתנה:</strong> יחס זה תמיד מחבר בין קריאה לכתיבה לאותו משתנה ספציפי. הוא אינו מקשר בין קריאה ממשתנה אחד לכתיבה של משתנה אחר.</li>
+<li><strong>יחס אחד-לרבים:</strong> קריאה בודדת עשויה להיות מקושרת לכמה כתיבות מאוחרות לאותו משתנה, כל עוד הן קורות לאחר הקריאה ואין להן השפעה על הערך שנטען.</li>
+<li><strong>יתכנות יחס ריק:</strong> ייתכן שיחס <code>fr</code> יהיה ריק (כלומר, ללא קשרים), למשל, במצב שבו כל קריאה מחזירה את הערך הסופי של המשתנה, ואין כתיבה נוספת שמשפיעה עליה.</li>
+<li><strong>אתחול אינו חלק מיחס <code>fr</code>:</strong> כתיבה שמבצעת אתחול של משתנה אינה קשורה ליחס <code>fr</code>.</li>
+<li><strong>יחסים בין קריאות מאותו משתנה:</strong> אם יש שתי קריאות, R1 ו-R2, מאותו משתנה, והראשונה (R1) קוראת מערך מוקדם יותר מאשר השנייה (R2), אז ל-R1 יהיה מספר רב יותר של קשרי <code>fr</code> מאשר ל-R2, מכיוון שהיא עשויה להיות מושפעת מכתיבות מוקדמות יותר (כלומר יש יותר כתיבות ש-R1 &ldquo;מפספס&rdquo; והם מתרחשות מאוחר מידי בזמן כי הוא בוצע לפני R2)</li>
+</ul>
+<h4 id="יחסים-נוספים-קשורים-ל-fr">
+  יחסים נוספים קשורים ל-<code>fr</code>:
+  <a class="heading-link" href="#%d7%99%d7%97%d7%a1%d7%99%d7%9d-%d7%a0%d7%95%d7%a1%d7%a4%d7%99%d7%9d-%d7%a7%d7%a9%d7%95%d7%a8%d7%99%d7%9d-%d7%9c-fr">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<ul>
+<li>
+<p>יחס <code>co</code>: מקשר בין כל כתיבה לכתיבות הבאות לה על אותו משתנה. אתחול נחשב ככתיבה ראשונית שמתרחשת &ldquo;לפני תחילת הזמן&rdquo;, ולכן יש קשר <code>co</code> בין האתחול לכל כתיבה שבאה אחריו. וגם <code>co</code> לא מצביע על אילוץ זמני. במקרה של קשר <code>co</code>, לשתי הכתיבות לוקח זמן להתפשט ברחבי המערכת, והסדר שלהן נקבע לעיתים קרובות רק לאחר מעשה.</p>
+</li>
+<li>
+<p>יחס <code>rf</code>: מקשר כתיבה מסוימת לכל קריאה שטוענת את הערך שנשמר באותה כתיבה.</p>
+</li>
+</ul>
+<h4 id="עיכוב-התפשטות-במערכות-מסודרות-חלש">
+  עיכוב התפשטות במערכות מסודרות חלש
+  <a class="heading-link" href="#%d7%a2%d7%99%d7%9b%d7%95%d7%91-%d7%94%d7%aa%d7%a4%d7%a9%d7%98%d7%95%d7%aa-%d7%91%d7%9e%d7%a2%d7%a8%d7%9b%d7%95%d7%aa-%d7%9e%d7%a1%d7%95%d7%93%d7%a8%d7%95%d7%aa-%d7%97%d7%9c%d7%a9">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>יחס <code>fr</code> מגדיר את הקשר בין פעולת קריאה לכתיבות המאוחרות יותר באותו משתנה. הוא פועל על ידי חזרה לאחור לכתיבה שסיפקה את ערך הקריאה, ואז ממשיך קדימה לקשר את הקריאה לכל כתיבה מאוחרת שנעשתה לאותו משתנה.</p>
+<p>במערכות עם עקביות חלשה, עיכוב בתפשטות המידע אחראי למה שנראה כהיפוך זמן לכאורה.</p>
+<p>זה קורה בגלל שלכתיבה לוקח זמן להתפשט במערכת, ולכן קריאה עשויה להתבצע מאוחר יותר בזמן הגלובלי מאשר הכתיבה, אך לא מאוחר מספיק כדי להחזיר את הערך של אותה כתיבה.  למשל ייתכן שקריאה תקבל ערך מכתיבה שעתידה להתחלף על ידי כתיבה מאוחרת יותר.</p>
+<p>במקרה של קשר <code>rfe</code>, הקריאה לא יכולה להחזיר את הערך של כתיבה מסוימת עד שהערך הזה יתפשט לחלק במערכת שבו מתבצעת הקריאה.</p>
+<p>דוגמה לכך ניתן לראות במבחן לקמוס:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="n">C</span> <span class="n">C</span><span class="o">-</span><span class="n">FR</span><span class="o">+</span><span class="n">w</span><span class="o">+</span><span class="n">w</span><span class="o">+</span><span class="n">w</span><span class="o">+</span><span class="n">reads</span><span class="p">.</span><span class="n">litmus</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="n">a</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="nf">P0</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="nf">WRITE_ONCE</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="nf">P1</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="nf">WRITE_ONCE</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="nf">P2</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="nf">WRITE_ONCE</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="nf">P3</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">    <span class="n">r1</span> <span class="o">=</span> <span class="nf">READ_ONCE</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">    <span class="n">r2</span> <span class="o">=</span> <span class="nf">READ_ONCE</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="n">r3</span> <span class="o">=</span> <span class="nf">READ_ONCE</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">    <span class="n">r4</span> <span class="o">=</span> <span class="nf">READ_ONCE</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">
+</span></span><span class="line"><span class="ln">30</span><span class="cl"><span class="nf">exists</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl"><span class="p">(</span><span class="mi">3</span><span class="o">:</span><span class="n">r1</span><span class="o">=</span><span class="mi">0</span> <span class="o">/</span><span class="err">\</span> <span class="mi">3</span><span class="o">:</span><span class="n">r2</span><span class="o">=</span><span class="mi">1</span> <span class="o">/</span><span class="err">\</span> <span class="mi">3</span><span class="o">:</span><span class="n">r3</span><span class="o">=</span><span class="mi">2</span> <span class="o">/</span><span class="err">\</span> <span class="mi">3</span><span class="o">:</span><span class="n">r4</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span></span></code></pre></div><p>נניח שכל הכתיבות מתרחשות בו זמנית (למשל בזמן t=0). בגלל מגבלות פיזיות כמו מהירות האור והטבע האטומי של החומר, כתיבות שמתבצעות במקביל ב-thread-ים נפרדים לא ייראו בכל חלקי המערכת באופן מיידי. במקום זאת, ייקח זמן עד שהכתיבות יתפשטו במערכת.</p>
+<ul>
+<li>החדשות על הכתיבה הראשונה W1 מגיעות ל-P3 בזמן t=1,</li>
+<li>החדשות על W2 מגיעות ל-P3 ב-t=2,</li>
+<li>והחדשות על W3 מגיעות ב-t=3.</li>
+</ul>
+<p>לכן, ייתכן שיחס $R_{3} \to_{\text{fr}} W_{3}$ ייראה כאילו &ldquo;חוזר אחורה בזמן&rdquo; מ-t=2 ל-t=0. אך למעשה, אין כאן שימוש במכונת זמן, אלא שזהו אפקט של עיכוב התפשטות בכתיבה.</p>
+<figure>
+    <img src="/posts/models/base-formal/fr.png"class="dark-image"
+    ><figcaption class="image-title">fr from The Linux-Kernel Memory Model by Example (mirrors.edge.kernel.org)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>האיור מראה ש-<code>fr</code> עשוי להצביע על קשר שנראה כאילו הוא הולך &ldquo;אחורה בזמן,&rdquo; לא בגלל מנגנון פיזי של מכונת זמן, אלא בשל העיכובים הנובעים מההתפשטות המוגבלת של עדכוני זיכרון במערכת המחשב.</p>
+<h4 id="מקרים-ספציפים-של-fr">
+  מקרים ספציפים של <code>fr</code>
+  <a class="heading-link" href="#%d7%9e%d7%a7%d7%a8%d7%99%d7%9d-%d7%a1%d7%a4%d7%a6%d7%99%d7%a4%d7%99%d7%9d-%d7%a9%d7%9c-fr">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כל קריאה שמחזירה את הערך ההתחלתי של המשתנה תהיה קשורה לכל הכתיבות שנעשו לאותו משתנה, מכיוון שהיא לא ראתה אף אחת מהכתיבות הללו.
+מצד שני, קריאה שמחזירה את הערך הסופי של המשתנה לא תהיה קשורה לשום כתיבה, מכיוון שהיא כבר מתייחסת לערך המעודכן ביותר ואין כתיבות נוספות שהיא מפספסת.</p>
+<h4 id="כיצד-יחס-fr-מוגדר-פורמלית">
+  כיצד יחס <code>fr</code> מוגדר פורמלית
+  <a class="heading-link" href="#%d7%9b%d7%99%d7%a6%d7%93-%d7%99%d7%97%d7%a1-fr-%d7%9e%d7%95%d7%92%d7%93%d7%a8-%d7%a4%d7%95%d7%a8%d7%9e%d7%9c%d7%99%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>במסגרת כלי כמו herd, אופרטור הרצף מבוצע באמצעות <code>;</code>.  אם יחס A מקשר בין אירועים $x \to y$ ויחס B מקשר בין $y \to z$, אז <code>A;B</code> יקשר את $x \to z$. זה מאפשר לנסח את יחס <code>fr</code> בצורה הבאה:
+<code>fr = (rf^-1 ; co)</code></p>
+<p>משמעות של הפורמליזציה היא כי עבור כל קריאה, תחילה יש לחזור אחורה לכתיבה שסיפקה את ערך הקריאה (באמצעות <code>rf^-1</code>), ואז להמשיך קדימה לכל כתיבה מאוחרת יותר לאותו משתנה (באמצעות <code>co</code>). כך נוצר הקשר בין הקריאה לכתיבה המאוחרת ביחס <code>fr</code>.</p>
+<p>עוד משהו מעניין שאפשר לראות שבגלל בצורה הפורמלית הוא השימוש ב-co במבנה של fr ואפשר להבין שזאת הסיבה הפורמלית ש-<code>fr</code> אינו מצביע על אילוץ זמני, וזה בגלל שהוא משתמש ב-<code>co</code>, גם שהוא בעצמו לא מצביע על אילוץ זמני.</p>
+<h3 id="יחס-ext">
+  יחס <code>ext</code>
+  <a class="heading-link" href="#%d7%99%d7%97%d7%a1-ext">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הקשר <code>ext</code> מקשר בין כל זוגות האירועים ששייכים ל-thread-ים שונים.</p>
+<h3 id="יחס-loc">
+  יחס <code>loc</code>
+  <a class="heading-link" href="#%d7%99%d7%97%d7%a1-loc">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הקשר <code>loc</code> מקשר בין כל זוגות הגישה לאותו מיקום בזיכרון. לדוגמה, כל קריאה וכתיבה לאותו משתנה יקושרו זה לזה באמצעות <code>loc</code>.</p>
+<h2 id="אופרטורים">
+  אופרטורים
+  <a class="heading-link" href="#%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%95%d7%a8%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="האופרטור-החיתוך">
+  האופרטור <code>&amp;</code>(החיתוך)
+  <a class="heading-link" href="#%d7%94%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%95%d7%a8-%d7%94%d7%97%d7%99%d7%aa%d7%95%d7%9a">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>אופרטור החיתוך <code>&amp;</code> משמש ליצירת קשרים משולבים בין קבוצות אירועים, כלומר הוא מייצר קשר הכולל רק את הזוגות שמשותפים לשני הקשרים שהוא משלב.</p>
+<h3 id="האופרטור--הרצף">
+  האופרטור <code>;</code> (הרצף)
+  <a class="heading-link" href="#%d7%94%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%95%d7%a8--%d7%94%d7%a8%d7%a6%d7%a3">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>האופרטור <code>;</code> יוצר רצף של יחסים בין אירועים. המשמעות היא שאם יחס <code>x</code> מכיל את הקישור $a \to b$, ויחס <code>y</code> מכיל את הקישור $b \to c$, אז היחס המתקבל מ-<code>(x ; y)</code> יכיל את הקישור $a \to c$. במילים אחרות, האופרטור מחבר בין אירועים שמקושרים דרך אירוע ביניים משותף.</p>
+<p>בצורה מתמטית אופרטור הרצף (<code>r1; r2</code>): מוגדר כך:</p>
+$$
+\{ (x, z) \mid \exists y \, \left[ (x, y) \in r_1 \land (y, z) \in r_2 \right] \}
+$$<p>
+כלומר, קישור קיים בין x ל-z אם קיים y המקשר ביניהם.</p>
+<p>לדוגמה שהקשר <code>fre;coe</code> מחבר כל קריאה של משתנה מסוים לכתיבה מאוחרת יותר של אותו משתנה, כאשר לפחות כתיבה אחת מתבצעת על ידי thread שונה (בגלל שזה עם ext).</p>
+<h3 id="האופרטור--1-ההיפוך">
+  האופרטור <code>^-1</code> (ההיפוך)
+  <a class="heading-link" href="#%d7%94%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%95%d7%a8--1-%d7%94%d7%94%d7%99%d7%a4%d7%95%d7%9a">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>אופרטור ה-<code>^-1</code> מחשב את ההיפוך של יחס נתון. כלומר, הוא מחליף את כיווני הקישורים באותו יחס. אם יחס מסוים מכיל את הקישור $a \to b$, אז ההיפוך שלו יכיל את הקישור $b \to a$. לדוגמה, היחס <code>po^-1</code> יכיל את כל זוגות האירועים לפי סדר תוכנית הפוך.</p>
+<h3 id="האופרטורים-domain-ו-range">
+  האופרטורים domain ו-range
+  <a class="heading-link" href="#%d7%94%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%95%d7%a8%d7%99%d7%9d-domain-%d7%95-range">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-domain (תחום) של פונקציה הוא קבוצת הערכים שמותר לנו לחבר לפונקציה שלנו. קבוצה זו היא ערכי x בפונקציה כגון f(x), ה-domain מחזיר את הקלטים של היחסים (כלומר את הצד השמאלי של הזוג ביחס).</p>
+<p>ה-range (טווח) של פונקציה הוא קבוצת הערכים שהפונקציה מחזירה. קבוצה זו היא הערכים שהפונקציה מוציאה החוצה לאחר שאנו מכניסים ערך x, ה-range מחזיר את הפלטים של היחסים (כלומר את הצד הימני של הזוג ביחס).</p>
+<p>במקרה הזה <code>f(x) -&gt; y</code> הפונקציה <code>f</code> מקבלת <code>x</code> (שהוא <a href="https://he.wikipedia.org/wiki/%D7%AA%D7%97%D7%95%D7%9D_%D7%A9%D7%9C_%D7%A4%D7%95%D7%A0%D7%A7%D7%A6%D7%99%D7%94"  class="external-link" target="_blank" rel="noopener">הדומיין</a> של הפונקציה - כלומר קבוצת כל הקלטים), ומחזירה <code>y</code> (שהוא <a href="https://he.wikipedia.org/wiki/%D7%98%D7%95%D7%95%D7%97_%D7%A9%D7%9C_%D7%A4%D7%95%D7%A0%D7%A7%D7%A6%D7%99%D7%94"  class="external-link" target="_blank" rel="noopener">הטווח</a> של הפונקציה - כלומר קבוצת כל הפלטים).</p>
+<h3 id="אופרטור-הסיומת--רפלקסיבי">
+  אופרטור הסיומת <code>?</code> (רפלקסיבי)
+  <a class="heading-link" href="#%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%95%d7%a8-%d7%94%d7%a1%d7%99%d7%95%d7%9e%d7%aa--%d7%a8%d7%a4%d7%9c%d7%a7%d7%a1%d7%99%d7%91%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>האופרטור <code>?</code> המשמש בסיומת (postfix) לאחרי יחס x מחשב את היחס המורכב מכל זוגות האירועים שניתן לחבר באמצעות שרשרת של קישורים מ-x באורך 0 או 1. האופרטור פועל כמו <code>?</code> ב-regex.</p>
+<p>אפשר לייצג את האופרטור גם בצורה אחרת: <code>id |x</code></p>
+<p>במילים אחרות הסיומת <code>?</code> מצביעה על כך שהקישור הוא אופציונלי, כלומר במקרה של הביטוי <code>x?</code> עשוי להיות שווה ל-x.</p>
+<h3 id="אופרטור-הסיומת-טרנזיטיבי">
+  אופרטור הסיומת<code>+</code> (טרנזיטיבי)
+  <a class="heading-link" href="#%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%95%d7%a8-%d7%94%d7%a1%d7%99%d7%95%d7%9e%d7%aa-%d7%98%d7%a8%d7%a0%d7%96%d7%99%d7%98%d7%99%d7%91%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>האופרטור <code>+</code>  המשמש בסיומת (postfix) לאחרי יחס x מחשב את היחס המורכב מכל זוגות האירועים שניתן לחבר באמצעות שרשרת קישורים מ-x באורך 1 או יותר; האופרטור פועל כמו <code>+</code> ב-regex.</p>
+<p>אפשר לייצג את האופרטור גם בצורה אחרת:
+<code>x|(x;x)|(x;x;x)|...</code></p>
+<h3 id="אופרטור-הסיומת-רפלקסיבי-טרנזיטיבי">
+  אופרטור הסיומת<code>*</code> (רפלקסיבי-טרנזיטיבי)
+  <a class="heading-link" href="#%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%95%d7%a8-%d7%94%d7%a1%d7%99%d7%95%d7%9e%d7%aa-%d7%a8%d7%a4%d7%9c%d7%a7%d7%a1%d7%99%d7%91%d7%99-%d7%98%d7%a8%d7%a0%d7%96%d7%99%d7%98%d7%99%d7%91%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>האופרטור <code>*</code> המשמש בסיומת (postfix) לאחרי יחס x מחשב את היחס המורכב מכל זוגות האירועים שניתן לחבר באמצעות שרשרת קישורים מ-x באורך 0 או יותר. האופרטור פועל כמו <code>*</code> ב-regex.</p>
+<p>אפשר לייצג את האופרטור גם בצורה אחרת:
+<code>id|x|(x;x)|(x;x;x)|...</code></p>
+<p>במילים אחרות הסיומת <code>*</code> משמשת לציון מספר שרירותי של קישורים מהסוג שצוין.</p>
+<h3 id="האופרטור--הזהות">
+  האופרטור <code>[]</code> (הזהות)
+  <a class="heading-link" href="#%d7%94%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%95%d7%a8--%d7%94%d7%96%d7%94%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>האופרטור <code>[x]</code> מחשב את יחס הזהות המוגבלת לאירועים ביחס x.</p>
+<h4 id="האופרטור--כ-syntactic-sugar">
+  האופרטור <code>[]</code> כ-syntactic sugar
+  <a class="heading-link" href="#%d7%94%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%95%d7%a8--%d7%9b-syntactic-sugar">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>האופרטור <code>[]</code> בשפת cat מקבל יחס ולרוב משמש עם אופרטור הרצף <code>;</code>
+והוא משמש לרוב בצורה הבאה לדוגמה:</p>
+<p><code>r ; [W]</code></p>
+<p>הוא מגביל את הטווח (range - כלומר הקצה הימיני) של היחס <code>r</code> להיות בקבוצה <code>W</code> (כלומר להיות כתיבה)</p>
+<p>במילים אחרות האופרטור <code>[x]</code> אומר שהאיבר הראשון ביחס <code>y</code> צריך להיות מהסוג של <code>x</code> לדוגמה כש-<code>x</code> הוא <code>R</code> ו-<code>y</code> הוא <code>addr</code>:
+`addr ; [R]</p>
+$$
+\begin{aligned}
+r = x \to y \\
+r \ ; \ [R] \\
+\Downarrow \\
+x \to y ; \ [R] \\
+y \in [R]
+\end{aligned}
+$$<p>הערה:
+למרות ש-<code>R</code> הוא אירוע קריאה כאן משתמשים בו כקבוצת כל הקריאות ואז כשמפעילים את האופרטור <code>[]</code> אז מתקבלת התוצאה הרצויה.</p>
+<h3 id="הפונקציה-fencerel">
+  הפונקציה <code>fencerel</code>
+  <a class="heading-link" href="#%d7%94%d7%a4%d7%95%d7%a0%d7%a7%d7%a6%d7%99%d7%94-fencerel">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>האופרטור <code>fencerel(x)</code> מחשב את היחס המורכב מכל זוגות האירועים כאשר הראשון מקדים (בסדר התוכנית) לאירוע בקבוצה x והשני אחריו.</p>
+<p>אפשר לייצג את האופרטור גם בצורה אחרת:
+<code>(po &amp; (_ * x)) ; po</code></p>
+<p>לדוגמה אם יש:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">P0</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">x</span><span class="p">,</span> <span class="kt">int</span> <span class="o">*</span><span class="n">y</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">	<span class="n">r1</span> <span class="o">=</span> <span class="nf">READ_ONCE</span><span class="p">(</span><span class="o">*</span><span class="n">x</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">	<span class="nf">smp_rmb</span><span class="p">();</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">	<span class="n">r2</span> <span class="o">=</span> <span class="nf">READ_ONCE</span><span class="p">(</span><span class="o">*</span><span class="n">y</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">	<span class="nf">smp_mb</span><span class="p">();</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl">	<span class="nf">WRITE_ONCE</span><span class="p">(</span><span class="o">*</span><span class="n">z</span><span class="p">,</span> <span class="n">r3</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">8</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>במקרה של <code>fencerel(Rmb)</code> אז יתקבל $R_{1} \to R_{2}$</p>
+<p>ובמקרה של <code>fencerel(Mb)</code> אז יתקבלו שלושת היחסים הבאים:</p>
+<ul>
+<li>$R_{1} \to W$</li>
+<li>$R_{2} \to W$</li>
+<li>$RMB \to W$</li>
+</ul>
+<hr>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://lwn.net/Articles/720550/">https://lwn.net/Articles/720550/</a>
+    </li>
+  
+    <li>
+      <a href="http://www0.cs.ucl.ac.uk/staff/j.alglave/papers/cav10.pdf">http://www0.cs.ucl.ac.uk/staff/j.alglave/papers/cav10.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://www.joelfernandes.org/resources/lkmm_herd7.pdf">https://www.joelfernandes.org/resources/lkmm_herd7.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt">https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt</a>
+    </li>
+  
+    <li>
+      <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/fr.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/fr.html</a>
+    </li>
+  
+    <li>
+      <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/Examples.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/Examples.html</a>
+    </li>
+  
+    <li>
+      <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html</a>
+    </li>
+  
+    <li>
+      <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html</a>
+    </li>
+  
+    <li>
+      <a href="http://www0.cs.ucl.ac.uk/staff/j.alglave/papers/toplas21.pdf">http://www0.cs.ucl.ac.uk/staff/j.alglave/papers/toplas21.pdf</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-memory-models" dir="rtl">        רואה עוד ב memory-models
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-memory-models">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/models/lkmm-code-examples/">LKMM Code Examples</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/lkmm/">LKMM</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/dependency/">Dependency</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/herd7/">Herd7</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/models/">Models</a>
+            </li>
+          
+        
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

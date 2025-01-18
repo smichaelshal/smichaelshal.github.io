@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  mb · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  מבוא
+  
+    
+    Link to heading
+  
+
+מחסום זיכרון הוא הוראה המיועדת לאכוף מגבלות סדר על פעולות זיכרון המבוצעות לפני ואחרי הוראת המחסום. זה מתבטא בכך שפעולות זיכרון שביצוען סודר לפני המחסום יבוצעו לפני כל פעולות זיכרון שניתן להן לאחר המחסום.
+חשיבות האכיפה שהמחסומים מספקים נובעת מהעובדה שמעבדים והתקנים אחרים במערכת עשויים לנצל מגוון טכניקות לשיפור ביצועים, כמו שינוי סדר ההוראות, דחייה ושילוב של פעולות זיכרון, ביצוע loads ספקולטיביות, חיזוי ספקולטיבי של branch-ים ושימוש בסוגים שונים של cache. מחסומי זיכרון נועדו לעקוף או לדכא את הטכניקות הללו או את השפעותיהם, כך שהקוד יכול לשלוט בצורה צפויה באינטראקציות בין מספר מעבדים או בין מעבד למכשירים.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="mb">
+  <meta name="twitter:description" content="מבוא Link to heading מחסום זיכרון הוא הוראה המיועדת לאכוף מגבלות סדר על פעולות זיכרון המבוצעות לפני ואחרי הוראת המחסום. זה מתבטא בכך שפעולות זיכרון שביצוען סודר לפני המחסום יבוצעו לפני כל פעולות זיכרון שניתן להן לאחר המחסום.
+חשיבות האכיפה שהמחסומים מספקים נובעת מהעובדה שמעבדים והתקנים אחרים במערכת עשויים לנצל מגוון טכניקות לשיפור ביצועים, כמו שינוי סדר ההוראות, דחייה ושילוב של פעולות זיכרון, ביצוע loads ספקולטיביות, חיזוי ספקולטיבי של branch-ים ושימוש בסוגים שונים של cache. מחסומי זיכרון נועדו לעקוף או לדכא את הטכניקות הללו או את השפעותיהם, כך שהקוד יכול לשלוט בצורה צפויה באינטראקציות בין מספר מעבדים או בין מעבד למכשירים.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/barriers/mb/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="mb">
+  <meta property="og:description" content="מבוא Link to heading מחסום זיכרון הוא הוראה המיועדת לאכוף מגבלות סדר על פעולות זיכרון המבוצעות לפני ואחרי הוראת המחסום. זה מתבטא בכך שפעולות זיכרון שביצוען סודר לפני המחסום יבוצעו לפני כל פעולות זיכרון שניתן להן לאחר המחסום.
+חשיבות האכיפה שהמחסומים מספקים נובעת מהעובדה שמעבדים והתקנים אחרים במערכת עשויים לנצל מגוון טכניקות לשיפור ביצועים, כמו שינוי סדר ההוראות, דחייה ושילוב של פעולות זיכרון, ביצוע loads ספקולטיביות, חיזוי ספקולטיבי של branch-ים ושימוש בסוגים שונים של cache. מחסומי זיכרון נועדו לעקוף או לדכא את הטכניקות הללו או את השפעותיהם, כך שהקוד יכול לשלוט בצורה צפויה באינטראקציות בין מספר מעבדים או בין מעבד למכשירים.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-10-12T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-10-12T00:00:00+00:00">
+    <meta property="article:tag" content="Barrier">
+    <meta property="article:tag" content="Memory">
+    <meta property="article:tag" content="Memory-Barrier">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Ordering">
+    <meta property="article:tag" content="Cache">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/barriers/amba-ace-barrier/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/barriers/acquire-release/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/barriers/mb/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/barriers/mb/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/barriers/mb/">
+              mb
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-10-12T00:00:00Z">
+                אוקטובר 12, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                7549 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/barriers/">Barriers</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/barrier/">Barrier</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory/">Memory</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory-barrier/">Memory-Barrier</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/ordering/">Ordering</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/x86/">X86</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/arm/">Arm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/ppc/">Ppc</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/linux/">Linux</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/kernel/">Kernel</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/asm/">Asm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/atomic/">Atomic</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/lock/">Lock</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/multi-copy-atomicity/">Multi-Copy-Atomicity</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="מבוא">
+  מבוא
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%95%d7%90">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>מחסום זיכרון הוא הוראה המיועדת לאכוף מגבלות סדר על פעולות זיכרון המבוצעות לפני ואחרי הוראת המחסום. זה מתבטא בכך שפעולות זיכרון שביצוען סודר לפני המחסום יבוצעו לפני כל פעולות זיכרון שניתן להן לאחר המחסום.</p>
+<p>חשיבות האכיפה שהמחסומים מספקים נובעת מהעובדה שמעבדים והתקנים אחרים במערכת עשויים לנצל מגוון טכניקות לשיפור ביצועים, כמו שינוי סדר ההוראות, דחייה ושילוב של פעולות זיכרון, ביצוע loads ספקולטיביות, חיזוי ספקולטיבי של branch-ים ושימוש בסוגים שונים של cache. מחסומי זיכרון נועדו לעקוף או לדכא את הטכניקות הללו או את השפעותיהם, כך שהקוד יכול לשלוט בצורה צפויה באינטראקציות בין מספר מעבדים או בין מעבד למכשירים.</p>
+<p>הסידור מחדש המודבר כאן בדרך כלל אינו משפיע על ביצוע בתוך thread בודד, אך הוא עלול לגרום להתנהגות בלתי צפויה כאשר מספר thread-ים פועלים בו זמנית, אלא אם כן סדר הביצוע נשלט בקפידה. אופי האילוצים שהמחסום מטיל תלוי בחומרה ובמודל סדר הזיכרון של הארכיטקטורה הספציפית. כמה ארכיטקטורות מספקות סוגים שונים של מחסומים לאכיפת אילוצי סדר מגוונים.</p>
+<p>מחסומי זיכרון נחוצים רק כאשר יש סיכון לאינטראקציה בין שני מעבדים או בין מעבד למכשיר. אם ניתן להבטיח שלא תהיה אינטראקציה כזו בחלק מסוים של הקוד, אז אין צורך בשימוש במחסומי זיכרון בחלק זה.</p>
+<p>בדרך כלל, מחסומי זיכרון משמשים ביישומים של קוד low-level שרץ קרוב יחסית לחומרה, במיוחד כאשר הקוד פועל על זיכרון המשותף למספר מכשירים. דוגמאות לקוד כזה כוללות פרימיטיבי סנכרון, מבני נתונים lockless במערכות מרובות מעבדים, ודרייברים שעוברים אינטראקציה עם חומרת מחשב.</p>
+<p>כאשר תוכנה פועלת על מערכת בעלת מעבד יחיד, החומרה דואגת לניהול הסדר הנדרש כדי להבטיח שהתוכנית תתבצע כאילו כל פעולות הזיכרון נעשו בסדר המוגדר על ידי המתכנת, כלומר בסדר התוכנית. במקרים אלו, אין צורך בשימוש במחסומי זיכרון. עם זאת, כאשר הזיכרון משותף עם התקנים מרובים, כמו מעבדים אחרים במערכת מרובת מעבדים או ציוד היקפי שממופה לזיכרון, עלולות להתרחש בעיות בגישה לא-מעודכנת, דבר שיכול להשפיע על התנהגות התוכנית. לדוגמה, ייתכן שמעבד שני יזהה שינויים בזיכרון שביצע המעבד הראשון בסדר שונה מזה של סדר התוכנית.</p>
+<p>המצב הזה רלוונטי כאשר מדובר בשני thread-ים או יותר הפועלים על שטח זיכרון משותף שבו מספר thread-ים.</p>
+<p>שם נפוץ למחסום זיכרון הוא גדר (fence) זיכרון ואולי זה באמת יותר מתאים בגלל שהוראות מחסום לא משפיעות על סדר פעולות הזיכרון בליבות אחרות.</p>
+<h3 id="מחסומי-זיכרון-וההשפעות-של-סידור-מחדש">
+  מחסומי זיכרון וההשפעות של סידור מחדש
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f-%d7%95%d7%94%d7%94%d7%a9%d7%a4%d7%a2%d7%95%d7%aa-%d7%a9%d7%9c-%d7%a1%d7%99%d7%93%d7%95%d7%a8-%d7%9e%d7%97%d7%93%d7%a9">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הוראות מחסום זיכרון מתייחסות להשפעות של סידור מחדש רק ברמת החומרה. יש לזכור כי קומפיילרים עשויים לסדר מחדש הוראות כחלק מתהליך האופטימיזציה של התוכנית. אמנם ההשפעות על התנהגות של תוכנה מקבילה יכולות להיות דומות בשני המקרים, בדרך כלל יש צורך לנקוט באמצעים נפרדים כדי למנוע אופטימיזציות של סדר מחדש על ידי הקומפיילר עבור נתונים שעשויים להיות משותפים על ידי מספר thread-ים שמבצעים.</p>
+<h3 id="סוגים-של-מחסומי-זיכרון">
+  סוגים של מחסומי זיכרון
+  <a class="heading-link" href="#%d7%a1%d7%95%d7%92%d7%99%d7%9d-%d7%a9%d7%9c-%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בחלק מהארכיטקטורות קיימות מספר הוראות מחסום, וכל אחת מהן מציעה מאפייני סידור שונים, אבל אפשר לרוב לחלק את המחסומים למספר קבוצות:</p>
+<ul>
+<li>
+<p><strong>מחסומי זיכרון כתיבה (store barriers)</strong>:</p>
+<p>מחסום זיכרון כתיבה (נקרא גם מחסום store או store-store) מספק ערובה לכך שכל פעולות הכתיבה המצוינות לפני המחסום ייראו כמתרחשות לפני כל פעולות הכתיבה שצוינו לאחר המחסום, ביחס לשאר רכיבי המערכת. מחסום כתיבה יוצר סדר חלקי שחל רק על פעולות הכתיבה, והוא לא מחייב השפעה על פעולות הקריאה (load).</p>
+<p>ניתן לראות במעבד כמבצע רצף של פעולות store למערכת הזיכרון ככל שהזמן מתקדם. כל ה-stores <strong>לפני</strong> מחסום כתיבה יתרחש <strong>לפני</strong> כל ה-stores לאחר מחסום הכתיבה.</p>
+<p>חשוב לציין שבדרך כלל יש לשלב מחסומי כתיבה עם מחסומי קריאה או עם תלות בכתובת.</p>
+</li>
+<li>
+<p><strong>מחסומי זיכרון קריאה (load barriers)</strong>:</p>
+<p>מחסום קריאה (נקרא גם מחסום load או load-load) מספק ערובה לכך שכל פעולות הקריאה (load) שצוינו לפני המחסום ייראו כמתרחשות לפני כל פעולות הקריאה שצוינו לאחר המחסום, ביחס לשאר רכיבי המערכת. מחסום קריאה יוצר סדר חלקי שמחייב רק את פעולות הקריאה, והוא לא משפיע בהכרח על פעולות הכתיבה.</p>
+<p>מחסומי זיכרון קריאה יכולים להצביע על מחסומי תלות כתובת, ולכן ניתן להחליפם. בנוסף, יש לשים לב שברוב המקרים יש להתאים מחסומי קריאה עם מחסומי כתיבה.</p>
+<p>מחסום קריאה לא מבטיח תמיד למשוך את הגרסה האחרונה והמעודכנת ביותר. ייתכן שהוא יקבל גרסה ישנה יותר, כל עוד הגרסה הזו היא לפחות חדשה כמו הערך האחרון שהגיע למעבד שמבצע את המחסום. למרות שזה נשמע כמו הבטחה חלשה, בפועל זה מספיק כדי למנוע מצב שבו רואים נתונים מיושנים.</p>
+</li>
+<li>
+<p><strong>מחסומי זיכרון כלליים</strong>:</p>
+<p>מחסום זיכרון כללי מספק ערובה לכך שכל פעולות ה-load וה-store המצוינות לפני המחסום ייחשבו כמתרחשות לפני כל פעולות ה-load וה-store שצוינו לאחר המחסום, בהקשר לשאר רכיבי המערכת. מחסום זיכרון כללי יוצר סדר חלקי שכולל הן את פעולות הקריאה והן את פעולות הכתיבה.</p>
+<p>מחסומי זיכרון כלליים מצביעים על מחסומי זיכרון קריאה וכתיבה, ולכן ניתן להחליף את אחד מהם.</p>
+<p>המחסום מספק הבטחה לגבי load לפני המחסום ו-store אחרי המחסום ולכן הוא נחשב גם מחסום store-load, וזה מבטיח שכל פעולות stores שבוצעו לפני המחסום יהיו גלויים לשאר המעבדים, ושכל פעולות loads שלאחר המחסום יקבלו את הערך העדכני ביותר שהיה בזמן ביצוע המחסום. כלומר, מחסום זה מונע את סידור מחדש של כל פעולות הכתיבה שהתרחשו לפניו עם פעולות הקריאה שאחריו, ובכך משמר את הסדר הנכון של ביצוע הפעולות במערכות מרובות מעבדים.</p>
+<p>במרבית המעבדים, הוראות שפועלות כמחסום store-load נוטות להיות יקרות יותר מבחינת ביצועים בהשוואה למחסומים האחרים.</p>
+</li>
+</ul>
+<h3 id="מה-אי-אפשר-להניח-לגבי-מחסומי-זיכרון">
+  מה אי אפשר להניח לגבי מחסומי זיכרון?
+  <a class="heading-link" href="#%d7%9e%d7%94-%d7%90%d7%99-%d7%90%d7%a4%d7%a9%d7%a8-%d7%9c%d7%94%d7%a0%d7%99%d7%97-%d7%9c%d7%92%d7%91%d7%99-%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ישנם כמה דברים חשובים שיש להבין לגבי מחסומי הזיכרון בקרנל, אשר אינם מובטחים:</p>
+<ul>
+<li>
+<p><strong>שלמות הגישה לזיכרון</strong>: אין ערובה לכך שכל גישה לזיכרון שהתרחשה לפני מחסום זיכרון תושלם במלואה לאחר ביצוע הוראת המחסום. כלומר, מחסום הזיכרון יכול להיחשב כמתווה קו בתור הגישה של המעבד, מה שעשוי לגרום לכך שגישות מסוימות לא יושלמו.</p>
+</li>
+<li>
+<p><strong>השפעה על מעבדים אחרים</strong>: אין הבטחה שהוצאה של מחסום זיכרון במעבד אחד תיצור השפעה ישירה על מעבד אחר או על כל חומרה אחרת במערכת. ההשפעה שיכולה להיות קיימת היא השפעה עקיפה, שבה המעבד השני יראה את ההשפעות של הגישה של המעבד הראשון, אך ראוי לציין את המגבלות בכך.</p>
+</li>
+<li>
+<p><strong>סדר ההשפעות ממעבדים אחרים</strong>: אין ערובה לכך שמעבד יראה את סדר ההשפעות הנכון מהגישות של מעבד אחר, אפילו אם המעבד השני עושה שימוש במחסום זיכרון. כדי להבטיח זאת, גם המעבד הראשון וגם המעבד שני צריכים להשתמש במחסומי זיכרון תואמים.</p>
+</li>
+<li>
+<p><strong>התערבות חומרה</strong>: אין ערובה לכך שחלק מתערבות חומרה, אשר אינה קשורה למעבד, לא יסדר מחדש את הגישה לזיכרון. אמנם מנגנוני קוהרנטיות cache אמורים להפיץ את ההשפעות העקיפות של מחסום זיכרון בין המעבדים, ישנם מקרים שבהם הם לא מבצעים זאת בסדר הנכון.</p>
+</li>
+</ul>
+<h2 id="מחסומים-ב-x86">
+  מחסומים ב-x86
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d-%d7%91-x86">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>ב-x86 הוראת מחסום מבטיחה שכל הקריאות או הכתיבות שהתבצעו לפני שמחסום יושלמו במלואן לפני הקריאות או הכתיבות שמגיעות אחרי המחסום.</p>
+<p>ההוראות <code>LFENCE</code>, <code>SFENCE</code> ו-<code>MFENCE</code> משמשות כמחסומים ייעודיים:</p>
+<ul>
+<li>
+<p>מחסום <strong><code>SFENCE</code> (store fence)</strong>: מחסום זה מבטיח שכל פעולות הכתיבה שבוצעו לפני ה-<code>SFENCE</code> (לפי סדר התוכנית) ייכתבו לזיכרון לפני כל כתיבה שתבוצע לאחר ה-<code>SFENCE</code>.</p>
+</li>
+<li>
+<p>מחסום <strong><code>LFENCE</code> (load fence)</strong>: מחסום זה מבטיח שכל פעולות הקריאה שבוצעו לפני ה-<code>LFENCE</code> יושלמו לפני כל קריאה שתבוצע אחריו.</p>
+</li>
+<li>
+<p>מחסום <strong><code>MFENCE</code> (memory fence)</strong>: הוראה זו מבטיחה שכל הגישה לזיכרון (קריאות וכתיבות) שהתבצעה לפני ה-<code>MFENCE</code> תושלם לפני כל גישה נוספת לזיכרון שתתבצע לאחר המחסום, בין אם מדובר בקריאה או בכתיבה.</p>
+</li>
+</ul>
+<p>בנוסף, הוראות serializing, הוראות IO, והוראות נעולות כמו <code>XCHG</code> (שנעולה במשתמע) יכולות לשמש גם כמחסומי קריאה/כתיבה.</p>
+<h2 id="מחסומים-ב-power-pc">
+  מחסומים ב-Power PC
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d-%d7%91-power-pc">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="sync">
+  sync
+  <a class="heading-link" href="#sync">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>המחסום <code>sync</code> מבטיח שכל ההוראות שנכתבו לפני הביצוע שלו יושלמו במלואן לפני שניתן יהיה לבצע הוראות נוספות אחריו (בסדר התוכנית). זאת אומרת, כל ההוראות המבוצעות בסדר התוכנית לפני <code>sync</code> חייבות להסתיים לפני שמתחילים לעבד הוראות חדשות, ובכך היא יוצרת מחסום שמונע את ביצוע ההוראות הבאות עד לסיום כל ההוראות הקודמות.</p>
+<p>המחסום <code>sync</code> משמשת בדרך כלל לסנכרון בין מעבדים שונים או בין thread-ים שונים, הוא מספק ודאות כי כל ההוראות הקודמות הושלמו לפני שממשיכים עם ההוראות הבאות.</p>
+<h3 id="lwsync">
+  lwsync
+  <a class="heading-link" href="#lwsync">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>מחסום <code>lwsync</code>, או Lightweight Synchronize, הוא מחסום סנכרון המבטיח שסיום כל ההוראות המבוצעות לפני ביצוע <code>lwsync</code> יושלמו לפני שניתן יהיה לבצע הוראות store נוספות במעבד שביצוע את המחסום. בנוסף, הוא מבטיח שכל הוראות load שמבוצעות לפני הקריאה ל-<code>lwsync</code> יושלמו לפני שניתן יהיה לבצע הוראות load נוספות באותו מעבד.</p>
+<p>היתרון המרכזי של <code>lwsync</code> הוא שהוא מאפשר סנכרון בין מספר מעבדים תוך השפעה מינימלית על ביצועי המערכת, מכיוון שהוא אינו מחייב המתנה לאישור (ack) מסוים ממעבדים אחרים. בצורה זו, <code>lwsync</code> תורם לייעול הביצועים של תוכניות במערכות מרובות מעבדים.</p>
+<h2 id="מחסומים-ב-arm">
+  מחסומים ב-Arm
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d-%d7%91-arm">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>ארכיטקטורת Armv8 מגדירה מחסומי זיכרון המספקים מגוון פונקציונליות:</p>
+<ul>
+<li>סידור הוראות load ו-store.</li>
+<li>השלמת הוראות load ו-store.</li>
+<li>סנכרון context.</li>
+<li>הגבלות על ספקולציות.</li>
+</ul>
+<h3 id="מחסום-זיכרון-נתונים-dmb">
+  מחסום זיכרון נתונים (<code>DMB</code>)
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f-%d7%a0%d7%aa%d7%95%d7%a0%d7%99%d7%9d-dmb">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הוראת <code>DMB</code> היא הוראת מחסום זיכרון שנועדה להבטיח סדר יחסי בין גישת זיכרון המתרחשת לפני המחסום לבין גישת זיכרון המתרחשת אחריו. עם זאת, יש לציין כי הוראת <code>DMB</code> אינה מבטיחה את השלמתן של הגישות לזיכרון שהיא משפיעה עליהן.</p>
+<p>העקרון המרכזי של הוראת <code>DMB</code> הוא ליצור סדר בין גישות לזיכרון שהוגדרו להיות מושפעות על ידי אפשרויות <code>DMB</code>, אשר נמסרות כארגומנטים להוראה. הוראת <code>DMB</code> מבטיחה שכל גישה לזיכרון, המושפעת על ידי המעבד המבצע את הוראת <code>DMB</code>, שהופיעה בסדר התוכנית לפני הוראת ה-<code>DMB</code>, כמו גם גישות לזיכרון שמקורן במעבד אחר, נצפו על ידי המעבד. גישות אלה ידרשו להיות מושלמות במידה הנדרשת על ידי אפשרויות ה-<code>DMB</code> לפני כל גישה משפיעה לזיכרון, המתרחשת בסדר התוכנית לאחר הוראת ה-<code>DMB</code>.</p>
+<p>להלן מידע נוסף על הוראת DMB:</p>
+<ul>
+<li>
+<p>עבור ה-<code>DMB</code>, פעולות תחזוקת data cache נחשבות להוראות גישה מפורשות לנתונים, וכפופות להגבלות הסדר המוטלות על ידי ה-<code>DMB</code>. הוראת <code>DMB</code> שנועדה לאכוף את סדר הוראות תחזוקת ה-cache חייבת לציין ארגומנט הכולל גם loads וגם stores.</p>
+</li>
+<li>
+<p>מחסום <code>DMB</code> אינו קובע מתי בדיוק מתרחשות הגישות. מה שה-<code>DMB</code> מבטיח הוא שכאשר הגישה אכן מתבצעת, חלות המגבלות על סדר הפעולות המוטלות על ידי המחסום והארגומנטים הקשורים אליו. עם זאת, ה-<code>DMB</code> מאפשר למעבד להמשיך בביצוע פעולות אחרות בזמן שהנתונים המפורשים מחכים להשלמה.</p>
+</li>
+<li>
+<p>מחסום <code>DMB</code> אינו מונע קריאת נתונים מפורשים עתידיים מביצוע ספקולטיבי. אם מתבצעת קריאה ספקולטיבית, ה-core חייבת לזרוק את הנתונים הספקולטיביים הנמצאים ברגיסטר. ה-core נדרש גם לבצע מחדש את טעינת הנתונים לאחר שכל הגישה הקודמת לנתונים המפורשים נצפתה.</p>
+</li>
+<li>
+<p>מחסום זה לא משפיע על שליפות הוראות.</p>
+</li>
+</ul>
+<h4 id="דוגמה-1-סידור-מחדש">
+  דוגמה 1: סידור מחדש
+  <a class="heading-link" href="#%d7%93%d7%95%d7%92%d7%9e%d7%94-1-%d7%a1%d7%99%d7%93%d7%95%d7%a8-%d7%9e%d7%97%d7%93%d7%a9">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הקוד הבא מדגים את האפשרות לסידור מחדש של פעולות זיכרון, כפי שמתיר מודל זיכרון עם סדר חלש. בשלב הראשון, המיקומים בזיכרון המיוצגים על ידי <code>X1</code> ו-<code>X3</code> מאותחלים לערך <code>0</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">STR</span> <span class="p">,</span> <span class="p">[</span><span class="no">X1</span><span class="p">]</span> 
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="no">STR</span> <span class="p">,</span> <span class="p">[</span><span class="no">X3</span><span class="p">]</span>  <span class="c1">; Might be observed before the previous STR.
+</span></span></span></code></pre></div><p>כאן, הכתיבה ל-<code>X3</code> עשויה להיראות כאילו היא מתבצעת לפני הכתיבה הקודמת ל-<code>X1</code>.</p>
+<p>בדוגמה זו, המערכת יכולה לעדכן ולקרוא את המיקום בזיכרון של <code>X3</code> לפני שהמיקום בזיכרון של <code>X1</code> מעודכן. אם נניח שמצוי מעבד אחר הקורא את שני מיקומי הזיכרון באותו סדר, הטבלה הבאה ממחישה את השילובים האפשריים של הערכים שיכולים להתקבל:</p>
+<table>
+  <thead>
+      <tr>
+          <th>X1</th>
+          <th>X3</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>0x0</td>
+          <td>0x0</td>
+      </tr>
+      <tr>
+          <td>0x0</td>
+          <td>0x1</td>
+      </tr>
+      <tr>
+          <td>0x1</td>
+          <td>0x0</td>
+      </tr>
+      <tr>
+          <td>0x1</td>
+          <td>0x1</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="דוגמה-2-מחסום-המונע-סידור-מחדש">
+  דוגמה 2: מחסום המונע סידור מחדש
+  <a class="heading-link" href="#%d7%93%d7%95%d7%92%d7%9e%d7%94-2-%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%94%d7%9e%d7%95%d7%a0%d7%a2-%d7%a1%d7%99%d7%93%d7%95%d7%a8-%d7%9e%d7%97%d7%93%d7%a9">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>בדוגמה הבאה, נעשה שימוש בהוראת <code>DMB</code> כדי לאכוף את תצפית הפקודה, כאשר מיקומי הזיכרון ב-<code>X1</code> ו-<code>X3</code> מאותחלים ל-<code>0x0</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">STR</span> <span class="p">,</span> <span class="p">[</span><span class="no">X1</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nf">DMB</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nf">STR</span> <span class="p">,</span> <span class="p">[</span><span class="no">X3</span><span class="p">]</span>  <span class="c1">; Cannot observe this STR without first observing the previous STR.
+</span></span></span></code></pre></div><p>בדוגמה זו, אם מיקום הזיכרון ב-<code>X3</code> מתעדכן, אז יש להבטיח שגם <code>X1</code> מעודכן. אם נניח שמעבד אחר קורא את שני מיקומי הזיכרון באותו סדר, הטבלה הבאה מציגה את השילובים המותרים של הערכים שיכולים להתקבל:</p>
+<table>
+  <thead>
+      <tr>
+          <th>X1</th>
+          <th>X3</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>0x0</td>
+          <td>0x0</td>
+      </tr>
+      <tr>
+          <td>0x1</td>
+          <td>0x0</td>
+      </tr>
+      <tr>
+          <td>0x1</td>
+          <td>0x1</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="מחסום-סנכרון-נתונים-dsb">
+  מחסום סנכרון נתונים (<code>DSB</code>)
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%a1%d7%a0%d7%9b%d7%a8%d7%95%d7%9f-%d7%a0%d7%aa%d7%95%d7%a0%d7%99%d7%9d-dsb">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>המחסום <code>DSB</code> הוא הוראת מחסום זיכרון שמבטיחה שכל גישות לזיכרון המתרחשות לפני סיום הוראת ה-<code>DSB</code> יושלמו לפני שההוראת המחסום עצמה תושלם. בכך, <code>DSB</code> מהווה מחסום חזק יותר בהשוואה ל-<code>DMB</code>, וכל סדר ש-<code>DMB</code> קובע עם ארגומנטים מסוימים נשמר גם על ידי ה-<code>DSB</code> כאשר משתמשים באותם ארגומנטים.</p>
+<p>ההשלמה של הוראת <code>DSB</code>, המבוצעת על ידי מעבד P0, מתרחשת כאשר מתקיימים כל התנאים הבאים:</p>
+<ul>
+<li>
+<p>כל האפקטים המפורשים של הגישות לזיכרון המופיעות בסדר התוכנית לפני הוראת ה-<code>DSB</code> הושלמו עבור כל רכיבי העיבוד בדומיין השיתוף הנדרש.</p>
+</li>
+<li>
+<p>אם סוגי הגישות הנדרשות על ידי ה-<code>DSB</code> כוללים גם קריאות וגם כתיבות, כל ההוראות שהונפקו על ידי המעבד P0 (המעבד שמבצע את המחסום) לפני ה-<code>DSB</code> חייבות להתבצע עבור הדומיין הנדרש:</p>
+<ul>
+<li>כל הוראות תחזוקת ה-cache.</li>
+<li>כל הוראות תחזוקת TLB.</li>
+</ul>
+</li>
+</ul>
+<p>בנוסף לכך, לא ניתן לשנות כל מצב של המערכת או לבצע כל פונקציה לאחר הוראת ה-<code>DSB</code> עד שהמחסום הושלם, למעט:</p>
+<ul>
+<li>שליפת הוראות ופענוח הוראות.</li>
+</ul>
+<p>הדוגמה הבאה ממחישה את הכללים הנלווים ל-DSB:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">STR</span> <span class="no">X0</span><span class="p">,</span> <span class="p">[</span><span class="no">X1</span><span class="p">]</span>     <span class="c1">; Must complete before the DSB can retire. 
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1"></span><span class="nf">DSB</span> 
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="no">ADD</span> <span class="no">X1</span><span class="p">,</span> <span class="no">X2</span><span class="p">,</span> <span class="no">X3</span>   <span class="c1">; Must NOT be executed before the first STR completes.
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="c1"></span><span class="nf">STR</span> <span class="no">X4</span><span class="p">,</span> <span class="p">[</span><span class="no">X5</span><span class="p">]</span>     <span class="c1">; Must NOT be executed until the first STR completes.
+</span></span></span></code></pre></div><p>במהלך רצף זה, מגבלות הסדר שהוטלו על ידי ה-DSB מבטיחות שההוראות <code>STR</code> וההוראת <code>ADD</code> השנייה לא יבוצעו עד שההוראה הקודמת <code>STR</code> תושלם וה-DSB יפרוש (retires).</p>
+<h4 id="מתי-נחשבת-גישה-כמושלמת-complete">
+  מתי נחשבת גישה כמושלמת (complete)?
+  <a class="heading-link" href="#%d7%9e%d7%aa%d7%99-%d7%a0%d7%97%d7%a9%d7%91%d7%aa-%d7%92%d7%99%d7%a9%d7%94-%d7%9b%d7%9e%d7%95%d7%a9%d7%9c%d7%9e%d7%aa-complete">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-<code>DSB</code> מבטיח שכל גישה קודמת לזיכרון תושלם לפני שההוראה <code>DSB</code> עצמה יכולה להסתיים, וזאת בהתאם לארגומנטים המיועדים. אך מהו המועד שבו גישה לזיכרון נחשבת למושלמת?</p>
+<p>ההסבר להשלמת קריאה הוא פשוט יותר בהשוואה להשלמת כתיבה. הסיבה לכך היא שהשלמת קריאה מתבצעת כאשר הנתונים שנקראו מועברים לרגיסטרים של המעבד.</p>
+<p>בניגוד להשלמת קריאה, השלמת כתיבה היא תהליך מורכב יותר. עבור כתיבות לזיכרון device, הנקודה שבה נחשבת הכתיבה כהושלמה תלויה במנגנון של Early-write acknowledgment המיועד לסוג הזיכרון. אם מערכת הזיכרון תומכת ב-EWA, אז ה-<code>DSB</code> יכול להסתיים לפני שהכתיבה תגיע לנקודת קצה (הציוד ההיקפי). לעומת זאת, כתיבה לזיכרון המוגדר כ-nGnRnE יכולה להיחשב כהושלמה רק כאשר מתקבלת תגובת כתיבה מהציוד ההיקפי.</p>
+<p>בדוגמה הבאה, ה-<code>DSB</code> מעכב (stall) את הביצוע עד שה-<code>STR</code> לזיכרון Device-nGnRnE  יקבל תגובת כתיבה מהקצה ההיקפי במיקום הזיכרון המתאים:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">STR</span> <span class="no">X0</span><span class="p">,</span> <span class="p">[</span><span class="no">Device-nGnRnE</span><span class="p">]</span>  <span class="c1">; Must receive a write response from the end-peripheral
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nf">DSB</span> <span class="no">SY</span>  
+</span></span></code></pre></div><p>בקטע זה, הדגש הוא על הצורך לקבל תגובת כתיבה מהקצה ההיקפי כדי שה-DSB יוכל להסתיים.</p>
+<h4 id="רכיבי-עיבוד-observers-שונים-בארכיטקטורת-aarch64">
+  רכיבי עיבוד (Observers) שונים בארכיטקטורת AArch64
+  <a class="heading-link" href="#%d7%a8%d7%9b%d7%99%d7%91%d7%99-%d7%a2%d7%99%d7%91%d7%95%d7%93-observers-%d7%a9%d7%95%d7%a0%d7%99%d7%9d-%d7%91%d7%90%d7%a8%d7%9b%d7%99%d7%98%d7%a7%d7%98%d7%95%d7%a8%d7%aa-aarch64">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>בארכיטקטורת AArch64, אין דרישה לסדר מסוים בין גישות שמבוצעות על ידי מעבדים שונים, גם אם קיימת תלות כתובות. לדוגמה, הקוד הבא יכול להתבצע ולהשלים בכל סדר, למרות שיש תלות כתובת בגלל שה-instruction cache וה-data cache שני רכיבי עיבוד (observers) שונים:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">DC</span> <span class="no">CVAU</span><span class="p">,</span> <span class="no">X0</span> <span class="c1">; Operations are executed in any order
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1"></span><span class="nf">IC</span> <span class="no">IVAU</span><span class="p">,</span> <span class="no">X0</span> <span class="c1">; despite address dependency.  
+</span></span></span></code></pre></div><p>אם הוראות אלו מסודרות מחדש, יתכן שה-instruction cache יתמלא בנתונים ישנים מה-data cache מה שיכול לגרום לבעיות עקב תצוגה שגויה של הנתונים. כדי למנוע בעיה זו, הארכיטקטורה דורשת שימוש במחסום זיכרון. דוגמה לכך מוצגת בקוד הבא:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">DC</span> <span class="no">CVAU</span><span class="p">,</span> <span class="no">X0</span> <span class="c1">; Operations are executed in any order
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1"></span><span class="nf">DSB</span> <span class="no">ISH</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nf">IC</span> <span class="no">IVAU</span><span class="p">,</span> <span class="no">X0</span> <span class="c1">; despite address dependency.  
+</span></span></span></code></pre></div><p>בדוגמה זו, ההוראה <code>DC CVAU</code>, שמנקה את ה-data cache, חייבת להשלים לפני ביצוע ההוראה <code>IC IVAU</code>, שמבצעת ביטול של instruction cache . השימוש ב-<code>DC CVAU</code> מבטיח שהנתונים החדשים יהיו זמינים ל-instruction cache לפני שניתן לבצע את הביטול.</p>
+<p>הערה:
+יש צורך בהוראת <code>DSB</code> כי ה-<code>DMB</code> משפיע רק על גישות לנתונים. זה כולל את הפעולת תחזוקת data cache, אך אינו מכסה את ההוראה לביטול ה-cache.</p>
+<h3 id="מחסום-סנכרון-הוראות-isb">
+  מחסום סנכרון הוראות (<code>ISB</code>)
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%a1%d7%a0%d7%9b%d7%a8%d7%95%d7%9f-%d7%94%d7%95%d7%a8%d7%90%d7%95%d7%aa-isb">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>במקרים מסוימים, במיוחד בעקבות פעולות cache, ייתכן שההוראות ב-instruction queue יהיו ישנות או לא עדכניות, ויש צורך לנקות אותן לפני שהמעבד יכול להמשיך לפעול. הוראת <code>isb</code> נועדה בדיוק למטרה זו.</p>
+<p>הוראת <code>ISB</code> מבטיחה שכל ההוראות המגיעות לאחר הוראת ה-<code>ISB</code> לפי סדר התוכנית יישלפו (fetch) מה-cache או מהזיכרון רק לאחר סיום הוראת ה-<code>ISB</code>. השימוש ב-<code>ISB</code> מבטיח שההשפעות של פעולות שינוי context שבוצעו לפני ה-<code>ISB</code> יהיו גלויות להוראות שנשלפו לאחר מכן.</p>
+<p>באמצעות ה-<code>ISB</code>, ה-pipeline נשטף, מה שמבטיח שהשפעות כל פעולה שמשנה את context שבוצעה לפני ה-<code>ISB</code> יהיו גלויות לכל הוראה שתבוא לאחריו. כך, הוראות שיגיעו מה-cache או מהזיכרון ישלפו מחדש.</p>
+<p>הוראה זו גם מבטיחה שכל פעולות שמשנות את ה-context לאחר ה-<code>ISB</code> ייכנסו לתוקף רק לאחר שההוראה הושלמה, ולכן אינן מובטחות להיות נראות בהוראות שמופיעות לפני ה-<code>ISB</code>.</p>
+<p>דוגמאות לפעולות משנות context, שדורשות הוספת הוראת <code>ISB</code> כדי להבטיח שהשפעותיהן יהיו גלויות להוראות שנשלפות לאחר הוראת ה-<code>ISB</code>, כוללות:</p>
+<ul>
+<li>הוראות תחזוקה של cache ו-TLB מלאים.</li>
+<li>שינויים ברגיסטרי מערכת.</li>
+</ul>
+<p>כל פעולות שינוי context המופיעות בסדר התוכנית לאחר הוראת ה-<code>ISB</code> נכנסות לתוקף רק לאחר ביצוע ה-<code>ISB</code>.</p>
+<h4 id="שינוי-context">
+  שינוי context
+  <a class="heading-link" href="#%d7%a9%d7%99%d7%a0%d7%95%d7%99-context">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ארכיטקטורת ARM מגדירה את ה-context של המעבד כמצב ה-cache, ה-TLB ורגיסטרי המערכת. ביצוע פעולות תחזוקה עבור cache או TLB, או עדכון של רגיסטרי מערכת נחשבים לפעולות שמשנות את ההקשר (context-switching).</p>
+<p>הארכיטקטורה מבטיחה כי כל פעולה שמשנה את ה-context תיראה לאחר אירוע של סינכרון context. הדרישה לסנכרון מפורש מקלה על מעצבי המעבדים, שכן היא מספקת את האפשרות להפיץ את שינויי ה-context בצורה לא מתמדת בכל מחזור. סנכרון מרומז יוצר תקורה מיותרת, ולכן דרישת אירוע סינכרון context מאפשרת לתוכנה לקבוע במפורש מתי היא רוצה שההקשר החדש יחול.</p>
+<p>אירוע סינכרון context יכול להתבצע על ידי אחת מהפעולות הבאות:</p>
+<ul>
+<li>ביצוע פעולת <code>ISB</code></li>
+<li>לקיחת Exception</li>
+<li>חזרה מ-Exception</li>
+<li>יציאה ממצב Debug</li>
+</ul>
+<p>הערה:
+מימושי מעבד ARM אינם רשאים לעדכן את ה-context שלהם עבור ביצועים עתידיים אם המעבד לא מבצע אירוע סינכרון context.</p>
+<p>ביצוע אירוע סינכרון context מבטיח את הדברים הבאים:</p>
+<ul>
+<li>
+<p>כל ה-unmasked interrupts מחכים בזמן אירוע סינכרון context, ונלקחים לפני ההוראה הראשונה לאחר אירוע הסינכרון.</p>
+</li>
+<li>
+<p>אין הוראות המופיעות בסדר התוכנית לאחר הוראה שגורמת לאירוע סינכרון context והוראות לא יכולות לבצע כל חלק מהפונקציונליות שלהן עד שאירוע הסינכרון התרחש.</p>
+</li>
+<li>
+<p>כל הכתיבות לרגיסטרים של המערכת שמתבצעות לפני אירוע סינכרון ה-context משפיעות על כל הוראה המופיעה בסדר התוכנית אחרי ההוראה שגרמה לאירוע סינכרון ה-context.</p>
+</li>
+<li>
+<p>כל השינויים שהושלמו בטבלאות התרגום עבור ערכים שנעשו בהם שינויים אינם מורשים להיות מאוחסנים ב-cache ב-TLB, משפיעים על כל שליפות הפקודות המתרחשות לאחר הוראה שגרמה לאירוע סינכרון ה-context.</p>
+</li>
+<li>
+<p>כל ביטול (invalidation) של TLBs, cache הוראות, ובמצב AArch32, מנבאי branch-ים, שהושלמו לפני אירוע סינכרון ה-context, משפיעים על כל ההוראות המופיעות בסדר התוכנית לאחר הוראה שגרמה לאירוע סינכרון context.</p>
+</li>
+</ul>
+<h3 id="מחסום-ספקולציה-sb">
+  מחסום ספקולציה (<code>SB</code>)
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%a1%d7%a4%d7%a7%d7%95%d7%9c%d7%a6%d7%99%d7%94-sb">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הוראת <code>SB</code> מהווה מחסום זיכרון שמונע ביצוע ספקולטיבי של הוראות עד להשלמת המחסום. כאשר מדובר בהוראות אלה, ניתן היה לצפות בהן דרך ערוצים צדדיים.</p>
+<p>בזמן שהמחסום לא הושלם, אין אפשרות לבצע ביצוע ספקולטיבי של הוראות המופיעות מאוחר יותר בסדר התוכנית, במידה שניתן לצפות בהן דרך ערוצים צדדיים, כתוצאה מספקולציה של זרימת בקרה או ספקולציה של ערכי נתונים. דוגמה לכך היא כאשר מתבצעת הקצאה ספקולטיבית עבור כל מבנה cache, כאשר ההקצאה של ערך מסוים יכולה להעיד על כל ערך נתונים הקיים בזיכרון או ברגיסטרים.</p>
+<ul>
+<li>
+<p>אין לבצע ספקולציות במידה שניתן לחזות אותן דרך ערוצים צדדיים, בשל ספקולציות של זרימת בקרה או ספקולציות של ערכי נתונים.</p>
+</li>
+<li>
+<p>ניתן לבצע ספקולציה במקרה שבו מתבצע חיזוי שההוראה שעלולה להוביל ל-exception לא גורמת בביצוע עצמו ל-exception.</p>
+</li>
+</ul>
+<p>לא ניתן לבצע ביצוע ספקולטיבי של הוראת <code>SB</code> כתוצאה מהדברים הבאים:</p>
+<ul>
+<li>ספקולציות של זרימת בקרה.</li>
+<li>ספקולציה של ערכי נתונים.</li>
+<li>חיזוי שההוראה שיכולה להוביל ל-exception אינה אכן יוצרת exception.</li>
+</ul>
+<p>הוראת <code>SB</code> יכולה להיחשב כהשולמה כאשר מתקיימים כל התנאים הבאים:</p>
+<ul>
+<li>
+<p>ידוע שהיא אינה ספקולטיבית, או שהיא ספקולטיבית רק כתוצאה מאחת מהאפשרויות הבאות:</p>
+<ul>
+<li>ספקולציה שההוראה שעלולה להוביל ל-exception ואינה גורמת ל-exception.</li>
+<li>ספקולציות המתרחשות מעבר לנקודה בזרם הביצוע שבה נלקח exception אסינכרוני מדויק.</li>
+</ul>
+</li>
+<li>
+<p>כל ערכי הנתונים המיוצרים על ידי הוראות המופיעות בסדר התוכנית לפני הוראת <code>SB</code> נפתרו מבחינה ארכיטקטונית, ולכן אינם ספקולטיביים.</p>
+</li>
+</ul>
+<p>הערה:
+להוראת <code>SB</code> אין השפעה על השימוש במשאבי חיזוי לצורך חיזוי זרם הפקודות המופק, כל עוד החיזוי אינו מתבסס על נתונים שנלקחו מפלטי הרגיסטר של ביצוע ספקולטיבי של הוראות המופיעות בסדר התוכנית לאחר הוראת <code>SB</code>.</p>
+<h3 id="הגבלת-ה-scope-של-מחסומי-הזיכרון">
+  הגבלת ה-scope של מחסומי הזיכרון
+  <a class="heading-link" href="#%d7%94%d7%92%d7%91%d7%9c%d7%aa-%d7%94-scope-%d7%a9%d7%9c-%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-%d7%94%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ההוראות <code>DMB</code> ו-<code>DSB</code> מקבלות ארגומנט המגדיר את סוג הגישה לזיכרון המוסדרת על ידי מחסום הזיכרון ואת דומיין השיתוף שעליו ההוראה פועלת. ה-scope הזה מגדיר למעשה את קבוצת המעבדים שעליהם חלים ההגבלות המוטלות על ידי המחסומים.</p>
+<p>יכולת הגבלת ה-scope של מחסום הזיכרון היא שימושית במיוחד כאשר מנסים לייעל את ההשפעות של מחסומי זיכרון. במקרים מסוימים, מגבלות הסדר המלאות שמוטלות על ידי מחסום עשויות להיות מגבילות מדי, דבר שיכול להשפיע על ביצועי המערכת. הגבלת ה-scope של המחסום לקבוצת משנה של גישות לזיכרון ומעבדים עשויה לאפשר אופטימיזציות במיקרו-ארכיטקטורה, אשר יכולות להפחית את ההשפעות השליליות של מחסומי הזיכרון על הביצועים.</p>
+<p>הערה:<br>
+בארכיטקטורת Armv8-A AArch64, יש צורך להגדיר באופן מפורש את הארגומנט בעת תכנות הוראות <code>DSB</code> או <code>DMB</code>. דרישה זו שונה מגרסאות קודמות של הארכיטקטורה, שבהן ברירת המחדל הייתה האפשרות <code>SY</code> במקרה שלא הוזן ארגומנט מפורש.</p>
+<p>הטבלה הבאה מציגה את הארגומנטים התקפים עבור <code>DSB</code> ו-<code>DMB</code>:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Argument</th>
+          <th>Ordered Accesses (Before-After)</th>
+          <th>Shareability Domain</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>NSHLD</code></td>
+          <td>Load-Load, Load-Store</td>
+          <td>Non-shareable</td>
+      </tr>
+      <tr>
+          <td><code>NSHST</code></td>
+          <td>Store-Store</td>
+          <td>Non-shareable</td>
+      </tr>
+      <tr>
+          <td><code>NSH</code></td>
+          <td>Any-Any</td>
+          <td>Non-shareable</td>
+      </tr>
+      <tr>
+          <td><code>ISHLD</code></td>
+          <td>Load-Load, Load-Store</td>
+          <td>Inner Shareable</td>
+      </tr>
+      <tr>
+          <td><code>ISHST</code></td>
+          <td>Store-Store</td>
+          <td>Inner Shareable</td>
+      </tr>
+      <tr>
+          <td><code>ISH</code></td>
+          <td>Any-Any</td>
+          <td>Inner Shareable</td>
+      </tr>
+      <tr>
+          <td><code>OSHLD</code></td>
+          <td>Load-Load, Load-Store</td>
+          <td>Outer Shareable</td>
+      </tr>
+      <tr>
+          <td><code>OSHST</code></td>
+          <td>Store-Store</td>
+          <td>Outer Shareable</td>
+      </tr>
+      <tr>
+          <td><code>OSH</code></td>
+          <td>Any-Any</td>
+          <td>Outer Shareable</td>
+      </tr>
+      <tr>
+          <td><code>LD</code></td>
+          <td>Load-Load, Load-Store</td>
+          <td>Full System</td>
+      </tr>
+      <tr>
+          <td><code>ST</code></td>
+          <td>Store-Store</td>
+          <td>Full System</td>
+      </tr>
+      <tr>
+          <td><code>SY</code></td>
+          <td>Any-Any</td>
+          <td>Full System</td>
+      </tr>
+  </tbody>
+</table>
+<p>למשל, כאשר משתמשים בהוראת <code>DMB ISHST</code>, ההשפעה חלה רק על הסדר של הוראות store המפורשות. סדר ההוראות של load שסביב המחסום אינו מושפע מההוראה. כמו כן, ה-<code>DMB</code> הזה מבצע אכיפה רק על הפקודות הנצפות עבור המעבדים השייכים לאותו דומיין שיתוף פנימי שבו פועל המעבד שמבצע את ה-<code>DMB</code>.</p>
+<h4 id="דוגמה-להגבלת-ה-scope-של-מחסומי-זיכרון">
+  דוגמה להגבלת ה-scope של מחסומי זיכרון
+  <a class="heading-link" href="#%d7%93%d7%95%d7%92%d7%9e%d7%94-%d7%9c%d7%94%d7%92%d7%91%d7%9c%d7%aa-%d7%94-scope-%d7%a9%d7%9c-%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>נשקול את הקוד הבא שרץ במעבד P0:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">LDR</span> <span class="no">x0</span><span class="p">,</span> <span class="p">[</span><span class="no">X4</span><span class="p">]</span>  <span class="c1">; Can be observed out-of-order 
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1"></span><span class="nf">STR</span> <span class="p">,</span> <span class="p">[</span><span class="no">X1</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nf">DMB</span> <span class="no">ISHST</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="nf">STR</span> <span class="p">,</span> <span class="p">[</span><span class="no">X3</span><span class="p">]</span>
+</span></span></code></pre></div><p>במקרה זה, הפרמטר <code>ISHST</code> מגביל את המחסום רק לדומיין Inner Shareable ולהוראות store. אם המעבד P0 והמעבד P1 אינם נמצאים באותו דומיין שיתוף פנימי, אז על פי ההגדרות הארכיטקטוניות, המעבד P1 יכול לראות את העדכון במיקום הזיכרון ב-<code>X3</code> לפני שהעדכון במיקום הזיכרון ב-<code>X1</code> הושלם. יתרה מכך, ההוראה <code>LDR</code> שקוראת מ-<code>X4</code> עשויה להיתפס מחוץ לסדר ביחס לקריאות למיקומים <code>X1</code> ו-<code>X3</code> על ידי כל המעבדים, כולל P0.</p>
+<p>ההקלות הללו על הסדר המוטל על גישות הזיכרון עשויות להפחית את העומס הנדרש כאשר יש לכפות סדר צפייה במערכת.</p>
+<h3 id="multi-copy-atomicity--barriers">
+  Multi-copy atomicity &amp; Barriers
+  <a class="heading-link" href="#multi-copy-atomicity--barriers">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>מערכת multi-copy atomicity אינה זקוקה לשימוש במחסומים. משמעות הדבר היא שהקוד לא יכול להבחין אם ישנם מחסומים המופצים בכל הנוגע לסידור ההוראות, ובסיסי הסידור שמספקים המחסומים נשמרים.</p>
+<p>כדי להמחיש זאת, ניתן לראות רצף קוד לדוגמה:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-asm" data-lang="asm"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">STR</span> <span class="p">[</span><span class="no">x0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nf">DSB</span> <span class="no">OSH</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nf">SEV</span>
+</span></span></code></pre></div><p>במערכת multi-copy atomicity, כאשר המעבד P1 מבצע כתיבה, המעבד P2 יכול לראות את טרנזקציית הכתיבה ולקרוא את הערך שנכתב על ידי P1. מעבד P2 משתמש בהוראת <code>DSB OSH</code> כדי לקבוע מתי הכתיבה הושלמה. אם המחסום יושלם בתוך המעבד שהנפיק אותו (במקרה זה P2), ההשפעה של המחסום תתרחש בכל זאת. P2 מתבסס על תגובות מהכתיבה כדי לקבוע מתי טרנזקציות חיצוניות הושלמו והפכו לניתנות לצפייה, וכך יכול המחסום להיחשב כשלם.</p>
+<p>במערכת non-multi-copy atomicity, ההנחה הזו אינה תקפה. אם נשתמש באותה דוגמת קוד, מערכת עם forwarding buffer, יכול להיות מצב שבו מעבד מאמין שהכתיבה שלו הושלמה (ולכן היא נראית לכל המעבדים הרלוונטיים), אך למעשה הכתיבה אינה נראית למעבדים אחרים. אם המעבד היה מסיים מחסום באופן פנימי, התוצאה עלולה להוביל לכישלון בקוהרנטיות הנתונים.</p>
+<p>במקרה זה, המעבד יהיה חייב להפיץ מחסומים. המחסום יבטיח שהכתיבה תיראה עבור טרנזקציות שמתרחשות לאחר המחסום.</p>
+<h2 id="lkmm">
+  LKMM
+  <a class="heading-link" href="#lkmm">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="סוגי-מחסומים-בקרנל">
+  סוגי מחסומים בקרנל
+  <a class="heading-link" href="#%d7%a1%d7%95%d7%92%d7%99-%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d-%d7%91%d7%a7%d7%a8%d7%a0%d7%9c">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<ul>
+<li>
+<p><strong>מחסומים חזקים</strong>: מחסומים אלו, כמו smp_mb() ו-synchronize_rcu(), דורשים שהמעבד ישלים את כל ההוראות שקודמות למחסום לפני שהוא מבצע הוראות שאחריו. כלומר, כל ההוראות שקרו לפני המחסום חייבות להתבצע קודם.</p>
+</li>
+<li>
+<p><strong>מחסום <code>smp_rmb()</code></strong>: מחסום זה מיועד לקריאות, ומחייב את המעבד לבצע את כל הקריאות שקדמו למחסום לפני שהוא מבצע קריאות מאוחרות יותר.</p>
+</li>
+<li>
+<p><strong>מחסום <code>smp_wmb()</code></strong>: מחסום זה מיועד לכתיבות, ומבטיח שכל הכתיבות שקודמות למחסום יושלמו לפני הכתיבות המאוחרות יותר.</p>
+</li>
+</ul>
+<p>מחסומי זיכרון בדרך כלל מגיעים בזוגות. אם יש לשני תהליכים שיתוף פעולה וחשוב להם הסדר שבו נכתבים שני ערכים, אז הצד השני חייב להיות מודע באותה מידה לסדר שבו ערכים אלו נקראים.</p>
+<p>הסיבה העיקרית לקיום של מספר סוגי מחסומי זיכרון היא שיקולי ביצועים. ביצוע של מחסום זיכרון מלא עשוי להיות פעולה יקרה, ומפתחי קרנל יעדיפו להימנע ממנו בנתיבי ביצוע מהירים. לעיתים, מחסומים חלשים יותר יהיו זולים יותר, במיוחד אם ניתן לוותר עליהם לחלוטין בארכיטקטורות מסוימות.</p>
+<p>פרימיטיבים מסודרים לחלוטין מציבים מחסום מלא (<code>smp_mb</code>) לפני ואחרי הביצוע שלהם. הם מבטיחים שהפעולה הנוכחית תסודר כנגד כל פעולה אחרת שנעשית לפניה או אחריה, ובכך מספקים את הסדר המקסימלי שניתן להשיג בכל הנוגע לזיכרון.</p>
+<h4 id="שימוש-במחסומי-זיכרון-smp_wmb-ו-smp_rmb">
+  שימוש במחסומי זיכרון <code>smp_wmb</code> ו-<code>smp_rmb</code>
+  <a class="heading-link" href="#%d7%a9%d7%99%d7%9e%d7%95%d7%a9-%d7%91%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f-smp_wmb-%d7%95-smp_rmb">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>בדרך כלל מומלץ להשתמש ב-<code>smp_store_release</code> ו-<code>smp_load_acquire</code> במקום ב-<code>smp_wmb</code> ו-<code>smp_rmb</code>, אך המחסומים הוותיקים יותר עדיין נמצאים בשימוש נרחב, ולכן הבנת אופן הפעולה שלהם חשובה.</p>
+<p>בקוד הבא מתואר שימוש במחסומים <code>smp_wmb</code> ו-<code>smp_rmb</code> כדי להבטיח סדר זיכרון בין פעולות כתיבה וקריאה על שני מעבדים שונים:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="cm">/* See MP+fencewmbonceonce+fencermbonceonce.litmus. */</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kt">void</span> <span class="nf">CPU0</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">	<span class="nf">WRITE_ONCE</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">	<span class="nf">smp_wmb</span><span class="p">();</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">	<span class="nf">WRITE_ONCE</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="kt">void</span> <span class="nf">CPU1</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">	<span class="n">r0</span> <span class="o">=</span> <span class="nf">READ_ONCE</span><span class="p">(</span><span class="n">y</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">	<span class="nf">smp_rmb</span><span class="p">();</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">	<span class="n">r1</span> <span class="o">=</span> <span class="nf">READ_ONCE</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>כאן, <code>smp_wmb</code> מבטיח שכל פעולות הכתיבה הקודמות לו ב-CPU0 יתבצעו לפני פעולות הכתיבה המאוחרות לו, בעוד <code>smp_rmb</code> מבטיח שכל פעולות הקריאה הקודמות לו ב-CPU1 יתבצעו לפני הקריאות שאחריו. כך שאם <code>r0</code> שווה ל-1, כלומר <code>y</code> נכתבה ונקראה בהצלחה, אז גם <code>r1</code> יהיה חייב להיות 1, משום ש-<code>x</code> נכתב ב-CPU0 לפני <code>y</code>.</p>
+<h3 id="מחסומים-ייחודיים-ב-lkmm">
+  מחסומים ייחודיים ב-LKMM
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d-%d7%99%d7%99%d7%97%d7%95%d7%93%d7%99%d7%99%d7%9d-%d7%91-lkmm">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בקרנל יש מספר מחסומים מיוחדים הדורשים יחס סדר שונה במעט מהמחסום <code>smp_mb()</code>. בין מחסומים אלה כלולים <code>smp_mb__before_atomic()</code>, <code>smp_mb__after_atomic()</code>, ו-<code>smp_mb__after_spinlock()</code>. מחסומים אלה אינם מסדרים את כלל האירועים המוקדמים מול כלל האירועים המאוחרים, כפי ש-<code>smp_mb()</code> עושה, אלא יוצרים סדר מדויק בין סוגי פעולות מסוימות.</p>
+<h4 id="מחסומי-before-ו-after">
+  מחסומי <code>before</code> ו-<code>after</code>
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-before-%d7%95-after">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>פעולות על משתנים אטומיים, כגון פעולות מונה מסוג <code>atomic_t</code> המחזירות ערכים, חייבות להבטיח סדר זיכרון מוגדר באמצעות מחסומי זיכרון מסביב לביצוען. כל פעולת זיכרון המתרחשת לפני קריאת הפעולה האטומית צריכה להיות גלויה לכל המעבדים לפני שהפעולה האטומית עצמה תיראה גלויה. באופן דומה, יש להבטיח שהפעולה האטומית תהיה גלויה לכל המעבדים לפני כל פעולת זיכרון שתבוצע לאחריה.</p>
+<p>המחסומים <code>smp_mb__before_atomic()</code> ו-<code>smp_mb__after_atomic()</code> מיועדים לשימוש יחד עם פעולות RMW אטומיות, שאינן כוללות מחסומי זיכרון באופן מובנה כמו פעולות ששמן מכיל את הסיומת <code>relaxed</code> ופעולות שלא מחזירות ערך. תפקידם הוא לספק את סדר פעולות הזיכרון הנדרש, במקרים בהם פעולות אטומיות מסוג RMW אינן כוללות מחסום זיכרון.</p>
+<p>מחסומים אלו מתפקדים באופן דומה למחסום זיכרון מלא (<code>smp_mb</code>), אך לא בדיוק באותו אופן.</p>
+<ul>
+<li>
+<p>ה- <code>smp_mb__before_atomic</code> מבטיח שכל הגישות לזיכרון שלפני הפעולה האטומית יישמרו בסדר הנכון עם הפעולה עצמה, ושהפעולה האטומית תבוצע לפני כל הגישות הבאות.</p>
+</li>
+<li>
+<p>ה-<code>smp_mb__after_atomic</code> מספק שמירה על סדר בין כל הגישות המאוחרות לפעולה האטומית לבין הפעולה עצמה, ומבטיח שהפעולה האטומית מתבצעת לאחר כל הגישות שקדמו לה.</p>
+</li>
+<li>
+<p>ה-<code>smp_mb__after_spinlock</code>  הוא עוד מחסום after אבל לא על פעולות אטומיות אלה על נעילת spinlock: הוא מסדר את פעולת רכישת מנעול וכל האירועים שהתרחשו לפניה מול כל האירועים הבאים כאשר נעשה שימוש במחסום זה לאחר פעולת רכישת מנעול.</p>
+</li>
+</ul>
+<p>חשוב לציין שגישה בין <code>smp_mb__{before,after}_atomic</code> לבין הפעולה האטומית עצמה לא נשמרת בסדר מסוים. לכן, יש להקפיד למקם את המחסום קרוב ככל הניתן לפעולה RMW האטומית כדי למנוע מצבים בלתי צפויים בסדר הפעולות.</p>
+<p>מחסומים אלה חיוניים משום שלארכיטקטורות שונות יש סדרי ביצוע שונים עבור הפרימיטיבים האטומיים שלהן במצב SMP. לדוגמה, בארכיטקטורת TSO כמו x86, הפרימיטיבים האטומיים מסודרים במלואם, ולכן המחסומים הללו עשויים לא להתקיים בבינארי לאחר הקימפול.</p>
+<p>יש להשתמש ב-<code>smp_mb__before_atomic</code> לפני הפעולה RMW אטומית שאינה מחזירה ערך, וב-<code>smp_mb__after_atomic</code> אחריה, כדי להבטיח את אותו סדר זיכרון שמספקות פעולות RMW אטומיות שמחזירות ערך.</p>
+<p>לדוגמה, בקטע קוד:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">obj</span><span class="o">-&gt;</span><span class="n">dead</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nf">smp_mb__before_atomic</span><span class="p">();</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nf">atomic_dec</span><span class="p">(</span><span class="o">&amp;</span><span class="n">obj</span><span class="o">-&gt;</span><span class="n">ref_count</span><span class="p">);</span>
+</span></span></code></pre></div><p>השימוש ב-<code>smp_mb__before_atomic</code> מבטיח שכל פעולות הזיכרון הקודמות לפעולה האטומית <code>atomic_dec()</code> יתבצעו בסדר הנדרש מבחינת כל המעבדים האחרים. בדוגמה זו, זה אומר שההשמה <code>obj-&gt;dead = 1</code> תהיה גלויה לכלל המעבדים לפני שהפחתת המונה <code>ref_count</code> תתבצע.</p>
+<p>אם לא נשתמש במחסום <code>smp_mb__before_atomic</code>, המערכת עשויה באופן לגיטימי לעדכן את המונה האטומי כך שיראה גלוי למעבדים אחרים לפני השלמת ההשמה <code>obj-&gt;dead = 1</code>. חוסר במחסום זיכרון במקרים כאלה עלול לגרום להתנהגות בלתי צפויה ואפילו לתוצאות קריטיות, עקב סדר זיכרון שגוי.</p>
+<h5 id="דוגמה-למימוש-עם-מחסומי-זיכרון">
+  דוגמה למימוש עם מחסומי זיכרון
+  <a class="heading-link" href="#%d7%93%d7%95%d7%92%d7%9e%d7%94-%d7%9c%d7%9e%d7%99%d7%9e%d7%95%d7%a9-%d7%a2%d7%9d-%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>הביטוי:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">atomic_fetch_add</span><span class="p">();</span>
+</span></span></code></pre></div><p>שקול לביטוי:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">smp_mb__before_atomic</span><span class="p">();</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nf">atomic_fetch_add_relaxed</span><span class="p">();</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nf">smp_mb__after_atomic</span><span class="p">();</span>
+</span></span></code></pre></div><p>הערה:
+ה-<code>atomic_fetch_add()</code> עשוי להיות מיושם בצורה יעילה יותר.</p>
+<p>בדוגמה נוספת:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">smp_mb__before_atomic</span><span class="p">();</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nf">atomic_dec</span><span class="p">(</span><span class="o">&amp;</span><span class="n">X</span><span class="p">);</span>
+</span></span></code></pre></div><p>נוצר תבנית דומה לפעולת release אך המחסום חזק יותר מ-release מכיוון שהוא מסדר את כל ההוראות שקדמו נגד הן קריאת והן כתיבת <code>atomic_dec()</code>, כמו גם נגד כל ההוראות שבאות אחריה.</p>
+<p>בדוגמה הבאה:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln">1</span><span class="cl"><span class="nf">atomic_inc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">X</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nf">smp_mb__after_atomic</span><span class="p">();</span>
+</span></span></code></pre></div><p>זהו דפוס acquire (אם כי לא אופייני בגלל שכאן יש פעולת כתיבה ולא קריאה), כאשר המחסום מספק שמירה על סדר חזק יותר מ-acquire, המבטיח שכל הגישות המאוחרות לפעולה יהיו מסודרות נגד הפעולה האטומית עצמה.</p>
+<h4 id="המחסום-ברירת-מחדל">
+  המחסום ברירת מחדל
+  <a class="heading-link" href="#%d7%94%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%91%d7%a8%d7%99%d7%a8%d7%aa-%d7%9e%d7%97%d7%93%d7%9c">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>אם לא מוגדר לאריכטקטורה מסוימת אז כברירת מחדל המחסומים <code>smp_mb__before_atomic</code> ו-<code>smp_mb__after_atomic</code> יהיו מחסום חזק:</p>
+<p><code>include/asm-generic/barrier.h</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln">1</span><span class="cl"> <span class="n">__smp_mb__before_atomic</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"> <span class="nf">__smp_mb__before_atomic</span><span class="p">()</span>	<span class="nf">__smp_mb</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl"> <span class="n">__smp_mb__after_atomic</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"> <span class="nf">__smp_mb__after_atomic</span><span class="p">()</span>	<span class="nf">__smp_mb</span><span class="p">()</span>
+</span></span></code></pre></div><h4 id="מחסומים-ב-bitops">
+  מחסומים ב-bitops
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d-%d7%91-bitops">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ישנן שתי פעולות <code>bitops</code> מיוחדות בעלות סמנטיקה של מחסומי נעילה (lock) מסוג <code>acquire</code> ו-<code>release</code>, באופן דומה לסמנטיקה של ספינלוק (spinlock). פעולות אלו מתפקדות כמו הגרסאות הרגילות שלהן שאינן כוללות את הסיומות <code>_lock</code> או <code>_unlock</code>, אך הן מספקות במפורש את המשמעות של <code>acquire</code> או <code>release</code>. משמעות הדבר היא שהן מבטיחות את סדר פעולות הזיכרון הנדרש בעת השימוש בהן בניהול נעילות, וניתן להסתמך עליהן ליצירת סדר זה מבלי להוסיף מחסומי זיכרון נוספים:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="ln">1</span><span class="cl"><span class="kt">int</span> <span class="nf">test_and_set_bit_lock</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">nr</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="o">*</span><span class="n">addr</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="kt">void</span> <span class="nf">clear_bit_unlock</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">long</span> <span class="n">nr</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">long</span> <span class="o">*</span><span class="n">addr</span><span class="p">);</span>
+</span></span></code></pre></div><ul>
+<li>
+<p>ה-<code>test_and_set_bit_lock</code>: משמשת לניסיון להשיג נעילה על ביט מסוים. פעולה זו מבטיחה שכל פעולות הזיכרון שתבוצענה לאחריה יתבצעו רק לאחר שהיא תושלם, ובכך מבטיחה סדר acquire.</p>
+</li>
+<li>
+<p>ה-<code>clear_bit_unlock</code>: משמשת לשחרור הנעילה, ומבטיחה שכל פעולות הזיכרון הקודמות לה יושלמו לפני ביצועה, דבר שמאפשר סדר release.</p>
+</li>
+</ul>
+<p>כך, בשימוש עם <code>bit_spin_trylock</code> ו-<code>bit_spin_unlock</code>, פעולות אלה מספקות סדר תקין בזרימת זיכרון, בלי צורך במחסומי זיכרון נוספים, ומאפשרות ניהול יעיל של נעילות ברמת ביטים.</p>
+<h3 id="מחסום-קומפיילר">
+  מחסום קומפיילר
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%a7%d7%95%d7%9e%d7%a4%d7%99%d7%99%d7%9c%d7%a8">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>לקרנל יש פונקציה בשם <code>barrier()</code>, שמשמשת כמחסום קומפיילר ומונעת מהקומפיילר לסדר מחדש את גישת הזיכרון משני צדדי המחסום. משמעות הדבר היא שהקומפיילר לא יכול להעביר גישה לזיכרון מעבר ל-<code>barrier()</code>.</p>
+<p>המחסום <code>barrier()</code> הוא מחסום כללי ואינו כולל גרסאות ייחודיות לגישות קריאה-קריאה או כתיבה-כתיבה. עם זאת, ניתן להתייחס לפונקציות <code>READ_ONCE()</code> ו-<code>WRITE_ONCE()</code> כצורות חלשות של מחסום, כאשר כל אחת מהן משפיעה רק על הגישה הספציפית שמסומנת בהן.</p>
+<p>ההשפעות של פונקציית <code>barrier()</code> הן:</p>
+<ul>
+<li>
+<p><strong>מניעת סידור מחדש</strong>: הפונקציה מונעת מהקומפיילר לסדר מחדש גישה לזיכרון שתתרחש לאחר <code>barrier()</code>, כמו גם את הקדמת הגישה שנעשתה לפני <code>barrier()</code>. דוגמה לשימוש בהשפעה זו היא בהקלת התקשורת בין הקוד של interrupt-handler לבין הקוד שקיבל את ה-interrupt.</p>
+</li>
+<li>
+<p><strong>טעינת משתנים בלולאות</strong>: כאשר <code>barrier()</code> נמצא בתוך לולאה, הוא מאלץ את הקומפיילר לטעון את המשתנים שבהם נעשה שימוש בלולאה בכל מעבר של הלולאה.</p>
+</li>
+</ul>
+<p>חשוב לציין שלמחסומי קומפיילר אלה אין השפעה ישירה על המעבד עצמו, אשר עשוי להחליט לסדר מחדש את הגישות לזיכרון לפי שיקוליו.</p>
+<h4 id="מחסומי-זיכרון-מעבד-וקומפייר">
+  מחסומי זיכרון מעבד וקומפייר
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f-%d7%9e%d7%a2%d7%91%d7%93-%d7%95%d7%a7%d7%95%d7%9e%d7%a4%d7%99%d7%99%d7%a8">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כל מחסומי הזיכרון מרמזים על מחסום קומפיילר, במערכות עם מעבד יחיד, מחסומי הזיכרון SMP מצטמצמים בעיקר למחסומי קומפיילר, משום שההנחה היא שהמעבד יפעל באופן עקבי בעבודתו הפנימית, כלומר הוא יוכל לסדר את הגישות החופפות שלו לזיכרון בצורה נכונה ביחס לעצמו.</p>
+<p><strong>חובה</strong> להשתמש במחסומי זיכרון SMP על מנת לשלוט בסדר הגישות לזיכרון משותף במערכות SMP. במקרים מסוימים, ניתן להשתמש בנעילה כדי להשיג את אותה שליטה, אך זה לא תמיד מספיק.</p>
+<h3 id="המודל-האופרטיבי">
+  המודל האופרטיבי
+  <a class="heading-link" href="#%d7%94%d7%9e%d7%95%d7%93%d7%9c-%d7%94%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%99%d7%91%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>המערכת מחולקת למעבדים ולתת-מערכת זיכרון. תפקידם של המעבדים הוא לבצע הוראות, אך לא בהכרח בסדר בו הן מופיעות בתוכנית. התקשורת בין המעבדים לבין תת-מערכת הזיכרון היא הכרחית עבור פעולות מסוימות. פעולות בסיסיות של המעבד, כגון ביצועי הוראות פשוטות, נעשות פעמים רבות ללא צורך בתקשורת זו, אך פעולות כמו loads, stores ו-barriers כרוכות בכך.</p>
+<p>לכל מעבד יש cache מקומי. כאשר מעבד מבצע store, המשמעות היא שהמידע נכתב קודם כל ל-cache המקומי של אותו מעבד. עם זאת, עיבוד ה-store על ידי ה-cache עשוי לקחת זמן, ולא ניתן להשתמש במידע שנכתב לצורך פעולת load עד שהכתיבה עוברת עיבוד. בארכיטקטורות רבות, ה-cache המקומי פועל בסדר FIFO, מה שמכתיב את עיכוב העיבוד.</p>
+<p>ביצוע הוראת מחסום זיכרון אינו דורש מהמעבד לבצע פעולה מיוחדת מלבד להודיע לתת-מערכת הזיכרון על קיומו של המחסום. עם זאת, מחסומים אכן מגבילים את האופן שבו המעבד ותת-מערכת הזיכרון מטפלים בהוראות אחרות, בכך שהם משפיעים על הסדר שלהן.</p>
+<p>ההשפעה של המחסום היא כפולה:</p>
+<ul>
+<li>המחסום כופה על המעבד לבצע הוראות בסדר מסוים.</li>
+<li>הסדר המדויק שבו ההוראות מתבצעות תלוי בסוג המחסום שהוגדר:</li>
+</ul>
+<p>מחסומים מסוימים משפיעים על הדרך שבה תת-מערכת הזיכרון מפיצה כתיבות בין מעבדים שונים. כאשר מעבד <code>P1</code> מבצע הוראת מחסום, יש לכך השפעה על האופן שבו stores מתפשטות למעבדים אחרים, כגון <code>P2</code>.</p>
+<ul>
+<li>
+<p>במקרה של מחסום <code>smp_wmb()</code> שבוצע על ידי המעבד <code>P1</code>, המעבד <code>P2</code> יחויב לקבל את כל ה-stores שנעשו לפני המחסום ב-<code>P1</code> (לפי סדר התוכנית) לפני שהוא יקבל stores מאוחרים יותר מ-<code>P1</code>.</p>
+</li>
+<li>
+<p>אם store כלשהו כבר הופץ מ-<code>P1</code> ל-<code>P2</code> לפני מחסום release, אז כל ה-stores המוקדמים שבוצעו ב-<code>P1</code> יופצו גם הם ל-<code>P2</code> לפני ה-store שנעשה לאחר המחסום. במילים אחרות, המחסום release מבטיח שכל מה שנעשה לפניו יופץ תחילה.</p>
+</li>
+<li>
+<p>מחסום חזק מאלץ כל store שהופץ ל-<code>P1</code> לפני המחסום (כולל כל מה שנעשה מוקדם יותר לפי סדר התוכנית ב-<code>P1</code>) להתפשט לכל שאר המעבדים לפני ביצוע הוראות כלשהן שנעשות לאחר המחסום החזק ב-<code>P1</code>.</p>
+</li>
+</ul>
+<p>ההפצה (propagation) של כתיבות, הנאכפת על ידי מחסומי release ומחסומים חזקים, משפיעה על stores שנעשו במעבדים אחרים לפני המחסום וגם על אלו שבוצעו ב-<code>P1</code>. מחסומים אלה מוגדרים כ-A-cumulative, כלומר הם משפיעים על stores מכל המעבדים, הן מהמעבדים האחרים שמתפשטים ל-<code>P1</code>, והן מהכתיבות שנעשו ב-<code>P1</code> עצמו לפני המחסום.
+לעומת זאת, מחסומי <code>smp_wmb()</code> אינם A-cumulative, כלומר הם משפיעים רק על ההפצה של stores שנעשו ב-<code>P1</code> עצמו לפני המחסום, ולא על כתיבות ממעבדים אחרים.</p>
+<p>במודל הזיכרון החלש של הקרנל (בניגוד למודל החזק), אין תמיכה ב-B-cumulativity עבור מחסום הזיכרון <code>smp_wmb</code> וגם לא עבור רצפי פעולות של release-acquire. משמעות הדבר היא שפעולות כתיבה אינן נדרשות להופיע לפי סדר מחייב של הפצה גלובלית עבור כל המעבדים במערכת, לאחר ביצוע מחסומים אלה או ברצפים הללו.</p>
+<p>עם זאת, המודל כן מספק תמיכה ב-A-cumulativity עבור מחסומי זיכרון חזקים (כגון <code>smp_mb</code>) וכן עבור פעולות store-release. ה-A-cumulativity מבטיחה שההשפעות של פעולות כתיבה מתבצעות בסדר מסוים על פני המעבדים, אך רק בהקשר של סדרי ה-release הקודמים.</p>
+<p>בזכות כך, מבנה יחס hb הופך לפשוט יותר לעומת המודל החזק של LKMM, כיוון שהמודל החלש אינו מחייב מעקב או ניהול של סדרי הפצה מורכבים כמו אלו הנדרשים ב-B-cumulativity.</p>
+<h1 id="cumulativity">
+  Cumulativity
+  <a class="heading-link" href="#cumulativity">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h1>
+<p>הצטברות (cumulativity), שמזכירה במידה מסוימת סדר סיבתי (causal), מתייחסת לסדר פעולות המוגדר על ידי מחסום זיכרון.</p>
+<p>בחלק מהאכריטקטורות מחסום זיכרון לא רק משפיע על הסדר של פעולות של ה-thread שהפעיל אותו, אלא גם על פעולות של thread-ים אחרים. בפרט, הוא מבטיח שההשפעות של פעולות שנעשו על ידי thread אחד יתפשטו ויתחייבו לפני פעולות אחרות המתבצעות על ידי thread אחר.</p>
+<p>המונח &ldquo;התפשטות&rdquo; (propagation) מתייחס לאופן שבו כתיבות לזיכרון מתפשטות לשאר ה-thread-ים במערכת, תוך הבטחה שהסדר שבו הכתיבות מופצות אינו סותר את סדר הקוהרנטיות.</p>
+<p>מנקודת מבט מיקרו-ארכיטקטונית, מחסומים משמשים כדי לסדר את הפצת הכתיבות בין thread-ים שונים. יישום פשוט מאוד של גישה זו יכול להיות המתנה עד להשלמת כל הוראות הכתיבה שעדיין בביצוע (in-flight), ולאחר מכן להפיץ את הכתיבות למערכות השונות לפני שהמחסום עצמו מושלם. עם זאת, מערכות מודרניות כוללות פרוטוקולים מתקדמים יותר שמסייעים לסדר את הפצת הכתיבות בצורה יעילה יותר.</p>
+<p>אנו אומרים שלמחסום יש השפעה מצטברת כאשר הוא מבטיח סדר התפשטות לא רק בין הכתיבה שמתבצעת על ידי ה-thread שמפעיל את המחסום, אלא גם בין כתיבות אחרות שמגיעות מ-thread-ים שאינם המבצע של המחסום.</p>
+<p>לכל מחסום סדר התפשטות ישנן שתי קבוצות של הוראות המיועדות לו, הנקראות pre-set ו-post-set. קבוצות אלו משתנות בהתאם לסוג המחסום, אך כל המחסומים חולקים מספר תכונות בסיסיות:</p>
+<ul>
+<li>מחסום זיכרון אינו יכול להתחייב עד שכל ההוראות הנמצאות בקבוצת ה-pre-set שלו התחייבו.</li>
+<li>הוראה הנמצאת בקבוצת ה-post-set של המחסום אינה יכולה להתחייב או להתקיים עד שהמחסום עצמו התחייב.</li>
+</ul>
+<p>כאשר מעבד מבצע מחסומי סדר התפשטות הוא מודיע לתת-מערכת הזיכרון על קיום המחסום. תת-מערכת הזיכרון, בתורה, מפיצה את המחסום לכל יתר המעבדים. בשלב זה נכנסות לתוקפן ההשפעות של סדר ההתפשטות של המחסום:</p>
+<ul>
+<li>תת-מערכת הזיכרון לא תבצע הפצה של מחסום למעבד מסוים עד שכל הכתיבות בקבוצת ה-pre-set של המחסום יופצו למעבד זה.</li>
+<li>תת-מערכת הזיכרון לא תבצע הפצה של כתיבה הנמצאת בקבוצת ה-post-set של מחסום למעבד כלשהו עד שהמחסום עצמו יופץ לאותו מעבד.</li>
+</ul>
+<p>בכך, כל עוד הכתיבות שביצע המעבד לפני המחסום לא הושלמו, המחסום לא יתפשט, ולאחר מכן, כל עוד המחסום לא יופץ לשאר המעבדים, הכתיבות לאחר המחסום גם הן לא יתפשטו.</p>
+<p>עקרון זה נכון גם לגבי הסדר שבו הכתיבה והמחסומים מגיעים לנקודת הקוהרנטיות. מבחינה זו, מחסומים נתפסים כמגיעים לנקודת הקוהרנטיות באופן דומה למעבד אחר. יתרה מכך, תת-מערכת הזיכרון אינה מזהה מחסום חזק עד שהוא התפשט לכל המעבדים והגיע לנקודת הקוהרנטיות. יש לציין כי עד שהמחסום לא הוכר, המעבד שמבצע את המחסום לא ימלא או יבצע כל הוראה לאחר המחסום החזק.</p>
+<h3 id="מחסומי-סדר-התפשטות">
+  מחסומי סדר התפשטות
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-%d7%a1%d7%93%d7%a8-%d7%94%d7%aa%d7%a4%d7%a9%d7%98%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>מחסומי סדר התפשטות מתאפיינים בדרגות שונות של מצטברות (cumulative). משמעות הדבר היא שהמחסומים משפיעים לא רק על סדר ההפצות של כתיבות שהונפקו על ידי המעבד עצמו, אלא גם על סדר ההפצות של כתיבות שהונפקו על ידי מעבדים אחרים.</p>
+<p>מחסום זיכרון חזק (נקרא גם מחסום מלא) חייב להתפשט לכל המעבדים לפני שהוא יכול מאושר (מקבל ack מתת מערכת הזיכרון). הוא מחויב להתפשט לכל המעבדים ורק לאחר מכן הוא יכול לקבל את האישור.</p>
+<p>ה-pre-sets וה-post-sets של המחסומים מורחבים בהתאם:</p>
+<ul>
+<li>ה-pre-set של מחסום בעל A-cumulative כולל את כל הכתיבות שהתפשטו למעבד שמבצע את המחסום לפני ביצועו.</li>
+<li>ה-post-set של מחסום בעל B-cumulative כולל את כל הגישות לזיכרון שביצע מעבד אחר לאחר שהמחסום התפשט אליו.</li>
+</ul>
+<h3 id="power-cumulativity">
+  Power cumulativity
+  <a class="heading-link" href="#power-cumulativity">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בארכיטקטורת Power פעולות stores מתבצעות ביחס למעבדים אחרים, ולא ישירות ביחס לזיכרון. כלומר, פעולה של store שמתבצעת על ידי המעבד P1 <strong>מתבצעת ביחס ל</strong>מעבד P2 כאשר כל פעולות ה-load שנעשת על ידי המעבד P2 לאותה כתובת זיכרון תחזיק את הערך החדש שנכתב או ערך שנכתב על ידי store מאוחרת יותר. הן לא יחזירו את הערך הקודם שנדרס על ידי ה-store של P1. הארכיטקטורה מבטיחה שאם המעבד P1 משתמש במחסומים כדי לסדר את פעולות הכתיבה S1, S2, ו-S3, אז שלושת הכתיבות יתבצעו באותו סדר גם ביחס לכל מעבד אחר Pi. לעומת זאת, בהיעדר מחסומים, ייתכן ש-store S1 של המעבד P1 יתבצע ביחס ל-P2, אך לא בהכרח ביחס ל-P3. ארכיטקטורת Power אינה מבטיחה סדר זיכרון כולל.</p>
+<p>בהסברים הבאים מעבד P1 מבצע מספר גישות זיכרון ולאחר מכן מבצע מחסום זיכרון:</p>
+<h4 id="קבוצת-a-כוללת">
+  קבוצת A כוללת:
+  <a class="heading-link" href="#%d7%a7%d7%91%d7%95%d7%a6%d7%aa-a-%d7%9b%d7%95%d7%9c%d7%9c%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>קבוצת A (בהקשר של P1) מתייחסת לכל הגישות לזיכרון <strong>שבוצעו ביחס ל-P1</strong> לפני יצירת מחסום הזיכרון.</p>
+<p>המשמעות של &ldquo;בוצע ביחס ל-P1&rdquo; כאן היא שכל כתיבה שהופצה ל-P1 ונקראה על ידי P1, כאילו הופכת להיות בסדר תכניות (program order) לפני מחסום הזיכרון. כלומר, אם P1 קרא את הערך שנכתב על ידי P0 לפני המחסום.</p>
+<h4 id="קבוצת-b-כוללת">
+  קבוצת B כוללת:
+  <a class="heading-link" href="#%d7%a7%d7%91%d7%95%d7%a6%d7%aa-b-%d7%9b%d7%95%d7%9c%d7%9c%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כל הגישות לזיכרון שביצעו מעבדים אחרים, אשר סודרו לאחר המחסום של P1, בהתאם לתלות נתונים, תלות בקרה, או מחסום אחר, ויש ליישם את  זה בצורה רקורסיבית קדימה.</p>
+<p>דוגמה לרקורסיביות של B-cumulativity בנוגע ל-stores ברצף הפעולות הבא:</p>
+<ol>
+<li>
+<p>מעבד 0 מבצע מחסום זיכרון ולאחר מכן מבצע store למשתנה <code>a</code>. ה-store הזה משתייך לקבוצה B של מחסום הזיכרון.</p>
+</li>
+<li>
+<p>מעבד 1 מבצע load מ-<code>a</code> שמחזיר את הערך המאוחסן על ידי המעבד 0. ה-load של מעבד 1 וכל הפעולות שלו שמסודרות לאחר ה-load משתייכות לקבוצה B של מעבד 0 של מחסום הזיכרון.</p>
+</li>
+<li>
+<p>מעבד 1 מבצע store למשתנה <code>b</code> המסודר לאחר ה-load מ-<code>a</code> (למשל, בהתאם לקוד או תלות בנתונים). לכן, ה-store הזה משתייך לקבוצה B של המחסום זיכרון של מעבד 0.</p>
+</li>
+<li>
+<p>מעבד 2 מבצע load מ-<code>b</code> שמחזיר את הערך המאוחסן על ידי המעבד 1. ה-load של מעבד 2 וכל הפעולות של מעבד 1 שמסודרות לאחר ה-load משתייכות לקבוצה B של המחסום זיכרון של מעבד 0.</p>
+</li>
+</ol>
+<p>האופי הרקורסיבי של B-cumulativity מאפשר להרחיב את הרצף הזה ללא הגבלה.</p>
+<p>בניגוד לכך, ל-A-cumulativity אין את הרקורסיה הזו. רק אותן פעולות שבוצעו ביחס ל-thread הספציפי המכיל את מחסום הזיכרון יהיו בקבוצה A של מחסום הזיכרון הזה. אין אפשרות לרקורסיה של A-cumulativity דרך loads של thread-ים אחרים; הרקורסיה הזו מוגבלת רק ל-B-cumulativity.</p>
+<p>הערה:
+צריך לשים לב שהתיעוד של ARMv7 כן עושה רקורסיה בקבוצה A ולעומת זאת ב-PPC אין רקורסיה בקבוצה A.</p>
+<h4 id="מחסומים-מצטברים">
+  מחסומים מצטברים
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d-%d7%9e%d7%a6%d7%98%d7%91%d7%a8%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>מחסום זיכרון נחשב ל-cumulative אם הוא מסדר גם גישות לזיכרון המבוצעות על ידי מעבדים ומנגנונים שאינם המעבד שביצע את המחסום.</p>
+<h5 id="כתיבות-לא-אטומיות">
+  כתיבות לא אטומיות
+  <a class="heading-link" href="#%d7%9b%d7%aa%d7%99%d7%91%d7%95%d7%aa-%d7%9c%d7%90-%d7%90%d7%98%d7%95%d7%9e%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בארכיטקטורת POWER, כתיבה אינה חייבת להתפשט בצורה אטומית לכל שאר המעבדים במערכת. כלומר, ייתכן מצב שבו כתיבה מסוימת תתפשט ל-thread אחד, בעוד ש-thread אחר לא יראה את אותה כתיבה.</p>
+<h5 id="תכונה-מצטברת-של-מחסומים">
+  תכונה מצטברת של מחסומים
+  <a class="heading-link" href="#%d7%aa%d7%9b%d7%95%d7%a0%d7%94-%d7%9e%d7%a6%d7%98%d7%91%d7%a8%d7%aa-%d7%a9%d7%9c-%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>התכונה המצטברת של המחסומים קובעת את הסדר שבו כל הכתיבות שהתפשטו ל-thread שמפעיל את המחסום מתבצעות לפני כל כתיבה נוספת המתרחשת לאחר מכן בסדר התוכנית, וזאת בכל הנוגע לכל thread אחר במערכת.</p>
+<h5 id="מחסומים-וכתיבות-לא-אטומיות">
+  מחסומים וכתיבות לא אטומיות
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d-%d7%95%d7%9b%d7%aa%d7%99%d7%91%d7%95%d7%aa-%d7%9c%d7%90-%d7%90%d7%98%d7%95%d7%9e%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>הסמנטיקה של מחסומי sync ו-lwsync במערכת POWER היא עדינה ומורכבת. ל-lwsync יש סמנטיקה מצטברת, אך הוספת lwsync בין שתי הוראות אינה מחזירה את עקביות הסדר הרציפה של ההוראות.</p>
+<p>אנו תופסים את ההתנהגות הזו על ידי פיצול מחסומים לאירועי התפשטות מרובים, המקבילים לאירועי הכתיבה, כאשר אנו קובעים כללי סדר מתאימים עבורם. מחסום יכול להתפשט ל-thread מסוים רק כאשר כל הכתיבות בקבוצת A המצטברת של המחסום כבר התפשטו לאותו thread.</p>
+<h4 id="applicable">
+  Applicable
+  <a class="heading-link" href="#applicable">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כל מחסום מצטבר מספק סדר רק כלפי הגישות התפיסות (applicable) המתאימות לו.</p>
+<p>ל-applicable יש משמעות משתנה בהתאם לסוג הוראת מחסום הזיכרון:</p>
+<ul>
+<li>
+<p><strong>מחסום <code>sync</code></strong>: כאן, גם ה-loads וגם ה-stores נחשבים applicable. המחסום מספק סדר סיבתי מלא, כלומר עקביות רציפה מלאה.</p>
+</li>
+<li>
+<p><strong>מחסום <code>lwsync</code></strong>: ה-applicability במצב זה מוגבלת למקרים הבאים:</p>
+<ol>
+<li>פעולות loads קודמות ו-loads הבאות.</li>
+<li>פעולות stores קודמות ו-stores הבאות.</li>
+<li>פעולות loads קודמות ו-stores הבאות.</li>
+</ol>
+<p>כתוצאה מכך, stores קודמים ו-loads הבאים אינם נחשבים ל-&ldquo;ישימים&rdquo; במצב של <code>lwsync</code>, ולכן במחסום <code>lwsync</code> לא מסדר את הכתיבות בקבוצה A עם קריאות בקבוצה B.</p>
+</li>
+<li>
+<p><strong>מחסום <code>eieio</code></strong>: רק ה-store נחשב ל-applicable.</p>
+</li>
+</ul>
+<h4 id="מחסום-ה-lwsync">
+  מחסום ה-lwsync
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%94-lwsync">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ההשפעה של מחסום ה-lwsync היא כפולה:</p>
+<ul>
+<li>
+<p>ראשית, הוא מגביל את האפשרות לסדר מחדש של הוראות ב-thread שבו הוא מתבצע. כל הוראת גישה לזיכרון חייבת להסתיים לפני ביצוע ה-lwsync, ולאחר מכן יש לבצע את ה-lwsync לפני כל הוראת גישה לזיכרון הבאה בסדר התוכנית (במקרה של קריאה) או לפני ביצוע של commit (במקרה של כתיבה).</p>
+</li>
+<li>
+<p>האפקט השני של מחסום ה-lwsync מתייחס לסידור ההפצה של ה-stores. עבור כל מחסום lwsync, המודל של האופרטיבי עוקב אחר קבוצת ה-stores והמחסומים שבוצעו על ידי thread הנוכחי או התפשטו ל-thread הנוכחי לפני ביצוע המחסום. לפני שניתן להפיץ את ה-lwsync ל-thread אחר, יש להבטיח שכל הכתיבות בקבוצה זו, המוכנה קבוצה A, יופצו קודם לכן ל-thread הנוכחי. סדר ההפצה שנכפה על ידי ה-lwsync הוא טרנזיטיבי.</p>
+</li>
+</ul>
+<h4 id="הדגמות-cumulativity">
+  הדגמות cumulativity
+  <a class="heading-link" href="#%d7%94%d7%93%d7%92%d7%9e%d7%95%d7%aa-cumulativity">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<h5 id="wrc----write-to-read-causality">
+  WRC -  Write to Read Causality
+  <a class="heading-link" href="#wrc----write-to-read-causality">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>הערה:
+המונח multi-copy atomicity במאמר הזה מתייחס באותו אופן גם ל-multi-copy atomicity וגם ל-ohter-multi-copy atomicity.</p>
+<p>בארכיטקטורות המספקות multi-copy atomicity, נדרש סנכרון מינימלי כדי למנוע את ההתנהגות המתוארת ב-WRC. במקרה כזה, כאשר מעבד 1 רואה את הכתיבה למשתנה x, כתיבה זו זמינה גם למעבד 2. לכן, כדי לאסור על ההתנהגות של WRC, מספיק לשמור על הסדר הפנימי של ההוראות בכל מעבד, למשל ניתן להשיג את זה על ידי תלות בין כתובת.</p>
+<p>לעומת זאת, בארכיטקטורות שאינן תומכות ב-multi-copy atomicity, אי-מניעת התנהגות WRC מחייבת לוודא שנראות הכתיבה של x שהתבצעה במעבד 0 תתפשט באופן ברור גם למעבד 1 וגם למעבד 2. תלות פשוטה לא מספיקה למטרה זו, שכן היא אינה מבטיחה cumulativity. לשם כך, יש צורך במחסום cumulative, כמו למשל lwsync.</p>
+<figure>
+    <img src="/posts/barriers/mb/Fig_11_The_write-to-read_causality_pattern_wrc_with_lightweight_fence_and_ppo_%28forbidden%29_.png"class="dark-image"
+    ><figcaption class="image-title">Fig 11 The write-to-read causality pattern wrc with lightweight fence and ppo (forbidden)  from Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory (inria.hal.science)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>המבחן ממחיש את A-cumulativity של lwsync במעבד 1.</p>
+<p>המחסום במעבד 1 מאלץ את הכתיבה של x להתפשט לפני הכתיבה של y למעבד 2 גם אם הכתיבה לא מתבצעת על אותו מעבד שמבצע את המחסום.</p>
+<p>מעבדים עשויים ליישם A-cumulativity בדרכים רבות ושונות. יישום אפשרי אחד של מחסומי A-cumulativity, היא שהמחסומים לא רק ימתינו לקריאה הקודמת (a באיור) שתתקיים, אלא גם שכל הערכים המעופשים עבור x יימחקו מהמערכת (למשל הערך 0 שנקרא על ידי e במעבד 2).</p>
+<p>לפי המודל האופרטיבי אפשר להבין את המקרה יותר בקלות:
+המחסום <code>lwsync</code> משפיע על ההפצה של הכתיבות שלו וגם על הכתיבות שהתפשטו אליו בכך שהוא מאלץ כל מעבד שמקבל את המחסום, לפני שהמחסום מסתיים הוא חייב לראות את כל הכתיבות שהתפשטו אל המעבד שביצע את המחסום, כלומר במקרה שלנו מעבד 1 הפעיל את המחסום ומעבד 2 ראה את הכתיבה c ל-<code>y</code> והוא היה חייב לפני זה לקבל את המחסום, ולפני שזה התרחש הוא היה חייב לקבל את הכתיבות שהתפשטו למעבד 1 לפני המחסום ולכן זה מחייב שהכתיבה a ל-<code>x</code> של מעבד 0 שנמצאת בקבוצה A של המחסום (בגלל שהקריאה b נמצאת בקבוצה A והקריאה מסופקת מהכתיבה a) תתפשט למעבד 2 לפני שהוא רואה את הכתיבה c ל-<code>y</code>.</p>
+<h5 id="isa2">
+  ISA2
+  <a class="heading-link" href="#isa2">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<figure>
+    <img src="/posts/barriers/mb/Fig_12_The_pattern_isa2_with_lighweight_fence_and_ppo_twice_%28forbidden%29_.png"class="dark-image"
+    ><figcaption class="image-title">Fig 12 The pattern isa2 with lighweight fence and ppo twice (forbidden)  from Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory (inria.hal.science)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>ארכיטקטורת Power זקוקה למחסום <code>lwsync</code> בין הכתיבות, ותלות כתובת או תלות בנתונים בין כל זוג קריאות (כלומר, ב-T1 וגם ב-T2).</p>
+<p>התבנית isa2+lwfence+ppos ממחישה את B-cumulativity של lwsync ב-T0.</p>
+<p>כאן הקריאות <code>e</code> ו-<code>f</code> של <code>z</code> ו-<code>x</code> לא יכולות לראות את הכתיבות <code>a</code> ו-<code>d</code> מחוץ לסדר זה קורה בגלל האופי הרקורסיבי של B-cumulativity שמכיל בתוכו את כל האירועים שמסודרים אחרי אירועים שנמצאים כבר בקבוצה B.</p>
+<h3 id="armv7-cumulativity">
+  ARMv7 cumulativity
+  <a class="heading-link" href="#armv7-cumulativity">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ארכיטקטורת ARMv7 מציעה מודל זיכרון שיש בו דמיון רב לארכיטקטורת IBM Power. בדומה ל-Power, גם ARMv7 אינה מבטיחה סדר זיכרון כולל, מה שמוביל לפוטנציאל להתנהגויות בלתי צפויות במצבים מסוימים. לארכיטקטורת ARM יש מגוון סוגים של מחסומים, כולל מחסום זיכרון נתונים, המסוגל לסדר את כל הגישות לזיכרון או להתמקד רק בגישות store.</p>
+<p>עם המעבר לארכיטקטורת ARMv8, המודל של arm השתנה ולקח בחשבון את עקרון ה-multi-copy atomicity, המאפשר יצירת סדר זיכרון כולל.</p>
+<h4 id="מחסומים">
+  מחסומים
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<h5 id="dsb">
+  DSB
+  <a class="heading-link" href="#dsb">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>המחסום DSB ייחשב כמושלם כאשר מתקיימים שני תנאים:</p>
+<ol>
+<li>
+<p>כל הגישה המפורשת לזיכרון שנצפתה על ידי המעבד המבצע (P0) לפני ביצוע ה-DSB, צריכה להיות מסוגי הגישה הנדרשים ולהיות נצפית על ידי צופים באותו דומיין שיתוף שנדרש עבור P0.</p>
+</li>
+<li>
+<p>כל פעולות התחזוקה הנוגעות ל-cache, מנבא branch-ים ול-TLB שבוצעו על ידי P0 לפני ביצוע ה-DSB חייבות להסתיים עבור דומיין השיתוף שנדרש.</p>
+</li>
+</ol>
+<h5 id="dmb">
+  DMB
+  <a class="heading-link" href="#dmb">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>המחסום DMB יוצר שתי קבוצות גישה לזיכרון: קבוצה A וקבוצה B.</p>
+<h6 id="קבוצת-a">
+  קבוצת A
+  <a class="heading-link" href="#%d7%a7%d7%91%d7%95%d7%a6%d7%aa-a">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h6>
+<p>אנו מפרשים את &ldquo;נצפה על ידי&rdquo; ב-ARMv7 כפי שאנו מפרשים את &ldquo;בוצע ביחס ל&rdquo; ב-Power.</p>
+<ul>
+<li>
+<p>כל גישה מפורשת לזיכרון מסוגי הגישה הנדרשים, המבוצעת על ידי צופים (observers) הנמצאים באותו דומיין שיתוף כמו המעבד P0, אשר <strong>נצפתה על ידי</strong> P0 לפני ביצוע הוראת ה-DMB.</p>
+</li>
+<li>
+<p>כל הוראת load עם סוגי הגישה הנדרשים, <strong>הנצפית על ידי</strong> כל צופה אחר (נקרא לו P1), אשר נמצא באותו דומיין שיתוף כמו P0, ונצפתה לפני שהצופה P1 ביצע גישה לזיכרון שנחשבת לחלק מקבוצה A.</p>
+</li>
+</ul>
+<h6 id="קבוצת-b">
+  קבוצת B
+  <a class="heading-link" href="#%d7%a7%d7%91%d7%95%d7%a6%d7%aa-b">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h6>
+<p>קבוצת B כוללת:</p>
+<ul>
+<li>
+<p>כל גישה מפורשת לזיכרון מסוגי הגישה הנדרשים המבוצעת על ידי P0, אשר מתרחשת בסדר תוכנית (program order) לאחר הוראת DMB.</p>
+</li>
+<li>
+<p>כל גישה מפורשת לזיכרון מסוגי הגישה הנדרשים על ידי כל צופה נתון (נקרא לו P1) באותו דומיין שיתוף כמו P0, אשר יכולה להתבצע רק לאחר ש-P1 נחשף ל-store שהוא חלק מקבוצה B.</p>
+</li>
+</ul>
+<p>כל צופה ששותף באותו דומיין שיתוף כמו P0 חייב לצפות בכל חברי קבוצת A לפני שהוא יכול לצפות באחד מחברי קבוצת B, בתנאי שחברי הקבוצות נדרשים להיות נצפים. התנאים הללו נקבעים לפי יכולת השיתוף של המערכת ומאפייני ה-cache של מיקומי הזיכרון שאליהם ניגשים חברי הקבוצות.</p>
+<p>במצבים שבהם חברי קבוצת A וחברי קבוצת B מבצעים גישה לאותו התקן חיצוני הממופה בזיכרון (memory-mapped peripheral), כל חברי קבוצת A יהיו נגישים וגלויים בהתקן החיצוני לפני שחברי קבוצת B יהפכו לגלויים בו.</p>
+<p>אנו מפרשים את קבוצת B ב-ARMv7 באותו אופן שבו פרשנו את קבוצת B ב-PowerPC, כלומר גישות שבוצעו אחרי פעולות מסוימות יוצרות רצף מחייב בין פעולות קריאה וכתיבה.</p>
+<h5 id="dmb-sy">
+  dmb sy
+  <a class="heading-link" href="#dmb-sy">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>למחסום dmb sy יש לו תכונות מצטברות:</p>
+<p>המחסום מסדר stores שה-thread שהפעיל את המחסום קורא מהן לפני המחסום (ביחס ל-stores שהוא מבצע אחרי המחסום), ובכך מקיים מה שנקרא A-cumulativity.</p>
+<p>המחסום מסדר את ה-stores (מה-thread שהפעיל את המחסום) המתרחשות לפני המחסום, ביחס ל-stores (מכל thread) המופיעים באופן לוגי אחרי המחסום, מה שמכונה B-cumulativity.</p>
+<h5 id="dmb-ld--dmb-st">
+  dmb ld &amp; dmb st
+  <a class="heading-link" href="#dmb-ld--dmb-st">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>המחסום <code>dmb ld</code> אינו צריך להיות מצטבר בכל דרך שהיא.
+בעוד ש-<code>dmb st</code> הוא אך רק מקיים B-cumulativity.</p>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Memory_barrier">https://en.wikipedia.org/wiki/Memory_barrier</a>
+    </li>
+  
+    <li>
+      <a href="https://www.kernel.org/doc/Documentation/memory-barriers.txt">https://www.kernel.org/doc/Documentation/memory-barriers.txt</a>
+    </li>
+  
+    <li>
+      <a href="https://preshing.com/20120710/memory-barriers-are-like-source-control-operations/">https://preshing.com/20120710/memory-barriers-are-like-source-control-operations/</a>
+    </li>
+  
+    <li>
+      <a href="https://preshing.com/20120515/memory-reordering-caught-in-the-act/">https://preshing.com/20120515/memory-reordering-caught-in-the-act/</a>
+    </li>
+  
+    <li>
+      <a href="https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf">https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf">https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://www.ibm.com/docs/en/openxl-c-and-cpp-aix/17.1.0?topic=sf-lwsync-builtin-ppc-lwsync-iospace-lwsync-builtin-ppc-iospace-lwsync">https://www.ibm.com/docs/en/openxl-c-and-cpp-aix/17.1.0?topic=sf-lwsync-builtin-ppc-lwsync-iospace-lwsync-builtin-ppc-iospace-lwsync</a>
+    </li>
+  
+    <li>
+      <a href="https://www.ibm.com/docs/en/openxl-c-and-cpp-aix/17.1.0?topic=sf-sync-builtin-ppc-sync-iospace-sync-builtin-ppc-iospace-sync">https://www.ibm.com/docs/en/openxl-c-and-cpp-aix/17.1.0?topic=sf-sync-builtin-ppc-sync-iospace-sync-builtin-ppc-iospace-sync</a>
+    </li>
+  
+    <li>
+      <a href="https://documentation-service.arm.com/static/65fdad3c1bc22b03bca90781?token=">https://documentation-service.arm.com/static/65fdad3c1bc22b03bca90781?token=</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/100941/0101/Barriers">https://developer.arm.com/documentation/100941/0101/Barriers</a>
+    </li>
+  
+    <li>
+      <a href="https://mariokartwii.com/armv8">https://mariokartwii.com/armv8</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/102336/0100/Instruction-barriers">https://developer.arm.com/documentation/102336/0100/Instruction-barriers</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/102336/0100/Memory-barriers">https://developer.arm.com/documentation/102336/0100/Memory-barriers</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/102336/0100/Data-Synchronization-Barrier">https://developer.arm.com/documentation/102336/0100/Data-Synchronization-Barrier</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/102336/0100/When-is-an-access-considered-complete-">https://developer.arm.com/documentation/102336/0100/When-is-an-access-considered-complete-</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/102336/0100/Different-Observers">https://developer.arm.com/documentation/102336/0100/Different-Observers</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/102336/0100/Limiting-the-scope-of-memory-barriers">https://developer.arm.com/documentation/102336/0100/Limiting-the-scope-of-memory-barriers</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/ka002179/latest/">https://developer.arm.com/documentation/ka002179/latest/</a>
+    </li>
+  
+    <li>
+      <a href="https://diy.inria.fr/herd/herding-cats-color.pdf">https://diy.inria.fr/herd/herding-cats-color.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://inria.hal.science/hal-01081364/document">https://inria.hal.science/hal-01081364/document</a>
+    </li>
+  
+    <li>
+      <a href="http://www.rdrop.com/users/paulmck/scalability/paper/N2745r.2009.02.27a.html">http://www.rdrop.com/users/paulmck/scalability/paper/N2745r.2009.02.27a.html</a>
+    </li>
+  
+    <li>
+      <a href="https://acg.cis.upenn.edu/papers/cav12_axiomatic_power.pdf">https://acg.cis.upenn.edu/papers/cav12_axiomatic_power.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://cseweb.ucsd.edu/classes/sp06/cse240b/manuals/power4-2.pdf">https://cseweb.ucsd.edu/classes/sp06/cse240b/manuals/power4-2.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://www.cl.cam.ac.uk/~pes20/cppppc-supplemental/pldi010-sarkar.pdf">https://www.cl.cam.ac.uk/~pes20/cppppc-supplemental/pldi010-sarkar.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://www.cl.cam.ac.uk/~pes20/armv8-mca/armv8-mca-draft.pdf">https://www.cl.cam.ac.uk/~pes20/armv8-mca/armv8-mca-draft.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/genc007826/latest">https://developer.arm.com/documentation/genc007826/latest</a>
+    </li>
+  
+    <li>
+      <a href="http://www0.cs.ucl.ac.uk/staff/j.alglave/papers/toplas21.pdf">http://www0.cs.ucl.ac.uk/staff/j.alglave/papers/toplas21.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://www.cl.cam.ac.uk/~pes20/ppc-supplemental/pldi105-sarkar.pdf">https://www.cl.cam.ac.uk/~pes20/ppc-supplemental/pldi105-sarkar.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt">https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt</a>
+    </li>
+  
+    <li>
+      <a href="https://github.com/torvalds/linux/blob/v5.10/Documentation/core-api/atomic_ops.rst">https://github.com/torvalds/linux/blob/v5.10/Documentation/core-api/atomic_ops.rst</a>
+    </li>
+  
+    <li>
+      <a href="https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/recipes.txt">https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/recipes.txt</a>
+    </li>
+  
+    <li>
+      <a href="https://lwn.net/Articles/576486/">https://lwn.net/Articles/576486/</a>
+    </li>
+  
+    <li>
+      <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/WeakModel.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/WeakModel.html</a>
+    </li>
+  
+    <li>
+      <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-barriers" dir="rtl">        רואה עוד ב barriers
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-barriers">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/barriers/amba-ace-barrier/">AMBA ACE Barrier</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/barriers/acquire-release/">Acquire Release</a>
+            </li>
+          
+        
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

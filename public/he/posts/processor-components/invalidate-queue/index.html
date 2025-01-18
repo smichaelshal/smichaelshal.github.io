@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Invalidate queue · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  מבוא
+  
+    
+    Link to heading
+  
+
+בפרוטוקולי קוהרנטיות מסוג Invalidate קיימים מספר סוגי הודעות ובניהם הודעות Invalidate פשוטות:
+הודעות Invalidate:
+הודעת invalidate כוללת את הכתובת הפיזית של שורת ה-cache שיש לבטל את תוקפה. כל מעבד אחר במערכת מחויב להסיר את הנתונים הרלוונטיים מה-cache שלו ולהגיב בהתאם.
+הודעות Invalidate Acknowledge:
+כאשר מעבד מקבל הודעת invalidate, הוא חייב להשיב בהודעת invalidate acknowledge לאחר שהסיר את הנתונים שצוינו מה-cache שלו.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Invalidate queue">
+  <meta name="twitter:description" content="מבוא Link to heading בפרוטוקולי קוהרנטיות מסוג Invalidate קיימים מספר סוגי הודעות ובניהם הודעות Invalidate פשוטות:
+הודעות Invalidate: הודעת invalidate כוללת את הכתובת הפיזית של שורת ה-cache שיש לבטל את תוקפה. כל מעבד אחר במערכת מחויב להסיר את הנתונים הרלוונטיים מה-cache שלו ולהגיב בהתאם.
+הודעות Invalidate Acknowledge: כאשר מעבד מקבל הודעת invalidate, הוא חייב להשיב בהודעת invalidate acknowledge לאחר שהסיר את הנתונים שצוינו מה-cache שלו.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/processor-components/invalidate-queue/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Invalidate queue">
+  <meta property="og:description" content="מבוא Link to heading בפרוטוקולי קוהרנטיות מסוג Invalidate קיימים מספר סוגי הודעות ובניהם הודעות Invalidate פשוטות:
+הודעות Invalidate: הודעת invalidate כוללת את הכתובת הפיזית של שורת ה-cache שיש לבטל את תוקפה. כל מעבד אחר במערכת מחויב להסיר את הנתונים הרלוונטיים מה-cache שלו ולהגיב בהתאם.
+הודעות Invalidate Acknowledge: כאשר מעבד מקבל הודעת invalidate, הוא חייב להשיב בהודעת invalidate acknowledge לאחר שהסיר את הנתונים שצוינו מה-cache שלו.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-08-18T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-08-18T00:00:00+00:00">
+    <meta property="article:tag" content="Buffer">
+    <meta property="article:tag" content="Invalidate-Queue">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Cache">
+    <meta property="article:tag" content="Early-Write-Acknowledgment">
+    <meta property="article:tag" content="Coherence-Protocol">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/store-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/combined-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/decoder/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/fetch/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/line-fill-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/reorder-buffer/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/processor-components/invalidate-queue/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/processor-components/invalidate-queue/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/processor-components/invalidate-queue/">
+              Invalidate queue
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-08-18T00:00:00Z">
+                אוגוסט 18, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                801 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/processor-components/">Processor-Components</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/buffer/">Buffer</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/invalidate-queue/">Invalidate-Queue</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/early-write-acknowledgment/">Early-Write-Acknowledgment</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/coherence-protocol/">Coherence-Protocol</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/mesi/">Mesi</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="מבוא">
+  מבוא
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%95%d7%90">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>בפרוטוקולי קוהרנטיות מסוג Invalidate קיימים מספר סוגי הודעות ובניהם הודעות Invalidate פשוטות:</p>
+<p>הודעות Invalidate:
+הודעת invalidate כוללת את הכתובת הפיזית של שורת ה-cache שיש לבטל את תוקפה. כל מעבד אחר במערכת מחויב להסיר את הנתונים הרלוונטיים מה-cache שלו ולהגיב בהתאם.</p>
+<p>הודעות Invalidate Acknowledge:
+כאשר מעבד מקבל הודעת invalidate, הוא חייב להשיב בהודעת invalidate acknowledge לאחר שהסיר את הנתונים שצוינו מה-cache שלו.</p>
+<p>במערכות מחשוב מתקדמות, קיימים מבנים פנימיים כמו ה-store buffer, שתפקידם לאגור באופן זמני את המידע המיועד לכתיבה בזיכרון הראשי. עם זאת, מגבלות בגודל ה-store buffer מחייבות את המעבד לנהל בקפידה את השימוש בו. כאשר המעבד מבצע רצף פעולות כתיבה (stores), במיוחד אם כל אחת מהן גורמת ל-cache miss, ה-store buffer עלול להתמלא במהירות. ברגע שה-buffer מתמלא, המעבד חייב להמתין לסיום תהליך ה-invalidations, שבמהלכו מבטלים שורות cache ישנות כדי לרוקן את ה-buffer ולאפשר המשך ביצוע. מצב זה עלול להתרחש גם לאחר הפעלת מחסום זיכרון, כאשר כל פעולות ה-store הבאות תלויות בהשלמת תהליך ה-invalidations, גם אם אין החמצת cache.</p>
+<p>כדי לשפר את ביצועי המערכת ולהפחית את זמן ההמתנה, ניתן ליישם מנגנון שבו הודעות ה-invalidations מקבלות אישור (acknowledge) מהר יותר. אחת הדרכים להשיג זאת היא שימוש בתורי invalidate acknowledge ייעודיים לכל מעבד, הנקראים invalidate queues.</p>
+<p>עם פרוטוקול קוהרנטיות כמו MESI, כשמעבדים מקבלים הודעות invalidation של שורות cache, הם מיישמים מנגנוני invalidate queues. במנגנונים אלו, בקשות ל-invalidate מתקבלות ומזוהות על ידי המעבד שמגיב מיד באמצעות אישור (ack) על קבלתן. עם זאת, הבקשות עצמן אינן מטופלות באופן מיידי.</p>
+<p>זמן התגובה של הודעות ה-invalidate acknowledge עשוי להתארך בשל הצורך לוודא ששורת ה-cache הרלוונטית אכן הועברה למצב invalid. תהליך זה יכול להתעכב אם ה-cache עמוס בפעולות אינטנסיביות של טעינה ואחסון נתונים, במיוחד כאשר כל הנתונים הללו נמצאים ב-cache. בנוסף, במצבים שבהם מספר רב של הודעות invalidate מגיעות בפרק זמן קצר, המעבד עלול להתקשות לעמוד בעומס, מה שעלול לעכב גם את כל שאר המעבדים במערכת.</p>
+<p>עם זאת, אין הכרח שהמעבד יבצע את פעולת ה-invalidate באופן מיידי לפני שליחת הודעת ה-acknowledge. במקום זאת, הוא יכול להכניס את הודעת ה-invalidate לתור (invalidate queue) ולשלוח את האישור (ack) מתוך הבנה שההודעה תעובד לפני שהמעבד ישלח הודעות נוספות הקשורות לאותה שורת cache.</p>
+<p>במערכות עם invalidate queue, המעבד יכול לשלוח את ה-invalidates acknowledge מיד עם הכנסתם לתור, מבלי להמתין לביטול בפועל של שורת ה-cache. עם זאת, כאשר המעבד מתכונן לשדר הודעות invalidate חדשות, הוא חייב לבדוק את ה-invalidate queue שלו. אם התור מכיל ערך המתאים לשורת ה-cache המדוברת, המעבד חייב להמתין עד שהכניסה לתור תעובד לפני שהוא שולח את ההודעה החדשה.</p>
+<p>הכנסת ערך לתור ה-invalidate queue היא למעשה התחייבות מצד המעבד לעבד את אותו ערך לפני שליחת הודעות נוספות במסגרת פרוטוקול MESI הנוגעות לאותה שורת cache. בתנאים רגילים, המעבד לא יפר את ההבטחה הזו כל עוד מבני הנתונים התואמים אינם גורמים לעיכובים משמעותיים.</p>
+<p>עם זאת, היכולת לאחסן הודעות invalidate בתור ה-invalidate queue יוצרת סיכון פוטנציאלי נוסף לשיבושים בסדר הזיכרון. הוראות מחסום זיכרון יכולות לקיים אינטראקציה עם ה-invalidate queue, כך שכאשר מעבד נתון מבצע מחסום זיכרון, הוא מסמן את כל הערכים הקיימים בתור באותו רגע, ומחייב כל פעולת קריאה (load) עוקבת להמתין עד שכל הערכים המסומנים יוחלו במלואם על ה-cache של המעבד.</p>
+<p>באופן כללי, read memory barrier משפיע רק על תור ה-invalidate queue ואילו write memory barrier משפיע רק על ה-store buffer, בעוד שמחסום זיכרון מלא משפיע על שניהם.</p>
+<p>המשמעות של פעולה זו היא שמחסום זיכרון קריאה מארגן את פעולות ה-loads רק על המעבד שמבצע אותו, כך שכל פעולות הקריאה שבוצעו לפני מחסום הזיכרון נראות כאילו הושלמו לפני כל פעולת קריאה עוקבת אחר המחסום. באופן דומה, מחסום זיכרון כתיבה מסדר את פעולות ה-stores רק על המעבד שמבצע אותו, כך שכל פעולות ה-stores הקודמות למחסום נראות כאילו הושלמו לפני כל פעולת store שאחריו. מחסום זיכרון מלא מארגן גם את פעולות ה-loads וגם את פעולות ה-stores, אך כמו במחסומים האחרים, הוא משפיע רק על המעבד המבצע אותו.</p>
+<p>ה-invalidate queue דומה במבנה שלו ל-store buffer, אך הוא משתייך למערכת הזיכרון ולא למעבד עצמו. תפקידו העיקרי הוא לשמש כתור המנהל את פעולות ה-invalidate של שורות cache, ומבטיח שהן יושלמו בצורה נכונה. כאשר תהליך invalidate מתבצע בהצלחה, ה-cache יכול לקבל בעלות על שורת ה-cache המתאימה ולבצע כתיבה בה.</p>
+<hr>
+<p>לעומת זאת, ה-load queue הוא מבנה ספקולטיבי שנמצא בתוך המעבד ומיועד לעקוב אחר פעולות קריאה (load) שמתבצעות באופן לא מסודר (out-of-order). מבנה זה מאפשר למעבד לבצע קריאות זיכרון במקביל להוראות אחרות, מבלי להמתין לסיום פעולות קודמות, וכך לנצל בצורה מיטבית את משאבי העיבוד.</p>
+<p>לדוגמה, המצב הבא יכול להתרחש:</p>
+<ol>
+<li>המעבד מבצע באופן ספקולטיבי פעולת קריאה (load) מהכתובת X.</li>
+<li>פעולת ה-load הזו מתבצעת לאחר פעולת כ-store לכתובת Y לפי סדר ההוראות בתוכנית, אך הכתובת Y עדיין לא נפתרה במלואה, ולכן פעולת ה-store אינה מתקדמת.</li>
+<li>ברגע שהכתובת Y נפתרת, מתברר שהיא זהה לכתובת X. כאשר ה-store ל-Y מתבצעת, המעבד בודק ב-loads queue כדי לראות אם קיימות פעולות load ספקולטיביות מאוחרות יותר ביחס לסדר ההוראות בתוכנית. אם הוא מוצא את פעולת ה-load ל-X (שהיא למעשה אותה כתובת כמו Y), הוא יצטרך &ldquo;למעוך&rdquo; את פעולות ההוראות שהתרחשו לאחריה, החל מ-load ל-X ואילך.</li>
+</ol>
+<hr>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/MESI_protocol">https://en.wikipedia.org/wiki/MESI_protocol</a>
+    </li>
+  
+    <li>
+      <a href="http://www.rdrop.com/users/paulmck/scalability/paper/whymb.2010.07.23a.pdf">http://www.rdrop.com/users/paulmck/scalability/paper/whymb.2010.07.23a.pdf</a>
+    </li>
+  
+    <li>
+      <a href="http://www.rdrop.com/users/paulmck/scalability/paper/whymb.2010.07.23a.pdf">http://www.rdrop.com/users/paulmck/scalability/paper/whymb.2010.07.23a.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://stackoverflow.com/questions/11105827/what-is-a-store-buffer">https://stackoverflow.com/questions/11105827/what-is-a-store-buffer</a>
+    </li>
+  
+    <li>
+      <a href="https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf">https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://github.com/paulmckrcu/perfbook">https://github.com/paulmckrcu/perfbook</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-processor-components" dir="rtl">        רואה עוד ב processor-components
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-processor-components">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/store-buffer/">Store buffer</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/combined-buffer/">Combined buffer</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/decoder/">Decoder</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/fetch/">Fetch</a>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/line-fill-buffer/">Line fill buffer</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

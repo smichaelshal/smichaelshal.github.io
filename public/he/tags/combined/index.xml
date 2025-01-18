@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Combined on Michael Shalitin</title>
+    <link>https://smichaelshal.github.io/he/tags/combined/</link>
+    <description>Recent content in Combined on Michael Shalitin</description>
+    <generator>Hugo</generator>
+    <language>he</language>
+    <lastBuildDate>Sun, 18 Aug 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://smichaelshal.github.io/he/tags/combined/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Combined buffer</title>
+      <link>https://smichaelshal.github.io/he/posts/processor-components/combined-buffer/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/processor-components/combined-buffer/</guid>
+      <description>&lt;h2 id=&#34;מבוא&#34;&gt;&#xA;  מבוא&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#%d7%9e%d7%91%d7%95%d7%90&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h2&gt;&#xA;&lt;p&gt;בגלל שלקריאה וכתיבה לזיכרון חיצוני עלולה להיות זמן השהייה ממושך, מעבדים יכולים לצמצם את מספר ההעברות על ידי מיזוג מספר כתיבות (stores) לטרנזקציה אחת גדולה יותר. על ידי כך, המעבד מבצע את הכתיבות כפעולה אחת מרוכזת, מה שמפחית את העומס על ה-bus ושיפור היעילות של הגישה לזיכרון החיצוני.&lt;/p&gt;&#xA;&lt;p&gt;שילוב כתיבה הוא אופטימיזציה שמטרתה לצמצם את כמות ההעברות בין ה-cache למכשירים, במיוחד במצבים שבהם עלויות ההעברה גבוהות משמעותית מהגישה המקומית ל-RAM. לדוגמה, בכרטיסים גרפיים, שעלויות ההעברה למכשירים גבוהות הרבה יותר. לכן, יש להימנע מהעברות מיותרות. אם יש צורך להעביר שורת cache שלמה רק בגלל שכתיבה אחת שונתה, זו פעולה בזבזנית, במיוחד אם הפעולה הבאה משנה מילה נוספת באותה השורה. בהתאם לכך, שילוב כתיבה אוסף מספר שינויים לפני שכותב את שורת ה-cache למכשיר. במצבים אידיאליים, כל מילה בשורת ה-cache משתנה אחת אחרי השנייה ורק לאחר שהמילה האחרונה השתנתה, שורת ה-cache נכתבת למכשיר.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

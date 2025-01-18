@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Herd7 · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  מבוא
+  
+    
+    Link to heading
+  
+
+אחת מהשיטות לפורמליזציה של מודל זיכרון היא ליצור תיאור מופשט שמתאר את האופן שבו מערכת פועלת בצורה פנימית. לאחר מכן, ניתן למנות את כל התוצאות האפשריות שנובעות מהפעולה המופשטת הזו. שיטה נוספת היא להגדיר את האילוצים שמטיל מודל הזיכרון בעזרת אקסיומות לוגיות, ולמיין את כל התוצאות האפשריות שמתאימות לאילוצים הללו, הכלי herd פועל לפי הגישה הזו.
+הכלי herd7 נועד לבדוק האם ביצועי זיכרון מסוימים, כולל תרחישים לא רצויים, יכולים להתרחש בתוכניות מקבילות בהתאם למודל זיכרון מוגדר. חשוב לציין כי herd7 עצמו אינו מתעסק ישירות בדרך שבה תוכניות רצות בפועל; הוא מתמקד אך ורק באימות התאמת הביצועים למודל הזיכרון שניתן לו.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Herd7">
+  <meta name="twitter:description" content="מבוא Link to heading אחת מהשיטות לפורמליזציה של מודל זיכרון היא ליצור תיאור מופשט שמתאר את האופן שבו מערכת פועלת בצורה פנימית. לאחר מכן, ניתן למנות את כל התוצאות האפשריות שנובעות מהפעולה המופשטת הזו. שיטה נוספת היא להגדיר את האילוצים שמטיל מודל הזיכרון בעזרת אקסיומות לוגיות, ולמיין את כל התוצאות האפשריות שמתאימות לאילוצים הללו, הכלי herd פועל לפי הגישה הזו.
+הכלי herd7 נועד לבדוק האם ביצועי זיכרון מסוימים, כולל תרחישים לא רצויים, יכולים להתרחש בתוכניות מקבילות בהתאם למודל זיכרון מוגדר. חשוב לציין כי herd7 עצמו אינו מתעסק ישירות בדרך שבה תוכניות רצות בפועל; הוא מתמקד אך ורק באימות התאמת הביצועים למודל הזיכרון שניתן לו.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/models/herd7/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Herd7">
+  <meta property="og:description" content="מבוא Link to heading אחת מהשיטות לפורמליזציה של מודל זיכרון היא ליצור תיאור מופשט שמתאר את האופן שבו מערכת פועלת בצורה פנימית. לאחר מכן, ניתן למנות את כל התוצאות האפשריות שנובעות מהפעולה המופשטת הזו. שיטה נוספת היא להגדיר את האילוצים שמטיל מודל הזיכרון בעזרת אקסיומות לוגיות, ולמיין את כל התוצאות האפשריות שמתאימות לאילוצים הללו, הכלי herd פועל לפי הגישה הזו.
+הכלי herd7 נועד לבדוק האם ביצועי זיכרון מסוימים, כולל תרחישים לא רצויים, יכולים להתרחש בתוכניות מקבילות בהתאם למודל זיכרון מוגדר. חשוב לציין כי herd7 עצמו אינו מתעסק ישירות בדרך שבה תוכניות רצות בפועל; הוא מתמקד אך ורק באימות התאמת הביצועים למודל הזיכרון שניתן לו.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-10-25T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-10-25T00:00:00+00:00">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Memory">
+    <meta property="article:tag" content="Cache">
+    <meta property="article:tag" content="Ordering">
+    <meta property="article:tag" content="Lkmm">
+    <meta property="article:tag" content="Kernel">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/lkmm-code-examples/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/lkmm/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/dependency/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/models/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/base-formal/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/ordering/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/models/herd7/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/models/herd7/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/models/herd7/">
+              Herd7
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-10-25T00:00:00Z">
+                אוקטובר 25, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                4470 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/memory-models/">Memory-Models</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory/">Memory</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/ordering/">Ordering</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/lkmm/">Lkmm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/kernel/">Kernel</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/linux/">Linux</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/barrier/">Barrier</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory-model/">Memory-Model</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/formal/">Formal</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/asm/">Asm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/arm/">Arm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/litmus/">Litmus</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/herd7/">Herd7</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cat/">Cat</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/bell/">Bell</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/docker/">Docker</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="מבוא">
+  מבוא
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%95%d7%90">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>אחת מהשיטות לפורמליזציה של מודל זיכרון היא ליצור תיאור מופשט שמתאר את האופן שבו מערכת פועלת בצורה פנימית. לאחר מכן, ניתן למנות את כל התוצאות האפשריות שנובעות מהפעולה המופשטת הזו. שיטה נוספת היא להגדיר את האילוצים שמטיל מודל הזיכרון בעזרת אקסיומות לוגיות, ולמיין את כל התוצאות האפשריות שמתאימות לאילוצים הללו, הכלי herd פועל לפי הגישה הזו.</p>
+<p>הכלי herd7 נועד לבדוק האם ביצועי זיכרון מסוימים, כולל תרחישים לא רצויים, יכולים להתרחש בתוכניות מקבילות בהתאם למודל זיכרון מוגדר. חשוב לציין כי herd7 עצמו אינו מתעסק ישירות בדרך שבה תוכניות רצות בפועל; הוא מתמקד אך ורק באימות התאמת הביצועים למודל הזיכרון שניתן לו.</p>
+<p>כל תרחיש אפשרי של סדר גישה לזיכרון בתוכנית נקרא מועמד לביצוע (candidate execution). על מודל הזיכרון להגדיר אילו מהמועמדים האלו מותרים ואילו אינם מותרים. כלומר, מודל הזיכרון נותן הנחיות ל-herd7 לגבי אילו ביצועים יש לדחות ואילו נחשבים תקפים.</p>
+<p>באמצעות herd7, ניתן גם ליצור גרפים מורכבים שממחישים את הקשרים בין הגישות לזיכרון בתוכניות מבחן לקמוס (litmus tests). גרפים אלה מאפשרים הבנה מעמיקה יותר של אופן ההתנהגות של גישות זיכרון במקביל.</p>
+<p>מודל הזיכרון ב-herd7 מופשט במובן שהוא אינו מתאר את היישום המדויק של מעבד מסוים, אלא מספק קבוצה של כללים ומאפיינים על הסדר והלוגיקה של גישות הזיכרון בתוכנית.</p>
+<p>הכלי herd פועל על ידי ייצוג האילוצים שמגדיר מודל הזיכרון באמצעות מערכת של אקסיומות לוגיות. על סמך אקסיומות אלה, herd מנתח את כל התוצאות האפשריות שעומדות בתנאים שהוגדרו במודל הזיכרון.</p>
+<p>הקלט ל-herd הוא מבחן לקמוס (litmus test), שהוא קטע קטן של קוד לצד קביעה (assertion). הפלט של herd מראה האם מודל הזיכרון מאפשר ביצוע של קוד זה באופן שיביא לכך שהקביעה תהיה נכונה.</p>
+<h3 id="מחזורים-והגבלות">
+  מחזורים והגבלות
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%96%d7%95%d7%a8%d7%99%d7%9d-%d7%95%d7%94%d7%92%d7%91%d7%9c%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>מחזורים (cycles) בזמן ביצוע הוראות, הם אינם אפשריים, בגלל שהזמן מסודר באופן ליניארי (ביקום שלנו, אם כי ייתכן שיש פתרונות אחרים למשוואות השדה של איינשטין שאינם מחויבים לכך). חלק מתפקידו של מודל הזיכרון הוא לקבוע את התנאים שבהם יש לבצע הוראה אחת לפני השנייה ולבחון אם קיימים מחזורים שנוצרו בתהליך. אם לא קיים מחזור כזה, ניתן למצוא סדר ביצוע לכל ההוראות שמספק את דרישות הסדר של מודל הזיכרון, לדוגמה על ידי ביצוע מיון טופולוגי. אם הסדר הפוטנציאלי של הביצוע אינו מפר את הדרישות האחרות של מודל הזיכרון, ניתן להוכיח כי הקביעה של מבחן הלקמוס עשויה להתקיים.</p>
+<p>לחומרת המחשב יש לרוב הגבלות נוספות שאינן נכללות בתיאורים של מודלי הזיכרון. מעצבי מעבדים לרוב לא מיישמים את כל ההתנהגויות המותרות על ידי ארכיטקטורה. העובדה שמודל זיכרון טוען כי ניתן לקיים את ה-assertion של מבחן לקמוס מסוים אינה מבטיחה שזה יקרה בפועל בכל מחשב נתון. דוגמה לכך היא ש-store buffers מוגבלים הנמצאים בחומרה אמיתית מונעים מהחומרה לבצע את כל סידורי הכתיבה מחדש שמודלי זיכרון בדרך כלל מתירים. יתרה מכך, ייתכן שמעצבי מעבדים יישמו בטעות התנהגויות שאסורות על ידי ארכיטקטורה (הידוע גם בשם silicon bug או CPU erratum).</p>
+<p>יש קשר הדוק בין סידורים לקיומם של מחזורים: כאשר אירועים מסוימים מוגדרים להיות מסודרים באופן מסוים, הסדר הזה לא יכול להכיל מחזור. אם קשר בין אירועים שונים אינו מכיל מחזורים, אז ניתן לסדר את האירועים הללו באופן עקבי. לכן, אם נצליח להגדיר במדויק אילו הוראות יש לבצע לפני אחרות בקוד, נוכל לפתח מודל פורמלי המגדיר את ערבויות סדר הביצוע באמצעות מחזורים בין הוראות. יתרה מכך, מודל זה יכול לשמש כבסיס לפיתוח כלי המנתח מבחני לקמוס בעיית סידור הביצוע. ניתן גם להשתמש באותה גישה כדי לתאר דרישות סדר אחרות של מודל הזיכרון.</p>
+<h2 id="litmus-test">
+  litmus test
+  <a class="heading-link" href="#litmus-test">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>מבחני לקמוס הם רצפי קוד פשוטים הפועלים במקביל (multithreading) ומופשטים מצורות סנכרון שונות. ההתנהגות שמודלי הזיכרון מגלים במהלך מבחנים אלו יכולה לספק תובנות חשובות למתכנתים ב-low level. לדוגמה, מבחנים אלה עשויים לחשוף את הצורך במחסומי זיכרון מסוימים כדי להשיג את ההתנהגות הרצויה במערכת. בנוסף, מבחני לקמוס לפעמים משמשים במדריכי ספקי מעבדים כדי להסביר את המאפיינים של מודל עקביות הזיכרון, וכך מספקים הקשר נוסף להבנת המערכת.</p>
+<p>עם זאת, למרות שמבחני לקמוס מציעים דרך טובה להעביר אינטואיציה לגבי כיצד מודלי זיכרון פועלים, הם אינם יכולים לשמש בדרך כלל כמפרט מקיף ומלא של מודל הזיכרון. זאת מכיוון שהם עשויים להשאיר חלק מההתנהגויות הפוטנציאליות, אשר אינן מכוסות על ידי מבחנים אלו, בלתי מוגדרות.</p>
+<p>כדי להבטיח שתלות בין אירועים נשמרת נבנה גרף תלות, גרף זה הוא גרף מכוון שבו כל קודקוד מייצג אירוע, וקיים קצה מ-<code>E1</code> ל-<code>E2</code> כשאירוע <code>E1</code> חייב להתרחש לפני אירוע <code>E2</code> עקב תלות כלשהי. בהנחה שהתלות בתוך הלולאה נשמרת, גרף התלות הוא גרף מכוון א-ציקלי (DAG). כל סדר טופולוגי של גרף זה נחשב תקף עבור האירועים.</p>
+<h3 id="מבנה-של-מבחן-לקמוס">
+  מבנה של מבחן לקמוס
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%a0%d7%94-%d7%a9%d7%9c-%d7%9e%d7%91%d7%97%d7%9f-%d7%9c%d7%a7%d7%9e%d7%95%d7%a1">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כל פונקציה (המייצגת תהליך או thread) במבחן הלקמוס וניתן להעניק לפונקציה שם לפי בחירתך, כל עוד השם מתחיל באות <code>P</code> ואחריה מופיע מספר מזהה של המעבד, כאשר המספור מתחיל מאפס ונמשך ברציפות.</p>
+<p>המוסכמה היא ששמות של משתנים מקומיים מתחילים באות <code>r</code>, שכן משתנים אלה נחשבים כמאוחסנים ברגיסטרים של המעבד.</p>
+<p>משתנים גלובליים מועברים לפונקציות כפרמטרים, ושמותיהם של הפרמטרים חשובים: הם חייבים להיות תואמים לשמות המשתנים הגלובליים המתאימים.</p>
+<h3 id="ביטוי-exists">
+  ביטוי <code>exists</code>
+  <a class="heading-link" href="#%d7%91%d7%99%d7%98%d7%95%d7%99-exists">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ביטוי הקביעה <code>exists</code> משמש להערכת המצב הסופי של המערכת לאחר ביצוע כלל הקוד במבחן, מצב סופי זה נבדק לאחר שכל התהליכים הסתיימו, וכל הפניות הזיכרון ומחסומי הזיכרון שלהם התפשטו והתעדכנו בכל חלקי המערכת.</p>
+<h4 id="תווים-מיוחדים-בשימוש-ב-exists">
+  תווים מיוחדים בשימוש ב-<code>exists</code>:
+  <a class="heading-link" href="#%d7%aa%d7%95%d7%95%d7%99%d7%9d-%d7%9e%d7%99%d7%95%d7%97%d7%93%d7%99%d7%9d-%d7%91%d7%a9%d7%99%d7%9e%d7%95%d7%a9-%d7%91-exists">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<ul>
+<li>תו <code>=</code> בודד בתוך ביטוי <code>exists</code> משמש כאופרטור שוויון, ולא כהצהרה או השמה.</li>
+<li>רצף התווים <code>/\</code> מייצג את האופרטור הלוגי &ldquo;או&rdquo; (OR), והוא שקול לסימון המתמטי <code>∨</code> ב-ASCII.</li>
+<li>רצף התווים <code>\/</code> מייצג את האופרטור הלוגי &ldquo;וגם&rdquo; (AND), והוא שקול לסימון המתמטי <code>∧</code> ב-ASCII.</li>
+<li>התו <code>~</code> מייצג שלילה (NOT).</li>
+</ul>
+<p>הכלי herd מנתח ומחזיר תשובה האם הביטוי הלוגי מוערך כאמת עבור כל האפשרויות, חלקן, או אף אחת מהתוצאות האפשריות של קטע הקוד.</p>
+<h2 id="שפת-cat">
+  שפת cat
+  <a class="heading-link" href="#%d7%a9%d7%a4%d7%aa-cat">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>שפת cat מציעה דרך לייצג מודלי זיכרון, והיא עושה זאת על ידי קבוצות של אילוצים על מועמדים לביצוע כמו אילוץ של איסור מחזורים. המפרט בשפה זו מוגדר במונחים של קבוצות ויחסים הכוללים אירועי גישה לזיכרון, מחסומים ו-thread-ים. לצורך העניין, כל מעבד במבחן לקמוס מתייחס ל-thread ספציפי.</p>
+<p>שפת cat משמשת במקרים נפוצים מודלי זיכרון ואפילו ההגדרה הרשמית של המודל המקבילות המובטחת על ידי ארכיטקטורת Arm הוא המודל cat שמופץ כחלק מחבילת הכלים herd+diy.
+וברור שגם מודל הזיכרון הרשמי של הקרנל בנוי בשפת cat.</p>
+<h3 id="קובצי-bell-ו-cat">
+  קובצי Bell ו-Cat
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%91%d7%a6%d7%99-bell-%d7%95-cat">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>שני הקבצים, Bell ו-Cat, בנויים מהצהרות שנכתבות בשפת cat, ו-herd מתייחס אליהם באופן כמעט זהה. ההבדל העיקרי הוא שקובץ Bell רשאי להכיל הצהרת הוראות, בעוד שקובץ Cat אינו רשאי להכיל אותן.</p>
+<h3 id="הצהרת-instructions">
+  הצהרת <code>instructions</code>
+  <a class="heading-link" href="#%d7%94%d7%a6%d7%94%d7%a8%d7%aa-instructions">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הצהרת <code>instructions</code> מגדירה תגיות שניתן להוסיף כדקורטור (decorator) לפעולות בסיסיות. לדוגמה, הצהרה כזו עשויה להוסיף תג למחסום זיכרון בשם <code>mb</code>, דבר המצביע על כך שהפעולה המדוברת היא מחסום זיכרון מלא (למשל ב-LKMM).</p>
+<p>בדרך כלל, קובץ Bell משמש לקוד המשותף בין מספר מודלים של זיכרון, כאשר לכל מודל יש קובץ Cat נפרד.</p>
+<h3 id="יחס-co-וחישוב-סדרי-כתיבה">
+  יחס co וחישוב סדרי כתיבה
+  <a class="heading-link" href="#%d7%99%d7%97%d7%a1-co-%d7%95%d7%97%d7%99%d7%a9%d7%95%d7%91-%d7%a1%d7%93%d7%a8%d7%99-%d7%9b%d7%aa%d7%99%d7%91%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בניגוד ליחסים po ו-rf, יחס co אינו מובנה ויש לחשב אותו במפורש בהתאם למודל הזיכרון שבו משתמשים. חישוב יחס זה מתבצע באמצעות קובץ ייעודי בשם <code>cos.cat</code>, שנכלל בתחילת קובץ ה-Cat של המודל. חישוב יחס co מחייב ניסוי של כל הסדרים האפשריים של כתיבות למשתנה מסוים, מה שמוביל להוצאה חישובית ניכרת ואקספוננציאלית.</p>
+<h3 id="שימוש-בקבוצות-ויחסים-ב-herd">
+  שימוש בקבוצות ויחסים ב-herd
+  <a class="heading-link" href="#%d7%a9%d7%99%d7%9e%d7%95%d7%a9-%d7%91%d7%a7%d7%91%d7%95%d7%a6%d7%95%d7%aa-%d7%95%d7%99%d7%97%d7%a1%d7%99%d7%9d-%d7%91-herd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הכלי herd מתבסס על סטים (sets) של אירועים ויחסים (relations) בין אותם אירועים. כל יחס מוגדר כאוסף של זוגות סדורים של אירועים, כאשר כל זוג סדור מייצג קישור מהאירוע הראשון ביחס לאירוע השני. שפת cat, המשמשת בקבצי Bell ו-Cat, עשירה באופרטורים שמאפשרים לבנות ולבדוק סטים ויחסים כאלה, מה שמעניק גמישות בבניית מודלים מורכבים לניתוח הזיכרון.</p>
+<h3 id="שימוש-בסטים-מובנים-ב-herd">
+  שימוש בסטים מובנים ב-herd
+  <a class="heading-link" href="#%d7%a9%d7%99%d7%9e%d7%95%d7%a9-%d7%91%d7%a1%d7%98%d7%99%d7%9d-%d7%9e%d7%95%d7%91%d7%a0%d7%99%d7%9d-%d7%91-herd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ל-herd יש מספר סטים מובנים מראש שמשמשים לסיווג אירועים, וכל אירוע שנוצר בתוכנית מתווסף אוטומטית לסטים הרלוונטיים.</p>
+<table>
+  <thead>
+      <tr>
+          <th>Name</th>
+          <th>Contents</th>
+          <th>Comment</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>R</code></td>
+          <td>Read events</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td><code>W</code></td>
+          <td>Write events</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td><code>IW</code></td>
+          <td>Initial Write events</td>
+          <td>כתיבה שקובעת את הערך ההתחלתי של משתנה</td>
+      </tr>
+      <tr>
+          <td><code>FW</code></td>
+          <td>Final Write events</td>
+          <td>ערכים שנבדקים בקביעה הסופית</td>
+      </tr>
+      <tr>
+          <td><code>M</code></td>
+          <td>Memory access events</td>
+          <td>כמו <code>R | W</code></td>
+      </tr>
+      <tr>
+          <td><code>B</code></td>
+          <td>Branch events</td>
+          <td></td>
+      </tr>
+      <tr>
+          <td><code>RMW</code></td>
+          <td>Read-Modify-Write events</td>
+          <td>האירועים המרכיבים של הוראת RMW אטומית</td>
+      </tr>
+      <tr>
+          <td><code>F</code></td>
+          <td>Fence events</td>
+          <td>ידוע גם כאירועי Barrier</td>
+      </tr>
+      <tr>
+          <td><code>_</code></td>
+          <td>All events</td>
+          <td>wildcard (תו כללי)</td>
+      </tr>
+  </tbody>
+</table>
+<h4 id="אירוע-rmw">
+  אירוע RMW
+  <a class="heading-link" href="#%d7%90%d7%99%d7%a8%d7%95%d7%a2-rmw">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>במעבדים הוראות מסוג RMW פועלות גם כקריאה וגם ככתיבה. עם זאת, ב-herd, הוראות אלה מיוצגות באופן פנימי על ידי אירוע קריאה שלאחריו מתבצעת כתיבה נפרדת. (כך מתנהגת גם החומרה).</p>
+<p>הקשר rmw משמש לקישור בין קריאה ספציפית של פעולת RMW לבין הכתיבה המתקיימת לאחר מכן לאותו מיקום זיכרון.</p>
+<h4 id="אירוע-iw">
+  אירוע IW
+  <a class="heading-link" href="#%d7%90%d7%99%d7%a8%d7%95%d7%a2-iw">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הערך ההתחלתי של מיקום בזיכרון נחשב כאילו נכתב על ידי פעולת כתיבה דמיונית ראשונית (initial write), אשר מופעלת על ידי מעבד נפרד לפני שהתוכנית הראשית מתחילה לפעול. כתיבה ראשונית זו, שמסמנת את הערך ההתחלתי של הזיכרון, מסומנת בתוכנה herd כ-<code>IW</code>.</p>
+<p>כתיבה ראשונית אינה נוצרת על ידי הוראות הבדיקה, אלא על ידי מכונות herd7.</p>
+<p>אתחול של משתנה תמיד נחשב לכתיבה הראשונה בסדר הקוהרנטיות עבור כל משתנה.</p>
+<h4 id="אירוע-fw">
+  אירוע FW
+  <a class="heading-link" href="#%d7%90%d7%99%d7%a8%d7%95%d7%a2-fw">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כתיבה סופית (final write) יכולה להיווצר על ידי הוראות תוכנית, וכאשר היא נוצרת כך, היא חייבת להיות מסודרת בסדר קפדני. כתיבה סופית מתייחסת ככתיבה לקריאה דימיונית שמתבצעת לאחר סיום הפעלת התוכנית, והכתיבה הסופית זמינה כ-<code>IW</code>.</p>
+<h3 id="הגדרת-תגיות-וסטים-בקובץ-bell">
+  הגדרת תגיות וסטים בקובץ Bell
+  <a class="heading-link" href="#%d7%94%d7%92%d7%93%d7%a8%d7%aa-%d7%aa%d7%92%d7%99%d7%95%d7%aa-%d7%95%d7%a1%d7%98%d7%99%d7%9d-%d7%91%d7%a7%d7%95%d7%91%d7%a5-bell">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>באמצעות ההצהרות <code>enum</code> ו-<code>instructions</code>, קובץ Bell יכול להגדיר רשימה מסודרת של תגים, ולהורות שכל הוראות מסוג מסוים חייבות להיות מסומנות עם אחד מהתגים הללו. לאחר מכן, herd יוצר סט עבור כל תג. שם הסט הוא שם התג עם האות הראשונה באות גדולה, והוא יכיל את כל האירועים שנוצרו מהוראות שסומנו בתג המתאים.</p>
+<p>לדוגמה, בקוד cat הבא (מתוך הקבצים של ה-LKMM):</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">enum</span> <span class="nc">Accesses</span> <span class="o">=</span> <span class="k">&#39;</span><span class="n">once</span> <span class="o">||</span> <span class="k">&#39;</span><span class="n">release</span> <span class="o">||</span> <span class="k">&#39;</span><span class="n">acquire</span> <span class="o">||</span> <span class="k">&#39;</span><span class="n">deref</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">instructions</span> <span class="nc">R</span><span class="o">[{</span><span class="k">&#39;</span><span class="n">once</span><span class="o">,</span><span class="k">&#39;</span><span class="n">acquire</span><span class="o">,</span><span class="k">&#39;</span><span class="n">deref</span><span class="o">}]</span>
+</span></span></code></pre></div><p>הקטע הזה מגדיר קבוצת תגים בשם <code>Accesses</code>, שמכילה את התגים <code>once</code>,  <code>release</code>,  <code>acquire</code> ו-<code>deref</code>. בנוסף, הוא קובע שכל הוראות קריאה (<code>R</code>) חייבות להיות מסומנות עם אחד מהתגים <code>once</code>, <code>acquire</code>, או <code>deref</code>. כתוצאה מכך, herd ייצור מספר סטים: לדוגמה, הסט <code>Once</code> יכיל את כל האירועים התואמים להוראות המסומנות בתג <code>once</code>, והסטים <code>Acquire</code>, <code>Release</code> ו-<code>Deref</code> יכילו אירועים שנוצרו מהוראות עם התגיות המקבילות.</p>
+<h3 id="הגדרת-אירועים">
+  הגדרת אירועים
+  <a class="heading-link" href="#%d7%94%d7%92%d7%93%d7%a8%d7%aa-%d7%90%d7%99%d7%a8%d7%95%d7%a2%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>את האירועים מהסוגים השונים והתיוג שלהם מגדירים בצורה הבאה (מתוך ה-LKMM ב-<code>linux-kernel.def</code>):</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="ln">1</span><span class="cl"><span class="nc">READ_ONCE</span><span class="o">(</span><span class="nc">X</span><span class="o">)</span> <span class="o">__</span><span class="n">load</span><span class="o">{</span><span class="n">once</span><span class="o">}(</span><span class="nc">X</span><span class="o">)</span>
+</span></span></code></pre></div><p>כלומר מוגדרים מספר דברים:</p>
+<ul>
+<li>שם האירוע הוא <code>READ_ONCE</code></li>
+<li>האירוע הוא אירוע קריאה שמסומן בעזרת <code>__load</code></li>
+<li>האירוע מתויג עם התג <code>once</code> (שמוגדר ב-<code>linux-kernel.bell</code>)</li>
+<li>האירוע מקבל פרמטר <code>X</code></li>
+</ul>
+<h3 id="יחסים-מובנים-ב-herd">
+  יחסים מובנים ב-herd
+  <a class="heading-link" href="#%d7%99%d7%97%d7%a1%d7%99%d7%9d-%d7%9e%d7%95%d7%91%d7%a0%d7%99%d7%9d-%d7%91-herd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בנוסף לסטים, herd מגיע עם מבחר יחסים מובנים המאפשרים ניתוח של יחסים בין אירועים. חלק מהיחסים הללו כבר הוזכרו קודם, והם מהווים את הבסיס לניתוח תלות, סדרי גישה ויחסים בין פעולות כתיבה וקריאה בזיכרון.</p>
+<table>
+  <thead>
+      <tr>
+          <th>Name</th>
+          <th>Relation</th>
+          <th>Comment</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>0</td>
+          <td>Empty</td>
+          <td>יחס ריק, אינו מכיל קישורים</td>
+      </tr>
+      <tr>
+          <td>id</td>
+          <td>Identity</td>
+          <td>מקשר כל אירוע לעצמו</td>
+      </tr>
+      <tr>
+          <td>int</td>
+          <td>Internal</td>
+          <td>מקשר אירועים שנמצאים באותו thread</td>
+      </tr>
+      <tr>
+          <td>ext</td>
+          <td>External</td>
+          <td>מקשר אירועים שנמצאים ב-thread-ים שונים</td>
+      </tr>
+      <tr>
+          <td>loc</td>
+          <td>Location</td>
+          <td>מקשר אירועי גישה לזיכרון המכוונים לאותו משתנה</td>
+      </tr>
+      <tr>
+          <td>rf</td>
+          <td>Reads-From</td>
+          <td>מקשר אירוע כתיבה לכל אירוע קריאה שטוען את הערך המאוחסן בכתיבה זו</td>
+      </tr>
+      <tr>
+          <td>rmw</td>
+          <td>Read-Modify-Write</td>
+          <td>מקשר את אירועי הקריאה והכתיבה של הוראת RMW</td>
+      </tr>
+      <tr>
+          <td>po</td>
+          <td>Program Order</td>
+          <td>מקשר אירועים באותו thread, בסדר שהם מתרחשים בזרם ההוראות (instruction stream)</td>
+      </tr>
+      <tr>
+          <td>addr</td>
+          <td>Address dependency</td>
+          <td>מקשר אירוע קריאה לכל אירוע גישה לזיכרון שכתובת היעד שלו תלויה בערך הנטען על ידי הקריאה</td>
+      </tr>
+      <tr>
+          <td>ctrl</td>
+          <td>Control dependency</td>
+          <td>מקשר אירוע קריאה לכל האירועים שמתבצעים באופן מותנה בהתאם לערך שנטען על ידי הקריאה</td>
+      </tr>
+      <tr>
+          <td>data</td>
+          <td>Data dependency</td>
+          <td>מקשר אירוע קריאה לכל אירוע כתיבה המאחסן ערך שתלוי בערך הנטען על ידי הקריאה</td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="ספריות-ויחסים-נוספים-ב-herd">
+  ספריות ויחסים נוספים ב-herd
+  <a class="heading-link" href="#%d7%a1%d7%a4%d7%a8%d7%99%d7%95%d7%aa-%d7%95%d7%99%d7%97%d7%a1%d7%99%d7%9d-%d7%a0%d7%95%d7%a1%d7%a4%d7%99%d7%9d-%d7%91-herd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הכלי herd כולל ספריות סטנדרטיות כגון <code>stdlib.cat</code> ו-<code>cos.cat</code>, והן מספקות הגדרות של יחסים נוספים שניתן להשתמש בהם כאילו הם מובנים.</p>
+<p>יחסים אלה מרחיבים את יכולות ניתוח התוכנית ביחסים נפוצים:</p>
+<table>
+  <thead>
+      <tr>
+          <th>Name</th>
+          <th>Relation</th>
+          <th>Comment</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>po-loc</td>
+          <td>קשר po עבור אותו מיקום</td>
+          <td>קישור אירועי גישה לזיכרון המכוונים לאותו משתנה, לפי סדר התוכנית; זהה ל-<code>po &amp; loc</code></td>
+      </tr>
+      <tr>
+          <td>rfe</td>
+          <td>external reads-from</td>
+          <td>קשר rf מוגבל לזוגות גישה ב-thread-ים שונים; זהה ל-<code>rf &amp; ext</code></td>
+      </tr>
+      <tr>
+          <td>rfi</td>
+          <td>internal reads-from</td>
+          <td>קשר rf מוגבל לזוגות גישה באותו thread; זהה ל-<code>rf &amp; int</code></td>
+      </tr>
+      <tr>
+          <td>co</td>
+          <td>coherence order</td>
+          <td>הסדר הכולל של כל הכתיבה לכל משתנה</td>
+      </tr>
+      <tr>
+          <td>coe</td>
+          <td>external coherence order</td>
+          <td>קשר co מוגבל לצמדי כתיבה ב-thread-ים שונים; זהה ל-<code>co &amp; ext</code></td>
+      </tr>
+      <tr>
+          <td>coi</td>
+          <td>internal coherence order</td>
+          <td>קשר co מוגבל לצמדי כתיבה באותו thread; זהה ל-<code>co &amp; int</code></td>
+      </tr>
+      <tr>
+          <td>fr</td>
+          <td>from-read</td>
+          <td>מקשר אירוע קריאה לכל אירוע כתיבה עבור אותו משתנה שמגיע אחרי (בסדר הקוהרנטיות של המשתנה) הכתיבה שממנו קורא אירוע הקריאה, זהה ל-<code>rf^-1 ; co</code></td>
+      </tr>
+      <tr>
+          <td>fre</td>
+          <td>external from-read</td>
+          <td>קשר fr מוגבל לצמדי גישה ב-thread-ים שונים, זהה ל-<code>fr &amp; ext</code></td>
+      </tr>
+      <tr>
+          <td>fri</td>
+          <td>internal from-read</td>
+          <td>קשר fr מוגבל לזוגות גישה באותו thread, זהה ל<code>fr &amp; int</code></td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="חישוב-קבוצות-ויחסים-בקבצי-bell-ו-cat">
+  חישוב קבוצות ויחסים בקבצי Bell ו-Cat
+  <a class="heading-link" href="#%d7%97%d7%99%d7%a9%d7%95%d7%91-%d7%a7%d7%91%d7%95%d7%a6%d7%95%d7%aa-%d7%95%d7%99%d7%97%d7%a1%d7%99%d7%9d-%d7%91%d7%a7%d7%91%d7%a6%d7%99-bell-%d7%95-cat">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>קבצי Bell ו-Cat מסוגלים לחשב קבוצות ויחסים באמצעות פונקציות ואופרטורים שמסופקים על ידי שפת cat ועל ידי הספריות המצורפות. אופרטורים אלה מאפשרים עבודה עם מבנים לוגיים, קבוצות ויחסים.</p>
+<p>הערה:
+בטבלה הבאה האופרטורים בעלי העדיפות הגבוהה יותר ממוקמים גבוה יותר בטבלה</p>
+<table>
+  <thead>
+      <tr>
+          <th>Operator</th>
+          <th>Operation</th>
+          <th>Example</th>
+          <th>Applicability</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><code>domain</code></td>
+          <td>ה-domain של היחס</td>
+          <td>האופרטור <code>domain(x)</code> מחשב את קבוצת כל האירועים שהם ההתחלה של קישור ב-x</td>
+          <td>חל על יחס, מניב קבוצה</td>
+      </tr>
+      <tr>
+          <td><code>range</code></td>
+          <td>ה-range של היחס</td>
+          <td>האופרטור <code>range(x)</code> מחשב את קבוצת כל האירועים שהם הסוף של קישור ב-x</td>
+          <td>חל על יחס, מניב קבוצה</td>
+      </tr>
+      <tr>
+          <td><code>fencerel</code></td>
+          <td>מקשר אירועים שמופרדים על ידי fence (סוג ה-fence הוא הערך x)</td>
+          <td>האופרטור <code>fencerel(x)</code> מחשב את היחס המורכב מכל זוגות האירועים כאשר הראשון נמצא לפני (בסדר התוכנית) האירוע בקבוצה x והשני אחריו; זהה ל-<code>(po &amp; (_ * x)) ; po</code></td>
+          <td>חל על קבוצה, מניב יחס</td>
+      </tr>
+      <tr>
+          <td><code>[]</code></td>
+          <td>מחזיר את יחס הזהות מהסט שיתקבל כקלט</td>
+          <td>האופרטור <code>[x]</code> מחשב את יחס הזהות המוגבלת לאירועים בסט x</td>
+          <td>חל על קבוצה, מניב יחס</td>
+      </tr>
+      <tr>
+          <td>Postfix <code>^-1</code></td>
+          <td>היפוך (Inversion)</td>
+          <td>האופרטור <code>x^-1</code> מחשב את היחס המתקבל על ידי היפוך של כל הקישורים ב-x</td>
+          <td>חל על יחס</td>
+      </tr>
+      <tr>
+          <td>Postfix <code>?</code></td>
+          <td>סגירה רפלקסיבית</td>
+          <td>האופרטור <code>x?</code> מחשב את היחס המורכב מכל זוגות האירועים שניתן לחבר באמצעות שרשרת של קישורים מ-x באורך 0 או 1; זהה ל-<code>id |x</code></td>
+          <td>חל על יחס</td>
+      </tr>
+      <tr>
+          <td>Postfix <code>+</code></td>
+          <td>סגירה טרנזיטיבית</td>
+          <td>האופרטור <code>x+</code> מחשב את היחס המורכב מכל זוגות האירועים שניתן לחבר באמצעות שרשרת קישורים מ-x באורך 1 או יותר; זהה ל-<code>x|(x;x)|(x;x;x)|...</code></td>
+          <td>חל על יחס</td>
+      </tr>
+      <tr>
+          <td>Postfix <code>*</code></td>
+          <td>סגירה רפלקסיבית טרנזיטיבית</td>
+          <td>האופרטור <code>x*</code> מחשב את היחס המורכב מכל זוגות האירועים שניתן לחבר באמצעות שרשרת קישורים מ-x באורך 0 או יותר; זהה ל-<code>id | x | (x;x) | (x;x;x) | ...</code></td>
+          <td>חל על יחס</td>
+      </tr>
+      <tr>
+          <td>Prefix <code>~</code></td>
+          <td>המשלים (complement)</td>
+          <td>האופרטור <code>~x</code> מחשב את היחס (או הקבוצה) המורכב מכל הקישורים (או האירועים) שאינם ב-x</td>
+          <td>חל על יחס או קבוצה</td>
+      </tr>
+      <tr>
+          <td>Infix <code>*</code></td>
+          <td>מכפלה קרטזית</td>
+          <td>האופרטור <code>x * y</code> מחשב את היחס המורכב מכל הקישורים מאירוע בסט x לאירוע בקבוצה y. מכפלה קרטזית של קבוצות אירועים (<code>x * y</code>): תהליך המייצר זוגות מכל הקומבינציות האפשריות של האירועים משתי הקבוצות.</td>
+          <td>חל על קבוצות, מניב יחס</td>
+      </tr>
+      <tr>
+          <td><code>\</code></td>
+          <td>הפרש (difference)</td>
+          <td>האופרטור <code>x \ y</code> מחשב את היחס (או הקבוצה) המורכב מכל הקישורים (או האירועים) ב-x שאינם נמצאים ב-y.</td>
+          <td>חל על יחסים או קבוצות</td>
+      </tr>
+      <tr>
+          <td><code>&amp;</code></td>
+          <td>חיתוך (Intersection)</td>
+          <td>האופרטור <code>x &amp; y</code> מחשב את היחס (או ה-set) המורכב מכל הקישורים (או האירועים) גם ב-x וגם ב-y. ביצוג מתמטי <code>∩</code></td>
+          <td>חל על יחסים או קבוצות</td>
+      </tr>
+      <tr>
+          <td><code>;</code></td>
+          <td>רצף (Sequencing)</td>
+          <td>האופרטור <code>x ; y</code> מחשב את היחס המורכב מכל הקישורים a⟶c כך שבאירוע מסוים b, היחס x מכיל a⟶b ו-y מכיל b⟶c</td>
+          <td>חל על יחסים</td>
+      </tr>
+      <tr>
+          <td><code>|</code></td>
+          <td>איחוד (Union)</td>
+          <td>האופרטור <code>x | y</code> מחשב את היחס (או ה-set) המורכב מכל הקישורים (או האירועים) ב-x או y או בשניהם. ביצוג מתמטי <code>∪</code>.</td>
+          <td>חל על יחסים או קבוצות</td>
+      </tr>
+      <tr>
+          <td><code>(* *)</code></td>
+          <td>הערה</td>
+          <td><code>(* This is a comment *)</code></td>
+          <td></td>
+      </tr>
+  </tbody>
+</table>
+<h3 id="הצהרות-נפוצות-בקבצי-bell-ו-cat">
+  הצהרות נפוצות בקבצי Bell ו-Cat
+  <a class="heading-link" href="#%d7%94%d7%a6%d7%94%d7%a8%d7%95%d7%aa-%d7%a0%d7%a4%d7%95%d7%a6%d7%95%d7%aa-%d7%91%d7%a7%d7%91%d7%a6%d7%99-bell-%d7%95-cat">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הצהרות הנפוצות ביותר בקבצי Bell ו-Cat הן הצהרות הקצאה (<code>let</code> או <code>let rec</code>) והצהרות בדיקה.</p>
+<ul>
+<li>
+<p>הצהרת <code>let</code>: משמשת להגדרת ערכים או יחסים חדשים.</p>
+</li>
+<li>
+<p>הצהרת <code>let rec</code>: נועדה להגדרות רקורסיביות, כולל הגדרות הדדיות בין מספר מבנים, והיא מורכבת יותר מהצהרת <code>let</code> רגילה. לפעמים נדרשות הגדרות רקורסיביות  כדי לייצג את התנהגות של מודלי זיכרון שונים (כמו ב-arm)</p>
+</li>
+<li>
+<p>הצהרת  <code>include</code>: הצהרה שמאפשרת לכלול קבצים אחרים בתוך הקוד.</p>
+</li>
+</ul>
+<h4 id="הצהרות-בדיקה-ב-herd">
+  הצהרות בדיקה ב-herd
+  <a class="heading-link" href="#%d7%94%d7%a6%d7%94%d7%a8%d7%95%d7%aa-%d7%91%d7%93%d7%99%d7%a7%d7%94-%d7%91-herd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הכלי herd מציע שלושה סוגים של הצהרות בדיקה, שכל אחת מוודאת תנאי על יחס:</p>
+<ul>
+<li>
+<p>הצהרת <code>acyclic</code>: דורשת שהיחס המחושב לא יכיל מחזורים. כלומר, אי אפשר לחזור לאותו אירוע דרך סדרה של קשרים.</p>
+</li>
+<li>
+<p>הצהרת <code>irreflexive</code>: דורשת שהיחס המחושב לא יהיה רפלקסיבי כלומר לא יכיל קישורים מאירוע לעצמו, אסור שתיהיה חזרה ישירה לאותו אירוע.</p>
+</li>
+<li>
+<p>הצהרת <code>empty</code>: דורשת שהיחס המחושב יהיו ריק, כלומר לא יכיל אף זוג אירועים.</p>
+</li>
+</ul>
+<p>הצהרות אלו מספקות כלי לבדיקת נכונותם של יחסים ומבנים בקוד, והן חיוניות למימוש וניתוח מודלים מורכבים בזיכרון.</p>
+<p>ניתן להעניק שמות לבדיקות באמצעות סיומת <code>as</code> ולאחריו השם של הבדיקה.</p>
+<h4 id="כשל-בבדיקות-ואזהרות-ב-herd">
+  כשל בבדיקות ואזהרות ב-herd
+  <a class="heading-link" href="#%d7%9b%d7%a9%d7%9c-%d7%91%d7%91%d7%93%d7%99%d7%a7%d7%95%d7%aa-%d7%95%d7%90%d7%96%d7%94%d7%a8%d7%95%d7%aa-%d7%91-herd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כאשר בדיקה נכשלת ב-herd, המשמעות היא שמודל הזיכרון אוסר על ביצוע המועמד הנבדק; כלומר, המודל קובע שהביצוע הזה לא יכול להתרחש במציאות. ניתן גם לשלוט על הבדיקה על ידי הוספת הקידומת <code>~</code>, שמשמעה שלילה של הבדיקה.</p>
+<p>בנוסף, אפשר לסמן בדיקה באמצעות מילת המפתח <code>flag</code>. כאשר בדיקה מסומנת כזו מצליחה, זה מעיד על כך שהביצוע נתקל בבעיה סמנטית כלשהי. אם זה קורה, herd מוסיף אזהרה לפלט כדי להתריע על כך.</p>
+<p>הצהרת <code>check</code>: הצהרה לביצוע בדיקות על יחסים וקבוצות שהוגדרו.</p>
+<h3 id="תכונות-מתקדמות-בשפת-cat-וב-herd">
+  תכונות מתקדמות בשפת cat וב-herd
+  <a class="heading-link" href="#%d7%aa%d7%9b%d7%95%d7%a0%d7%95%d7%aa-%d7%9e%d7%aa%d7%a7%d7%93%d7%9e%d7%95%d7%aa-%d7%91%d7%a9%d7%a4%d7%aa-cat-%d7%95%d7%91-herd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>שפת cat תומכת במגוון תכונות מתקדמות, כמו set-ים ו-tuple-ים, התאמת דפוסים, פונקציות שניתן להגדיר על ידי המשתמש, וגם איטרציה ורקורסיה בסגנון OCaml (השפה שבה כתוב herd), אבל אני לא אדון כאן בתכונות האלה והמתעניינים יכולים לקרוא את התיעוד.</p>
+<h2 id="תהליך-עיבוד-ובדיקה-ב-herd">
+  תהליך עיבוד ובדיקה ב-herd
+  <a class="heading-link" href="#%d7%aa%d7%94%d7%9c%d7%99%d7%9a-%d7%a2%d7%99%d7%91%d7%95%d7%93-%d7%95%d7%91%d7%93%d7%99%d7%a7%d7%94-%d7%91-herd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>אם קובץ Bell קיים, הוא מעובד תחילה ואחריו מתחיל העיבוד של הקובץ Cat.</p>
+<p>לאחר טעינת קבצי Bell ו-Cat, הכלי herd ממשיך לנתח את מבחן הלקמוס. מבחן זה עשוי לכלול פקודות מאקרו, כגון <code>smp_mb()</code>, שהן למעשה קיצורי דרך לפעולות בסיסיות (כמו מחסום זיכרון עם תג <code>mb</code>). הרחבת פקודות המאקרו למבנים הבסיסיים מתבצעת לפי מיפוי המוגדר בקובץ, כמו <code>linux.def</code>, שמצוין באמצעות פרמטר ב-cli <code>-macros</code> או בקובץ קונפיגורציה עם שורת <code>macros</code>.</p>
+<p>לאחר מכן, herd מפרש את התוכנית על ידי בניית רשימה של אירועים (event-ים) עבור כל thread בתוכנית. בתוכניות שנכתבו בשפה עילית כמו C, התהליך כולל פירוק הצהרות וביטויים לרצף של פעולות בסיסיות (כגון קריאה, כתיבה, חישובים לוגיים/אריתמטיים על רגיסטרים, תנאים וכדומה). בתוכניות שנכתבו בשפת אסמבלי, ההוראות הבודדות בדרך כלל מתאימות ישירות לפעולות אלה. עם זאת, פעולות אטומיות מסוג rmw מיוצגות תמיד כשילוב של שתי פעולות נפרדות – קריאה וכתיבה – המקושרות דרך יחס ה-rmw המובנה.</p>
+<h3 id="ארגון-אירועים-לכל-thread">
+  ארגון אירועים לכל thread
+  <a class="heading-link" href="#%d7%90%d7%a8%d7%92%d7%95%d7%9f-%d7%90%d7%99%d7%a8%d7%95%d7%a2%d7%99%d7%9d-%d7%9c%d7%9b%d7%9c-thread">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>האירועים בתוכנית מאורגנים כרשימה עבור כל thread, לפי סדר התוכנית (program order). עם זאת, חשוב להבין שסדר התוכנית מתייחס לסדר שבו ההוראות מוצגות ליחידת הביצוע של המעבד, ולא בהכרח לסדר שבו הן מופיעות בקוד המקור או קוד האובייקט של התוכנית. ברוב המקרים, שני הסדרים זהים, אך הם שונים כאשר ישנם branch-ים. אם מתבצע branch קדימה (forward branch), חלק מההוראות עשויות לא להתבצע ולהישאר מחוץ לרשימת האירועים, ואילו branch אחורה (backward branch) עשוי לגרום להוראות מסוימות לחזור שוב לרשימה.</p>
+<h3 id="יצירת-רשימות-אירועים-ב-branch-ים-מותנים">
+  יצירת רשימות אירועים ב-branch-ים מותנים
+  <a class="heading-link" href="#%d7%99%d7%a6%d7%99%d7%a8%d7%aa-%d7%a8%d7%a9%d7%99%d7%9e%d7%95%d7%aa-%d7%90%d7%99%d7%a8%d7%95%d7%a2%d7%99%d7%9d-%d7%91-branch-%d7%99%d7%9d-%d7%9e%d7%95%d7%aa%d7%a0%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בשל העובדה שאין דרך לדעת מראש האם יילקח branch מותנה, כל branch כזה יוצר שתי רשימות אירועים עבור הכלי herd: אחת שבה ה-branch נלקח, והשנייה שבה לא נלקח. לכן, תוכנית המכילה שני branch-ים מותנים תוביל ליצירת ארבע רשימות, תוכנית עם שלושה branch-ים תיצור שמונה רשימות, וכן הלאה. סדר האירועים בתוך כל רשימה נקבע על ידי יחס ה-po. הכלי herd נדרש לבדוק כל רשימה כזו בנפרד, מאחר שכל רשימה מייצגת ביצוע אפשרי של התוכנית.</p>
+<h3 id="טיפול-בלולאות-ו-branch-ים-חוזרים">
+  טיפול בלולאות ו-branch-ים חוזרים
+  <a class="heading-link" href="#%d7%98%d7%99%d7%a4%d7%95%d7%9c-%d7%91%d7%9c%d7%95%d7%9c%d7%90%d7%95%d7%aa-%d7%95-branch-%d7%99%d7%9d-%d7%97%d7%95%d7%96%d7%a8%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כאשר התוכנית מכילה לולאה, ייתכן ש-branch מותנה יילקח מספר בלתי מוגבל של פעמים, מה שיכול להוביל לגידול לא פרופורציונלי במספר הביצועים האפשריים. כדי למנוע זאת, יש מגבלה על מספר הפעמים ש-herd יאפשר ל-branch מסוים להופיע בביצוע. מגבלה זו מוגדרת באמצעות הפרמטר <code>-unroll</code> ב-cli, שבדרך כלל מוגדר ל-2 איטרציות לכל היותר. אם הביצוע דורש מספר גבוה יותר של איטרציות, הוא פשוט לא ייחשב.</p>
+<h3 id="בחירת-ערכי-קריאה-וכתיבה">
+  בחירת ערכי קריאה וכתיבה
+  <a class="heading-link" href="#%d7%91%d7%97%d7%99%d7%a8%d7%aa-%d7%a2%d7%a8%d7%9b%d7%99-%d7%a7%d7%a8%d7%99%d7%90%d7%94-%d7%95%d7%9b%d7%aa%d7%99%d7%91%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>לאחר יצירת המועמדים לביצוע (candidate executions), herd נדרש להחליט, עבור כל אירוע קריאה, מאיזה אירוע כתיבה מתקבל הערך שהקריאה מחזירה. כמו במקרים של branch-ים מותנים, גם כאן אין דרך לדעת מראש איזה ערך ייקרא, ולכן אם לתוכנית יש יותר מכתיבה אחת לאותו משתנה, herd צריך לבחון את כל השילובים האפשריים של יחס ה-rf. תהליך זה יכול להוביל לגידול אקספוננציאלי במספר הביצועים האפשריים שיש לבדוק, בדומה לגידול שנוצר עקב branch-ים מותנים.</p>
+<h3 id="ניתוח-זרימת-נתונים-בתהליך-עיבוד-מועמד-לביצוע">
+  ניתוח זרימת נתונים בתהליך עיבוד מועמד לביצוע
+  <a class="heading-link" href="#%d7%a0%d7%99%d7%aa%d7%95%d7%97-%d7%96%d7%a8%d7%99%d7%9e%d7%aa-%d7%a0%d7%aa%d7%95%d7%a0%d7%99%d7%9d-%d7%91%d7%aa%d7%94%d7%9c%d7%99%d7%9a-%d7%a2%d7%99%d7%91%d7%95%d7%93-%d7%9e%d7%95%d7%a2%d7%9e%d7%93-%d7%9c%d7%91%d7%99%d7%a6%d7%95%d7%a2">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כאשר herd מעבד מועמד לביצוע, הוא מבצע ניתוח זרימת נתונים שמטרתו לנתח את הערכים המחושבים והמאוחסנים במשתנים המקומיים עבור כל thread בתוכנית. ניתוח זה משמש במספר תפקידים:</p>
+<ul>
+<li>הכלי herd בודק כל branch מותנה, ומוודא שהמצב הלוגי שלו תואם לבחירת הביצוע: כלומר, ה-branch נלקח רק כאשר התנאים המתאימים התקיימו.</li>
+<li>הכלי herd מאמת את כתובת היעד של כל גישה עקיפה לזיכרון (כגון גישה דרך מצביע או גישה יחסית למעבד), ומוודא כי יחס ה-rf אכן מקשר בין כתיבה לקריאה המתבצעות לאותה כתובת יעד.</li>
+<li>הכלי herd מזהה וקובע אילו סוגי תלויות קיימות בין אירועים המייצגים גישה לזיכרון, כולל תלות בנתונים, תלות בכתובות ותלות בשליטה. תלויות אלה זמינות למודל באמצעות קשרי data, addr ו-ctrl.</li>
+</ul>
+<h2 id="שימוש-והרצה-ב-herd">
+  שימוש והרצה ב-herd
+  <a class="heading-link" href="#%d7%a9%d7%99%d7%9e%d7%95%d7%a9-%d7%95%d7%94%d7%a8%d7%a6%d7%94-%d7%91-herd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="מבחני-litmus">
+  מבחני litmus
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%97%d7%a0%d7%99-litmus">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<h4 id="cross">
+  cross
+  <a class="heading-link" href="#cross">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>אם רוצים להריץ מבחני litmus על מכונות אחרות שבהן אין את ה-diy tools אז אפשר ליצר את המבחן עצמו במכונה עם ה-diy-tools ולאחר מכן להריץ את המבחן עצמו על מכונה אחרת.</p>
+<p>בהתחלה יוצרים את המבחן עצמו:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">litmus7 -o /tmp/my_test.tar -os mac SB-TEST.litmus
+</span></span></code></pre></div><p>הערה:
+במקרה הזה מכונת היעד היא mac</p>
+<p>ולאחר מכן במכונה המרוחקת לאחר שמעבירים אליה את ה-<code>my_test.tar</code> (שמכיל את הפלט מהשלב הקודם):</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">mkdir SB <span class="o">&amp;&amp;</span> <span class="nb">cd</span> SB
+</span></span><span class="line"><span class="ln">2</span><span class="cl">tar xf /tmp/my_test.tar
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">sh run.sh
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="c1">### or ###</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">sh comp.sh
+</span></span></code></pre></div><h4 id="klitmus">
+  klitmus
+  <a class="heading-link" href="#klitmus">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הכלי <code>klitmus7</code> מיועד להפעלת בדיקות לקרנל והבדיקות רצות כמודולים קרנלים. המודול קרנלי ש-klitmus יוצר ניתן לטעון ולפרוק דינמית בתוך קרנל פעיל. לאחר טעינת המודולים, הם מופעלים באמצעות קריאה לפסאודו-קובץ <code>/proc/litmus</code>, שמספק ממשק לתקשורת עם המודולים.</p>
+<p>בנוסף לכך, <code>klitmus7</code> פועל אך ורק במצב קימפול cross, כלומר הוא מתרגם את המבחנים לכמה קבצי C, ומספק גם Makefile וסקריפט הפעלה בשם <code>run.sh</code>. כך ניתן לפשט את תהליך ההכנה וההרצה של הבדיקות הנדרשות במערכת.</p>
+<h5 id="דוגמה-להרצה">
+  דוגמה להרצה:
+  <a class="heading-link" href="#%d7%93%d7%95%d7%92%d7%9e%d7%94-%d7%9c%d7%94%d7%a8%d7%a6%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בשלב הראשון יוצרים את המבחן עצמו עם <code>klitmus7</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">klitmus7 -o X.tar SB+onces.litmus
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">mkdir -p X <span class="o">&amp;&amp;</span> <span class="nb">cd</span> X <span class="o">&amp;&amp;</span> tar xmf ../X.tar
+</span></span><span class="line"><span class="ln">2</span><span class="cl">make
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">sudo sh run.sh
+</span></span></code></pre></div><h3 id="קטע-filter-לעומת-exists">
+  קטע filter לעומת exists
+  <a class="heading-link" href="#%d7%a7%d7%98%d7%a2-filter-%d7%9c%d7%a2%d7%95%d7%9e%d7%aa-exists">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ישנם מקרים שבהם קטע ה-filter פועל במהירות רבה יותר, במיוחד במקרים הנפוצים, שכן הכלי herd7 מסוגל להפסיק את הביצוע ברגע שביטוי ה-filter לא מצליח להתקיים. בניגוד לכך, קטע ה-exists מקבל את הערך שלו בסוף הבדיקה, מה שדורש מ-herd7 להשקיע זמן בבדיקה של ביצועים מזויפים, שבהם שני הקטעים הקריטיים פועלים במקביל.</p>
+<p>בנוסף לכך, ישנם אנשים המעדיפים את ההפרדה בין שמספק השימוש בקטעים filter ו-exists.</p>
+<h3 id="דגל-speedcheck">
+  דגל speedcheck
+  <a class="heading-link" href="#%d7%93%d7%92%d7%9c-speedcheck">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כדי להאיץ את הביצועים של herd7, ניתן להשתמש באפשרות <code>-speedcheck true</code>. אפשרות זו מונעת מ-herd7 ליצור את כל מצבי הקצה האפשריים ומכוונת אותו להתמקד בשאלה האם ניתן לקיים את קטע ה-exists או לא.</p>
+<p>חשוב לציין כי ניתוח מבחן הלקמוס הוא בעל מורכבות אקספוננציאלית, הן כאשר משתמשים באפשרות <code>-speedcheck true</code> והן כאשר לא. אם אינכם מעוניינים בשימוש בארגומנטים של cli, ניתן להשיג מהירות דומה על ידי הוספת משפט filter עם אותו ביטוי בדיוק כמו קטע ה-exists.</p>
+<h3 id="הצגת-תוצאת-exists">
+  הצגת תוצאת <code>exists</code>
+  <a class="heading-link" href="#%d7%94%d7%a6%d7%92%d7%aa-%d7%aa%d7%95%d7%a6%d7%90%d7%aa-exists">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כשרוצים לראות את התוצאה של הפסקת <code>exists</code> אפשר להוסיף את הדגל <code>show</code> עם <code>prop</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">-show prop
+</span></span></code></pre></div><h3 id="הצגה-של-קשרים">
+  הצגה של קשרים
+  <a class="heading-link" href="#%d7%94%d7%a6%d7%92%d7%94-%d7%a9%d7%9c-%d7%a7%d7%a9%d7%a8%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>אפשר להציג קשרים ב-2 דרכים, או דרך המודל עצמו או להעביר דגל בהרצת herd7.</p>
+<h4 id="דרך-המודל">
+  דרך המודל
+  <a class="heading-link" href="#%d7%93%d7%a8%d7%9a-%d7%94%d7%9e%d7%95%d7%93%d7%9c">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>צריך פשוט לכתוב את המילת מפתח <code>show</code> ואחריה את הקשרים שרוצים להציג מופרדים בפסיקים בקובץ cat.</p>
+<p>לדוגמה:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">show</span> <span class="n">ppo</span><span class="o">,</span><span class="n">cumul</span><span class="o">-</span><span class="n">fence</span>
+</span></span></code></pre></div><p>הערה:
+לפעמים herd7 לא מראה ביצוא תמונה את הקשרים בין אירועים גם אם יש כאלו ובפעמים כאלו כדי &ldquo;ללחוץ&rdquo; עליו לעשות את זה אפשר לכוון אותו יותר ספציפי כמו למשל על ידי <code>&amp; ext</code> או <code>&amp; int</code> לדוגמה.</p>
+<h4 id="דרך-ה-cli">
+  דרך ה-cli
+  <a class="heading-link" href="#%d7%93%d7%a8%d7%9a-%d7%94-cli">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>אפשר להשתמש בדגל <code>doshow</code>.</p>
+<p>לדוגמה:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">-doshow pb
+</span></span></code></pre></div><p>אפשר גם להשתמש הפוך ולא להציג קשרים עם הדגל <code>unshow</code> באותה צורת שימוש.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">-unshow rf,co
+</span></span></code></pre></div><h3 id="הצגת-תוצאות-אסורות">
+  הצגת תוצאות אסורות
+  <a class="heading-link" href="#%d7%94%d7%a6%d7%92%d7%aa-%d7%aa%d7%95%d7%a6%d7%90%d7%95%d7%aa-%d7%90%d7%a1%d7%95%d7%a8%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כשרוצים לראות תוצאה אסורה יש קצת בעיה בהרצה רגילה כי היא אסורה ולכן גם אם משתמשים ב-<code>show</code> הפלט יהיה קובץ ריק, אבל אם בכל זאת רוצים לראות את התוצאה האסורה (למשל כדי לראות את המעגליות) אז יש מספר דגלים שיכולים לעזור:</p>
+<h4 id="הדגל-through">
+  הדגל <code>through</code>
+  <a class="heading-link" href="#%d7%94%d7%93%d7%92%d7%9c-through">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הדגל אומר ל-herd תן לריצות נוספות להגיע לשלב הסופי של מנוע herd7, אפשרות זו מאפשרת למשתמשים ליצור תמונות של הרצות אסורות, אשר נדחות אחרת בשלב מוקדם של מנוע herd7.</p>
+<p>כלומר, ברירת המחדל <code>none</code> מאפשר רק ביצועים תקפים (לפי המודל הפעיל) לעבור. ההתנהגות של אפשרות זו שונה בין דגמי קבצי טקסט פנימיים וטקסט:</p>
+<p>הערה:
+הכוונה במודלים פנימיים (internal) הם מודלים של herd7 עצמו (כמו <code>cav12</code>, <code>minimal</code> ו-<code>uniproc</code>) ולעומת זאת מודלי טקסט הם מודלים שהמתמש יכול לבחור להעביר.</p>
+<ul>
+<li>
+<p>עבור מודלים פנימיים: כל התג מאפשר לכל הרצות לעבור; בעוד שהתג <code>invalid</code> ידחה ביצועים שמפרים את <code>uniproc</code>, תוך מתן אפשרות לביצוע אסור אחר לעבור.</p>
+</li>
+<li>
+<p>מודלים של קבצי טקסט: התגים <code>all</code> ו-<code>invalid</code> מאפשרים לכל הביצועים לעבור. עבור מודלים כאלה, ניתן להשיג שליטה מדויקת יותר על הרצות שמגיעות לשלב הסופי של herd7 עם האפשרות<code>skipcheck</code>.</p>
+</li>
+</ul>
+<p>ברירת המחדל היא <code>none</code>.</p>
+<p>בקיצור אפשר להוסיף את הדגל:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">-through invalid
+</span></span></code></pre></div><h4 id="הדגל-skipchecks">
+  הדגל <code>skipchecks</code>
+  <a class="heading-link" href="#%d7%94%d7%93%d7%92%d7%9c-skipchecks">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>אפשרות זו חלה על מודלי קבצי טקסט. הוא מורה ל-herd7 להתעלם מתוצאות הבדיקות שניתנו.</p>
+<p>ואפשר להעביר את השמות ברצף עם הפרדה של פסיקים (<code>,</code>) בין השמות.</p>
+<p>לדוגמה אפשר להוסיף את הדגל:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">-skipchecks coherence,happens-before,propagation
+</span></span></code></pre></div><h5 id="בדיקות-בקובץ-המודל">
+  בדיקות בקובץ המודל
+  <a class="heading-link" href="#%d7%91%d7%93%d7%99%d7%a7%d7%95%d7%aa-%d7%91%d7%a7%d7%95%d7%91%d7%a5-%d7%94%d7%9e%d7%95%d7%93%d7%9c">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>על מנת שהאפשרות תפעל, יש לתת שמות של הבדיקות בקובץ המודל עם מבנה:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">as</span> <span class="o">&lt;</span><span class="nc">NAME</span><span class="o">&gt;</span>
+</span></span></code></pre></div><p>למשל דוגמה מהמודל של הקרנל בקובץ <code>linux-kernel.cat</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">acyclic</span> <span class="n">hb</span> <span class="k">as</span> <span class="n">happens</span><span class="o">-</span><span class="n">before</span>
+</span></span></code></pre></div><h4 id="שילוב-של-הדברים-ביחד">
+  שילוב של הדברים ביחד
+  <a class="heading-link" href="#%d7%a9%d7%99%d7%9c%d7%95%d7%91-%d7%a9%d7%9c-%d7%94%d7%93%d7%91%d7%a8%d7%99%d7%9d-%d7%91%d7%99%d7%97%d7%93">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כשרוצים לראות למה תוצאה אסורה אפשר להשתמש בדגלים בצורה הבאה:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl"> -through invalid -show prop -o &lt;DIR&gt;
+</span></span></code></pre></div><p>לדוגמה:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">herd7 -through invalid -bell linux-kernel.bell -macros linux-kernel.def -cat linux-kernel.cat my_tests/C-Z6.0+o-mb-o+acq-o+o-mb-o.litmus -show prop -o ~/kernel/out
+</span></span></code></pre></div><p>ולאחר מכן אפשר להפוך את הפלט של herd7 לתמונה בפורמט png עם הבינארי <code>dot</code> (בלינוקס) שמגיע בחבילה <code>graphviz</code>.</p>
+<p><a href="https://diy.inria.fr/doc/herd.html"  class="external-link" target="_blank" rel="noopener">לקריאה נוספת על הדגלים אפשר לבדוק בתיעוד באתר של herd</a></p>
+<h3 id="פרמטרים-נוספים-ב-cli">
+  פרמטרים נוספים ב-CLI:
+  <a class="heading-link" href="#%d7%a4%d7%a8%d7%9e%d7%98%d7%a8%d7%99%d7%9d-%d7%a0%d7%95%d7%a1%d7%a4%d7%99%d7%9d-%d7%91-cli">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<ul>
+<li>
+<p><code>-o &lt;dest&gt;</code>:
+שומר את קוד C של קבצי הבדיקה בכתובת <code>&lt;dest&gt;</code> במקום להריץ אותם.
+אם <code>&lt;dest&gt;</code> הוא ארכיון (סיומת <code>.tar</code>) או ארכיון דחוס (סיומת <code>.tgz</code>), הכלי litmus7 יבנה ארכיון (וזה בעצם תכונת קימפול cross), ואחרת <code>&lt;dest&gt;</code> יתפרס כשם של תיקייה קיימת שבה נשמרות הבדיקות.</p>
+</li>
+<li>
+<p><code>-crossrun &lt;(user@)?host(:port)?|adb|qemu(:exec)?&gt;</code>:
+כאשר נעשה שימוש בדרייבר של ה-shell (שזה ברירת המחדל של האפשרות driver), שני הארגומנטים הראשונים מאפשרים לסקריפט <code>run.sh</code> להריץ בדיקות בודדות במחשב מרוחק.</p>
+</li>
+<li>
+<p>אפשרות SSH:</p>
+<ul>
+<li>הפרמטר <code>user</code> הוא שם המשתמש להתחברות במחשב המרוחק.</li>
+<li>הפרמטר <code>&lt;host&gt;</code> הוא שם המחשב המרוחק.</li>
+<li>לא חובה להוסיף את מספר ה-port ברירת מחדל (22).</li>
+</ul>
+</li>
+<li>
+<p>אפשרות QEMU:</p>
+<ul>
+<li>הבדיקות יופעלו עם הסימולטור QEMU, כאשר ניתן לציין את שם הבינארי (executable) שלו לאחר <code>:</code>. ברירת המחדל היא ששם ההפעלה הוא <code>qemu</code>.</li>
+<li>הארגומנט <code>qemu</code> מורה לסקריפט ה-shell להשתמש באמולטור QEMU. יש להגדיר את משתנה הסביבה QEMU לנתיב של האמולטור לפני הפעלת הסקריפט <code>run.sh</code>, לדוגמה: <code>QEMU=qemu sh run.sh</code> (שימוש בתחביר של sh).</li>
+</ul>
+</li>
+</ul>
+<h2 id="docker-herdtools7">
+  docker herdtools7
+  <a class="heading-link" href="#docker-herdtools7">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="dockerfile">
+  Dockerfile
+  <a class="heading-link" href="#dockerfile">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>קובץ Dockerfile לדוגמה להרצת כלי herdtools7:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln"> 1</span><span class="cl">FROM ocaml/opam
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">WORKDIR /home/opam
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">RUN opam install herdtools7
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">USER root
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">RUN apt update
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">RUN apt install -qq -y openssh-server
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">RUN <span class="nb">echo</span> <span class="s2">&#34;root:Password1&#34;</span> <span class="p">|</span> chpasswd
+</span></span><span class="line"><span class="ln">12</span><span class="cl">RUN <span class="nb">echo</span> <span class="s2">&#34;opam:Password1&#34;</span> <span class="p">|</span> chpasswd
+</span></span><span class="line"><span class="ln">13</span><span class="cl">RUN sed -i <span class="s2">&#34;s/#PermitRootLogin prohibit-password/PermitRootLogin yes/g&#34;</span> /etc/ssh/sshd_config
+</span></span><span class="line"><span class="ln">14</span><span class="cl">RUN service ssh start
+</span></span><span class="line"><span class="ln">15</span><span class="cl">RUN <span class="nb">echo</span> <span class="s2">&#34;check-certificate=off&#34;</span> &gt; /root/.wgetrc
+</span></span><span class="line"><span class="ln">16</span><span class="cl">
+</span></span><span class="line"><span class="ln">17</span><span class="cl">RUN mkdir -p /home/opam/kernel
+</span></span><span class="line"><span class="ln">18</span><span class="cl">
+</span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="c1"># USER opam</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="c1"># RUN ssh-keygen -A</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl">EXPOSE <span class="m">22</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">CMD <span class="o">[</span><span class="s2">&#34;/usr/sbin/sshd&#34;</span>, <span class="s2">&#34;-D&#34;</span><span class="o">]</span>
+</span></span></code></pre></div><h3 id="בניית-ה-container">
+  בניית ה-container
+  <a class="heading-link" href="#%d7%91%d7%a0%d7%99%d7%99%d7%aa-%d7%94-container">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1"># docker pull ocaml/opam # ???</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">docker build . -t herd
+</span></span><span class="line"><span class="ln">3</span><span class="cl">docker run -p 2231:22 -v &lt;KERNEL_PATH&gt;:<span class="s2">&#34;/home/opam/kernel&#34;</span> herd
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">ssh opam@127.0.0.1 -p <span class="m">2231</span>
+</span></span></code></pre></div><h3 id="שימוש-ב-container">
+  שימוש ב-container
+  <a class="heading-link" href="#%d7%a9%d7%99%d7%9e%d7%95%d7%a9-%d7%91-container">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">docker start 9a7f3dd8da6c
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">ssh opam@127.0.0.1 -p <span class="m">2231</span> <span class="c1"># Password1</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="c1">### or ###</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">docker <span class="nb">exec</span> -it 9a7f3dd8da6c bash
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="nb">cd</span> kernel/tools/memory-model
+</span></span><span class="line"><span class="ln">8</span><span class="cl">
+</span></span><span class="line"><span class="ln">9</span><span class="cl">herd7 -macros linux-kernel.def -bell linux-kernel.bell -cat linux-kernel.cat t1/test02.litmus -show prop -o ~/kernel/out
+</span></span></code></pre></div><h3 id="יצוא-דיאגרמה">
+  יצוא דיאגרמה
+  <a class="heading-link" href="#%d7%99%d7%a6%d7%95%d7%90-%d7%93%d7%99%d7%90%d7%92%d7%a8%d7%9e%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">sudo apt update -y
+</span></span><span class="line"><span class="ln">2</span><span class="cl">sudo apt install -y graphviz
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">herd7 &lt;CMD&gt; -show all -o &lt;DIR&gt;
+</span></span><span class="line"><span class="ln">5</span><span class="cl">
+</span></span><span class="line"><span class="ln">6</span><span class="cl">dot -Tpng &lt;FILE.dot&gt; &gt; &lt;OUTPUT&gt;.png
+</span></span></code></pre></div><hr>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://www.joelfernandes.org/resources/lkmm_herd7.pdf">https://www.joelfernandes.org/resources/lkmm_herd7.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://diy.inria.fr/doc/herd.html">https://diy.inria.fr/doc/herd.html</a>
+    </li>
+  
+    <li>
+      <a href="https://lwn.net/Articles/720550/">https://lwn.net/Articles/720550/</a>
+    </li>
+  
+    <li>
+      <a href="https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf">https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/recipes.txt">https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/recipes.txt</a>
+    </li>
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Instruction_scheduling">https://en.wikipedia.org/wiki/Instruction_scheduling</a>
+    </li>
+  
+    <li>
+      <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/herd.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/herd.html</a>
+    </li>
+  
+    <li>
+      <a href="https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/litmus-tests.txt">https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/litmus-tests.txt</a>
+    </li>
+  
+    <li>
+      <a href="https://diy.inria.fr/doc/diy.pdf">https://diy.inria.fr/doc/diy.pdf</a>
+    </li>
+  
+    <li>
+      <a href="http://www0.cs.ucl.ac.uk/staff/j.alglave/papers/toplas21.pdf">http://www0.cs.ucl.ac.uk/staff/j.alglave/papers/toplas21.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html</a>
+    </li>
+  
+    <li>
+      <a href="https://diy.inria.fr/doc/litmus.html">https://diy.inria.fr/doc/litmus.html</a>
+    </li>
+  
+    <li>
+      <a href="https://diy.inria.fr/linux/long.pdf">https://diy.inria.fr/linux/long.pdf</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-memory-models" dir="rtl">        רואה עוד ב memory-models
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-memory-models">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/models/lkmm-code-examples/">LKMM Code Examples</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/lkmm/">LKMM</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/dependency/">Dependency</a>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/models/">Models</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/base-formal/">Base Formal</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

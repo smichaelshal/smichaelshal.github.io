@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Cache maintenance · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  תחזוקת cache בתוכנה
+  
+    
+    Link to heading
+  
+
+לעיתים יש צורך בתוכנה לבצע פעולות ניקוי או ביטול של ה-cache. פעולות אלו נדרשות כאשר תוכן הזיכרון החיצוני השתנה, ויש צורך להבטיח שה-cache אינו מכיל נתונים מיושנים. פעולות אלו יכולות להיות נדרשות גם לאחר שינויים הקשורים ל-MMU כמו שינוי הרשאות גישה, מדיניות cache, מיפוי כתובות וירטואליות לכתובת פיזית, או כאשר ה-I-caches ו-D-caches חייבים להיות מסונכרנים לקוד שנוצר באופן דינמי, כגון ב-JIT-compilers וטועני ספריות דינמיות.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Cache maintenance">
+  <meta name="twitter:description" content="תחזוקת cache בתוכנה Link to heading לעיתים יש צורך בתוכנה לבצע פעולות ניקוי או ביטול של ה-cache. פעולות אלו נדרשות כאשר תוכן הזיכרון החיצוני השתנה, ויש צורך להבטיח שה-cache אינו מכיל נתונים מיושנים. פעולות אלו יכולות להיות נדרשות גם לאחר שינויים הקשורים ל-MMU כמו שינוי הרשאות גישה, מדיניות cache, מיפוי כתובות וירטואליות לכתובת פיזית, או כאשר ה-I-caches ו-D-caches חייבים להיות מסונכרנים לקוד שנוצר באופן דינמי, כגון ב-JIT-compilers וטועני ספריות דינמיות.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/cache/cache-maintenance/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Cache maintenance">
+  <meta property="og:description" content="תחזוקת cache בתוכנה Link to heading לעיתים יש צורך בתוכנה לבצע פעולות ניקוי או ביטול של ה-cache. פעולות אלו נדרשות כאשר תוכן הזיכרון החיצוני השתנה, ויש צורך להבטיח שה-cache אינו מכיל נתונים מיושנים. פעולות אלו יכולות להיות נדרשות גם לאחר שינויים הקשורים ל-MMU כמו שינוי הרשאות גישה, מדיניות cache, מיפוי כתובות וירטואליות לכתובת פיזית, או כאשר ה-I-caches ו-D-caches חייבים להיות מסונכרנים לקוד שנוצר באופן דינמי, כגון ב-JIT-compilers וטועני ספריות דינמיות.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-09-16T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-09-16T00:00:00+00:00">
+    <meta property="article:tag" content="Cache">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Memory">
+    <meta property="article:tag" content="Coherence-Protocol">
+    <meta property="article:tag" content="Instruction">
+    <meta property="article:tag" content="Cache-Coherence">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/multi-copy-atomicity/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/snoop--directory/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/cache-coherence/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/cache/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/cache/cache-maintenance/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/cache/cache-maintenance/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/cache/cache-maintenance/">
+              Cache maintenance
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-09-16T00:00:00Z">
+                ספטמבר 16, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                1578 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/cache/">Cache</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory/">Memory</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/coherence-protocol/">Coherence-Protocol</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/instruction/">Instruction</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache-coherence/">Cache-Coherence</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/x86/">X86</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/arm/">Arm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/asm/">Asm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba/">Amba</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba-chi/">Amba-Chi</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba-ace/">Amba-Ace</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="תחזוקת-cache-בתוכנה">
+  תחזוקת cache בתוכנה
+  <a class="heading-link" href="#%d7%aa%d7%97%d7%96%d7%95%d7%a7%d7%aa-cache-%d7%91%d7%aa%d7%95%d7%9b%d7%a0%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>לעיתים יש צורך בתוכנה לבצע פעולות ניקוי או ביטול של ה-cache. פעולות אלו נדרשות כאשר תוכן הזיכרון החיצוני השתנה, ויש צורך להבטיח שה-cache אינו מכיל נתונים מיושנים. פעולות אלו יכולות להיות נדרשות גם לאחר שינויים הקשורים ל-MMU כמו שינוי הרשאות גישה, מדיניות cache, מיפוי כתובות וירטואליות לכתובת פיזית, או כאשר ה-I-caches ו-D-caches חייבים להיות מסונכרנים לקוד שנוצר באופן דינמי, כגון ב-JIT-compilers וטועני ספריות דינמיות.</p>
+<ul>
+<li>
+<p>ביטול (Invalidation) של cache או cache line: פעולה זו כוללת ניקוי של ה-cache מנתונים ללא כתיבה לרמה הבאה או לזיכרון הראשי על ידי ביטול של cache line אחת או יותר. משמעות הדבר היא שה-cache מסומן כ-invalid, ולכן תוכן השורות אינו מוגדר. אפשר לראות זאת כדרך להסיר שינויים בתחום הזיכרון מה-cache, כך שהנתונים המחודשים מהזיכרון החיצוני יכנסו ל-cache בצורה נכונה.</p>
+</li>
+<li>
+<p>ניקוי של cache line או cache: פעולה זו כוללת כתיבה של התוכן של שורות ה-cache המסומנות כמלוכלכות לרמה הבאה של ה-cache או ישירות לזיכרון הראשי, ולאחר מכן ניקוי ביט ה-dirty ב-cache line. פעולה זו מבטיחה שהתוכן של ה-cache line יהיה תואם עם הרמה הבאה של ה-cache או עם מערכת הזיכרון.</p>
+</li>
+</ul>
+<h3 id="פעולות-תחזוקת-cache-והשפעתן">
+  פעולות תחזוקת cache והשפעתן
+  <a class="heading-link" href="#%d7%a4%d7%a2%d7%95%d7%9c%d7%95%d7%aa-%d7%aa%d7%97%d7%96%d7%95%d7%a7%d7%aa-cache-%d7%95%d7%94%d7%a9%d7%a4%d7%a2%d7%aa%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בנסיבות רגילות, פעולות של ניקוי או ביטול של כל ה-cache מתבצעות בעיקר על ידי ה-firmware כחלק מתהליך ההדלקה או הכיבוי של הליבה. תהליך זה עשוי לקחת זמן משמעותי, במיוחד כאשר מדובר ב-cache L2, שבו מספר השורות יכול להיות גדול מאוד. במקרה כזה, יש לעבור על כל השורות בלולאה אחת אחת, מה שיכול להאריך את זמן הביצוע.</p>
+<h2 id="x86">
+  x86
+  <a class="heading-link" href="#x86">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="cache-line-writeback-and-flush">
+  Cache Line Writeback and Flush
+  <a class="heading-link" href="#cache-line-writeback-and-flush">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הוראת <code>CLFLUSH</code> מקבלת כתובת ומבצעת בדיקה האם הכתובת נמצאת ב-cache. אם הכתובת קיימת ב-cache, כל שורת ה-cache הכוללת את הכתובת נעשית לא חוקית. במקרה שחלק כלשהו מהשורה במצב מלוכלך (כלומר, modified או owned ב-MOESI), כל השורה נכתבת חזרה לזיכרון הראשי לפני שהיא מבוטלת. <code>CLFLUSH</code> משפיעה על כל ה-cache-ים שביררכיית הזיכרון, כולל ה-cache-ים הפנימיים וחיצוניים למעבד, וכן על כל הליבות במעבד. לעומת זאת, הוראת <code>CLWB</code> פועלת בצורה דומה, אך היא לא מבטלת את שורת ה-cache. התהליך של הבדיקה והביטול נמשך עד שהכתובת עודכנה בזיכרון, ובמקרה של <code>CLFLUSH</code>, עד שכל ה-cache-ים הקשורים בכתובת זו בוטלו.</p>
+<p>באופן כללי, סוג הזיכרון הבסיסי שהוקצה לכתובת לא משפיע על אופן פעולת ההוראה הזו. עם זאת, כאשר סוג הזיכרון הבסיסי עבור הכתובת מוגדר כ-Uncacheable או Write Combining, המעבד לא ימשיך לבדוק את כל ה-cache-ים כדי לוודא אם הכתובת נמצאת בהם. במצבים אלו, הכתובת אינה ניתנת לשמירה והביטול של התוקף הוא מיותר. כמו כן, אם הכתובת הפיזית המתאימה נופלת בטווח הכתובת הפעילה של Write-Combining Buffer, הנתונים ב-buffer יכתבו חזרה לזיכרון.</p>
+<h3 id="cache-writeback-and-invalidate">
+  Cache Writeback and Invalidate
+  <a class="heading-link" href="#cache-writeback-and-invalidate">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בניגוד להוראות <code>CLFLUSH</code> ו-<code>CLWB</code>, אשר פועלות על cache line בודדת, ההוראות <code>WBINVD</code> ו-<code>WBNOINVD</code> משפיעות על כל ה-cache במערכת. כאשר מופעלת הוראת <code>WBINVD</code>, היא מתחילה בכתיבה write-back של כל שורות ה-cache המלוכלכות (כלומר, שורות במצב modified או owned ב-MOESI) אל הזיכרון הראשי. הוראת <code>WBINVD</code> מבטלת גם את כל שורות ה-cache. תהליך זה נמשך עד שכל ה-cache-ים הפנימיים בנתיב של הליבה המבצעת לזיכרון המערכת מתבטלים. במצבים מסוימים, תהליך זה עשוי לכלול גם cache-ים ברמות אחרות בהיררכיית ה-cache של המערכת. לכל אחת מההוראות, מתבצע מחזור bus מיוחד שנשלח ל-cache-ים חיצוניים ברמות גבוהות יותר, כדי להנחות אותם לבצע פעולות כתיבה וביטול תוקף.</p>
+<h3 id="cache-invalidate">
+  Cache Invalidate
+  <a class="heading-link" href="#cache-invalidate">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הוראת <code>INVD</code> מיועדת לבטל את כל שורות ה-cache. בניגוד להוראת <code>WBINVD</code>, הוראת <code>INVD</code> לא מבצעת כתיבה write-back של שורות ה-cache המלוכלכות אל הזיכרון הראשי. התהליך נמשך עד שכל ה-cache-ים הפנימיים בוטלו. בנוסף, מתבצע מחזור bus מיוחד המועבר ל-cache-ים חיצוניים ברמות גבוהות יותר, כדי להנחות אותם לבצע ביטול תוקף. יש להשתמש בהוראת <code>INVD</code> רק במצבים שבהם קוהרנטיות הזיכרון איננה נדרשת.</p>
+<h2 id="arm">
+  Arm
+  <a class="heading-link" href="#arm">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>ב-arm יש תבנית דומה לפעולות תחזוקת cache ל-data cache ול-instruction cache וכל פעולה כזאת מקבלת פרמטרים שבעזרתם ניתן לבצע את הפעולה לדיוק ולמיקום הנכון.</p>
+<h3 id="סוג-ה-cache">
+  סוג ה-cache
+  <a class="heading-link" href="#%d7%a1%d7%95%d7%92-%d7%94-cache">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הדבר הראשון שצריך לבחור זה כמובן את סוג ה-cache שעליו רוצים להפעיל את הפעולה:</p>
+<ul>
+<li>פעולות על ה-data cache מתבצעות על ידי ההוראה <code>DC</code></li>
+<li>פעולות על ה-instruction cache מתבצעות על ידי ההוראה <code>IC</code></li>
+</ul>
+<h3 id="סוג-הפעולה">
+  סוג הפעולה
+  <a class="heading-link" href="#%d7%a1%d7%95%d7%92-%d7%94%d7%a4%d7%a2%d7%95%d7%9c%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כמו ב-x86 גם ב-arm ניתן לבחור בין 2 פעולות על ה-cache-ים:</p>
+<ul>
+<li>ניקוי של cache line או cache (מסומן על ידי <code>C</code>)</li>
+<li>ביטול של cache line או cache  (מסומן על ידי <code>I</code>)</li>
+</ul>
+<h3 id="ערכים-מושפעים">
+  ערכים מושפעים
+  <a class="heading-link" href="#%d7%a2%d7%a8%d7%9b%d7%99%d7%9d-%d7%9e%d7%95%d7%a9%d7%a4%d7%a2%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בעת ביצוע פעולות תחזוקת cache, ניתן לבחור באילו ערכים הפעולה צריכה לחול:</p>
+<ul>
+<li>
+<p>לכל הערכים (<code>All</code>): פעולה זו משפיעה על כל ה-cache במערכת. הבחירה ב-<code>All</code> אינה זמינה עבור data cache.</p>
+</li>
+<li>
+<p>לכתובת הוירטואלית (<code>VA</code>): פעולה זו מתבצעת על שורת ה-cache המכילה תוכן של כתובת וירטואלית ספציפית. כאן מתייחסים ל-cache על פי כתובת וירטואלית.</p>
+</li>
+<li>
+<p>ה-Set ו-Way: פעולה זו מתבצעת על cache line ספציפית שנבחרת לפי מיקומה בתוך מבנה ה-cache, כלומר לפי ה-Set וה-Way שלה.</p>
+</li>
+</ul>
+<h3 id="הגדרת-נקודת-ביצוע-והיקף-תחזוקת-cache">
+  הגדרת נקודת ביצוע והיקף תחזוקת cache
+  <a class="heading-link" href="#%d7%94%d7%92%d7%93%d7%a8%d7%aa-%d7%a0%d7%a7%d7%95%d7%93%d7%aa-%d7%91%d7%99%d7%a6%d7%95%d7%a2-%d7%95%d7%94%d7%99%d7%a7%d7%a3-%d7%aa%d7%97%d7%96%d7%95%d7%a7%d7%aa-cache">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-scope ביצוע הפעולה יכול להיות PoC או PoU.</p>
+<h4 id="point-of-unification">
+  Point of Unification
+  <a class="heading-link" href="#point-of-unification">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>עשויות להתקיים מספר נקודות איחוד (PoU) במערכת:</p>
+<ol>
+<li>
+<p><strong>נקודת איחוד לכל ליבה:</strong> כל ליבה במערכת עשויה להכיל נקודת איחוד משלה. בנקודה זו, כל הוראות הזיכרון ונתוני ה-cache הקשורים לליבה זו מאוחדים, כלומר, כל שינויים בזיכרון הנתונים או הוראות cache בליבה זו מתואמים ונראים כאחידים בליבה עצמה.</p>
+</li>
+<li>
+<p><strong>נקודת איחוד למערכת כולה או לתחום שיתוף:</strong> בנוסף, עשויה להתקיים נקודת איחוד ברמה גבוהה יותר, המתייחסת למערכת כולה או לתחום השיתוף הכולל. בנקודה זו, כל ה-cache-ים במערכת או בתחום השיתוף מאוחדים, כך שכל השינויים המתרחשים ב-cache הנתונים או הוראות ה-cache נראים כאחידים בכל המעבדים המשתפים את אותו תחום.</p>
+</li>
+</ol>
+<p>כאשר מתבצעת fetch מכתיבה, זה מרמז שהשינוי הגיע לנקודת האיחוד הקרובה ביותר (PoU), כלומר, כל השינויים נשמרים ומעודכנים עד לנקודה זו. עם זאת, זה לא מרמז שהשינוי הגיע לכל נקודת איחוד אחרת במערכת, גם אם הכתיבה בוצעה על ידי ליבה מרוחקת או מעבד אחר במערכת.</p>
+<p>הכרת ה-PoU מאפשרת self modifying code  כדי להבטיח ש-fetch של הוראות עתידיות יבוצעו בצורה נכונה מהגרסה של הקוד שעבר את השינוי.</p>
+<h4 id="point-of-coherency">
+  Point of Coherency
+  <a class="heading-link" href="#point-of-coherency">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>נקודות הקוהרנטיות (PoC) - היא הנקודה שבה עדכוני ה-cache נדחפים לזיכרון הפיזי. לכן כל הליבות, DSPs, התקני I/O, מנועי DMA וכו&rsquo; כולם רואים את אותו עותק של זיכרון.</p>
+<h3 id="סוג-השיתוף">
+  סוג השיתוף
+  <a class="heading-link" href="#%d7%a1%d7%95%d7%92-%d7%94%d7%a9%d7%99%d7%aa%d7%95%d7%a3">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>לפעולות שניתן לשדר, אתה יכול לבחור את רמת השיתוף:</p>
+<ul>
+<li>סוג השיתוף Inner Shareable מסומן על ידי <code>IS</code></li>
+</ul>
+<h3 id="ה-cache-ברמת-המערכת">
+  ה-cache ברמת המערכת
+  <a class="heading-link" href="#%d7%94-cache-%d7%91%d7%a8%d7%9e%d7%aa-%d7%94%d7%9e%d7%a2%d7%a8%d7%9b%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>מבחינה קונספטואלית, ניתן להבחין ב-2 קטגוריות עיקריות של cache-י מערכת ב-arm:</p>
+<ol>
+<li>
+<p>ה-cache-י מערכת לפני נקודת הקוהרנטיות הניתנים לניהול חלקי: cache-י מערכת אלה נמצאים לפני נקודת הקוהרנטיות וניתנים לניהול באמצעות הוראות תחזוקה של cache על פי כתובת וירטואלית החלות על נקודת הקוהרנטיות. עם זאת, הם אינם ניתנים לניהול על ידי הוראות תחזוקה לפי set/way. תחזוקה של cache-ים כאלה, כמו במקרה של ניהול צריכת חשמל, חייבת להתבצע באמצעות מנגנונים שאינם ארכיטקטוניים.</p>
+</li>
+<li>
+<p>ה-cache-י מערכת מעבר לנקודת הקוהרנטיות: cache-ים אלה נמצאים מעבר לנקודת הקוהרנטיות ולכן אינם נגישים לתוכנה. ניהול cache-ים כאלה אינו נכלל בתחום הארכיטקטורה ונתון לניהול מחוץ למערכת הארכיטקטונית.</p>
+</li>
+</ol>
+<p>במערכת מרובת מעבדים, כאשר משתמשים בהוראת <code>IC IVAU</code> עבור מיקום non-cacheable, ההוראה משודרת לכל המעבדים בתוך התחום Inner Shareable של המעבד שמבצע את ההוראה. זאת למרות שמיקומי זיכרון רגילים שאינם נתמכים על ידי cache מטופלים כאל Outer Shared במצבים אחרים של הארכיטקטורה.</p>
+<p>ייתכן שיידרשו צעדים נוספים בתוכנה כדי לסנכרן את פעולות המעבדים עם המעבדים האחרים. זה עשוי לכלול ביצוע הוראת ISB לאחר השלמת ביטול התוקף, על מנת למנוע בעיות הקשורות לשינויים וביצוע במקביל של רצפי הוראות.</p>
+<p>בלוקים גדולים יותר של הוראות ניתן לשנות באמצעות הוראת <code>IC IALLU</code> במערכת חד-מעבד, או באמצעות <code>IC IALLUIS</code> במערכת מרובת מעבדים.</p>
+<h4 id="איפוס-cache-zero">
+  איפוס cache (Zero)
+  <a class="heading-link" href="#%d7%90%d7%99%d7%a4%d7%95%d7%a1-cache-zero">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>יכולת טעינת ה-cache מראש עם ערכי אפס באמצעות הוראת <code>DC ZVA</code> מאפשרת למעבדים לפעול בצורה הרבה יותר מהירה לעומת גישה למערכות זיכרון חיצוניות, שלעיתים יכולה לקחת הרבה זמן.</p>
+<p>איפוס cache line מתבצע בצורה דומה לשליפה מוקדמת, בכך שמדובר בדרכים לרמוז למעבד על השימוש הצפוי בכתובות מסוימות בעתיד. עם זאת, פעולת האיפוס יכולה להיות מהירה יותר מכיוון שאין צורך להמתין להשלמת גישה לזיכרון חיצוני. במקום לקרוא את הנתונים מהזיכרון לתוך ה-cache, שורות ה-cache מתמלאות באפסים. זה מאפשר למעבד להבין שהקוד מחליף לחלוטין את תוכן שורת ה-cache, ולכן אין צורך בקריאה ראשונית.</p>
+<p>דוגמה לשימוש: אם אתה זקוק ל-buffer אחסון זמני גדול או מאתחל מבנה חדש, תוכל לבחור בין כתיבת קוד שיתחיל להשתמש בזיכרון או קוד שיבצע טעינה מראש של הנתונים לפני השימוש. שני האפשרויות ידרשו זמן ומעבד לשימוש ברוחב פס זיכרון בקריאת התוכן הראשוני ל-cache. באמצעות אפס cache, תוכל לחסוך את רוחב הפס הנדרש ולבצע את הקוד מהר יותר.</p>
+<h2 id="amba-acechi">
+  AMBA ACE/CHI
+  <a class="heading-link" href="#amba-acechi">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="מעבדים-ותחזוקת-cache">
+  מעבדים ותחזוקת cache
+  <a class="heading-link" href="#%d7%9e%d7%a2%d7%91%d7%93%d7%99%d7%9d-%d7%95%d7%aa%d7%97%d7%96%d7%95%d7%a7%d7%aa-cache">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>מעבדים משתמשים בטרנזקציות תחזוקת cache כדי לגשת ולתחזק את ה-cache-ים של מעבדים אחרים במערכת. טרנזקציות תחזוקה אלו מאפשרות למעבדים לראות את ההשפעה של פעולות load ו-store על cache מערכת שלא ניתן לגשת אליו בדרכים אחרות.
+טרנזקציות תחזוקת cache שידור יכולות להתפשט גם ל-cache-ים ב-downstream, מה שמאפשר תחזוקה של כל ה-cache-ים במערכת.</p>
+<p>מעבד היוזם טרנזקציית תחזוקת cache אחראי גם לביצוע הפעולה המתאימה ב-cache המקומי שלו.</p>
+<h4 id="טרנזקציות-תחזוקת-cache">
+  טרנזקציות תחזוקת cache
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%aa%d7%97%d7%96%d7%95%d7%a7%d7%aa-cache">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<ul>
+<li>
+<p>טרנזקציית CleanShared מאפשרת למעבד לבצע פעולת ניקוי על ה-cache-ים של מעבדים אחרים במערכת. כאשר cache של מעבד שמחזיק cache line מלוכלכת מקבל טרנזקציית CleanShared, עליו לספק את שורת ה-cache כדי לכתוב אותה לזיכרון הראשי. ה-cache שמבצעים עליו snooping יכול לשמור את העותק המקומי שלו של שורת ה-cache.</p>
+</li>
+<li>
+<p>טרנזקציית CleanInvalid מאפשרת למעבד לבצע פעולת ניקוי וביטול תוקף על ה-cache-ים של מעבדים אחרים במערכת. כאשר cache שמחזיק cache line נקייה מקבל טרנזקציית CleanInvalid, עליו להסיר את העותק המקומי שלו של שורת ה-cache. אם ה-cache שמבצעים עליו snooping מחזיק cache line מלוכלכת, הוא נדרש לספק את שורת ה-cache כדי לכתוב אותה לזיכרון הראשי ולהסיר את העותק המקומי שלו.</p>
+</li>
+<li>
+<p>טרנזקציית MakeInvalid מאפשרת למעבד לבצע פעולת ביטול תוקף על ה-cache-ים של מעבדים אחרים במערכת. כאשר ה-cache שמבצעים עליו snooping מקבל טרנזקציית MakeInvalid, עליו להסיר את העותק המקומי שלו של שורת ה-cache, אך אינו נדרש לספק נתונים, גם אם שורת ה-cache מלוכלכת.</p>
+</li>
+</ul>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/den0024/a/Caches/Cache-maintenance">https://developer.arm.com/documentation/den0024/a/Caches/Cache-maintenance</a>
+    </li>
+  
+    <li>
+      <a href="https://inria.hal.science/hal-02509910/document">https://inria.hal.science/hal-02509910/document</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/ihi0050/latest/">https://developer.arm.com/documentation/ihi0050/latest/</a>
+    </li>
+  
+    <li>
+      <a href="https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf">https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/107565/0101/Memory-system/Caches-and-memory-hierarchy/Implications-of-caches-for-programmers?lang=en">https://developer.arm.com/documentation/107565/0101/Memory-system/Caches-and-memory-hierarchy/Implications-of-caches-for-programmers?lang=en</a>
+    </li>
+  
+    <li>
+      <a href="https://mariokartwii.com/armv8">https://mariokartwii.com/armv8</a>
+    </li>
+  
+    <li>
+      <a href="https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/memory-access-ordering---an-introduction">https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/memory-access-ordering---an-introduction</a>
+    </li>
+  
+    <li>
+      <a href="https://documentation-service.arm.com/static/65fdad3c1bc22b03bca90781?token=">https://documentation-service.arm.com/static/65fdad3c1bc22b03bca90781?token=</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/den0024/a/Caches/Point-of-coherency-and-unification">https://developer.arm.com/documentation/den0024/a/Caches/Point-of-coherency-and-unification</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-cache" dir="rtl">        רואה עוד ב cache
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-cache">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/cache/multi-copy-atomicity/">Multi-copy atomicity</a>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/cache/snoop--directory/">Snoop &amp; Directory</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/cache/cache-coherence/">Cache coherence</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/cache/cache/">Cache</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>
