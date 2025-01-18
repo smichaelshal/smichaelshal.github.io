@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Domains · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  מבוא
+  
+    
+    Link to heading
+  
+
+הגישה לנתוני זיכרון עלולה להיות איטית יותר ולדרוש יותר כוח במערכות שבהן יש חומרת cache קוהרנטית, בהשוואה למערכות ללא מנגנון זה. כדי לצמצם את העלות הזו, נהוג לשמור על קוהרנטיות רק בין חלק מהרכיבים, תוך דאגה שהם ממוקמים קרוב פיזית זה לזה בתוך המעבד. לשם כך, ארכיטקטורת ARM מחלקת את המערכת לדומיינים, מה שמאפשר להגביל את הדרישה לקוהרנטיות רק לאזורים שבהם היא באמת נחוצה.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Domains">
+  <meta name="twitter:description" content="מבוא Link to heading הגישה לנתוני זיכרון עלולה להיות איטית יותר ולדרוש יותר כוח במערכות שבהן יש חומרת cache קוהרנטית, בהשוואה למערכות ללא מנגנון זה. כדי לצמצם את העלות הזו, נהוג לשמור על קוהרנטיות רק בין חלק מהרכיבים, תוך דאגה שהם ממוקמים קרוב פיזית זה לזה בתוך המעבד. לשם כך, ארכיטקטורת ARM מחלקת את המערכת לדומיינים, מה שמאפשר להגביל את הדרישה לקוהרנטיות רק לאזורים שבהם היא באמת נחוצה.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/arm/domains/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Domains">
+  <meta property="og:description" content="מבוא Link to heading הגישה לנתוני זיכרון עלולה להיות איטית יותר ולדרוש יותר כוח במערכות שבהן יש חומרת cache קוהרנטית, בהשוואה למערכות ללא מנגנון זה. כדי לצמצם את העלות הזו, נהוג לשמור על קוהרנטיות רק בין חלק מהרכיבים, תוך דאגה שהם ממוקמים קרוב פיזית זה לזה בתוך המעבד. לשם כך, ארכיטקטורת ARM מחלקת את המערכת לדומיינים, מה שמאפשר להגביל את הדרישה לקוהרנטיות רק לאזורים שבהם היא באמת נחוצה.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-10-05T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-10-05T00:00:00+00:00">
+    <meta property="article:tag" content="Arm">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Ordering">
+    <meta property="article:tag" content="Amba">
+    <meta property="article:tag" content="Amba-Ace">
+    <meta property="article:tag" content="Asm">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/arm/early-write-acknowledgment/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/arm/domains/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/arm/domains/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/arm/domains/">
+              Domains
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-10-05T00:00:00Z">
+                אוקטובר 5, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                1626 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/arm/">Arm</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/arm/">Arm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/ordering/">Ordering</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba/">Amba</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba-ace/">Amba-Ace</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/asm/">Asm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="מבוא">
+  מבוא
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%95%d7%90">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>הגישה לנתוני זיכרון עלולה להיות איטית יותר ולדרוש יותר כוח במערכות שבהן יש חומרת cache קוהרנטית, בהשוואה למערכות ללא מנגנון זה. כדי לצמצם את העלות הזו, נהוג לשמור על קוהרנטיות רק בין חלק מהרכיבים, תוך דאגה שהם ממוקמים קרוב פיזית זה לזה בתוך המעבד. לשם כך, ארכיטקטורת ARM מחלקת את המערכת לדומיינים, מה שמאפשר להגביל את הדרישה לקוהרנטיות רק לאזורים שבהם היא באמת נחוצה.</p>
+<p>המורכבות של פרוטוקולי קוהרנטיות cache משתנה בהתאם לחלקים של המערכת שבהם יש לשמור על סנכרון. בהתאם למבנה המערכת, פרוטוקול קוהרנטיות יכול להיות פשוט או מסובך.</p>
+<p>יש כל מיני מערכות שמסוגלות לתמוך במספר פרוטוקולים שונים של קוהרנטיות, בהתאם לחלקים במערכת שבהם שומרים על סנכרון.</p>
+<h2 id="shareability">
+  Shareability
+  <a class="heading-link" href="#shareability">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="זיכרון-רגיל-shareable">
+  זיכרון רגיל Shareable
+  <a class="heading-link" href="#%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f-%d7%a8%d7%92%d7%99%d7%9c-shareable">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>למיקומי זיכרון רגיל קיימת תכונת Shareability אשר יכולה להיות באחת מהקטגוריות הבאות:</p>
+<ul>
+<li>ניתן לשיתוף Inner: תכונה זו חלה בתוך דומיין השיתוף Inner בלבד.</li>
+<li>ניתן לשיתוף Outer: תכונה זו חלה על דומיין השיתוף Inner וגם ה-Outer.</li>
+<li>לא ניתן לשיתוף: המיקום אינו תומך בשיתוף בין רכיבים שונים.</li>
+<li>מערכת (System): כמו השם שלו, הוא כולל את כל רכיבי המערכת.</li>
+</ul>
+<p>תכונות השיתוף הללו נועדו להגדיר את דרישות הקוהרנטיות של הנתונים הנמצאים במיקום זה, והחומרה נדרשת לאכוף את הדרישות הללו. עם זאת, תכונות השיתוף אינן משפיעות על דרישות הקוהרנטיות הקשורות לשליפת הוראות.</p>
+<p>הערות:
+- מתכנני המערכת יכולים להשתמש בתכונת השיתוף כדי להגדיר אילו מיקומי זיכרון רגיל דורשים שמירה על קוהרנטיות. עם זאת, אין להניח שציון מיקום כ-Non-Shareable מאפשר לתוכנה להסיק שהמיקום אינו עקבי בין יחידות עיבוד שונות במערכת זיכרון משותף. הנחות כאלו אינן ניידות בין מערכות עם ריבוי מעבדים, אשר עשויות להשתמש באופן שונה בתכונת השיתוף.
+- כל יישום של מערכת עם ריבוי מעבדים עשוי לכלול cache שמשותף באופן טבעי בין יחידות עיבוד שונות.</p>
+<p>לכל טרנזקציה של גישה לזיכרון במערכת מוקצה מצב shareability שמבוסס על מספר גורמים:</p>
+<ul>
+<li>תכונות הזיכרון: מאפייני האזור שאליו מתבצעת הגישה, שנקבעים על פי טבלאות תרגום ה-MMU.</li>
+<li>קונפיגורציית ה-core: התצורה של הליבות, שעשויה להשתנות בין ליבות שונות באותו cluster.</li>
+<li>יישום Interconnect: האופן שבו המעבדים מחוברים ביניהם משפיע גם הוא על קוהרנטיות.</li>
+<li>אינטגרציה של Interconnect: ההשפעה של מערכות interconnect המחברות בין המעבדים והמערכות המחוברות אליהן.</li>
+</ul>
+<h3 id="שיתוף-inner-ושיתוף-outer">
+  שיתוף Inner ושיתוף Outer
+  <a class="heading-link" href="#%d7%a9%d7%99%d7%aa%d7%95%d7%a3-inner-%d7%95%d7%a9%d7%99%d7%aa%d7%95%d7%a3-outer">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בארכיטקטורת ARM, המערכת מחולקת באופן מופשט לדומיינים של שיתוף Inner ושיתוף Outer.</p>
+<ul>
+<li>
+<p>דומיין שיתוף פנימי (Inner Shareable Domain): זהו דומיין הכולל קבוצה של יחידות עיבוד שצופות יחד באותם נתונים, ודורשות שהנתונים יישארו עקביים ביניהן כאשר נעשות גישות למיקומים בעלי תכונת השיתוף Inner.</p>
+</li>
+<li>
+<p>דומיין שיתוף חיצוני (Outer Shareable Domain): דומיין זה כולל קבוצה של יחידות עיבוד אשר הנתונים שלהן צריכים להיות עקביים ביניהן כאשר הן ניגשות לנתונים בעלי תכונת השיתוף Outer.</p>
+</li>
+</ul>
+<h4 id="דגשים">
+  דגשים:
+  <a class="heading-link" href="#%d7%93%d7%92%d7%a9%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<ul>
+<li>כל יחידת עיבוד משתייכת רק לדומיין שיתוף Inner אחד.</li>
+<li>כל יחידת עיבוד משתייכת רק לדומיין שיתוף Outer אחד.</li>
+<li>כל יחידות העיבוד השייכות לאותו דומיין שיתוף Inner, הן גם חברים באותו דומיין שיתוף Outer. כלומר, דומיין השיתוף Inner הוא תמיד תת-קבוצה של דומיין השיתוף Outer.</li>
+</ul>
+<p>הרעיון שהדומיין שיתוף Inner הוא תמיד תת-קבוצה של דומיין השיתוף Outer יוצר היררכיה ברורה בין ה-agent-ים ודומייני השיתוף השונים.</p>
+<p>הרעיון מאחורי ההיררכיה הזו הוא שכאשר ה-agent-ים נמצאים בתוך דומיין שיתוף Inner, התקשורת ביניהם עשויה להיות מהירה יותר וחסכונית יותר בצריכת האנרגיה. לעומת זאת, שמירה על סנכרון בין כל ה-agent-ים בדומיין השיתוף Outer היא הכרחית על מנת להבטיח פעולה תקינה ומסודרת.</p>
+<p>למשל, אם אנו יודעים שטווח זיכרון מסוים משמש רק על ידי agent-ים הנמצאים באותו דומיין שיתוף פנימי, נוכל לסמן את אותו טווח כניתן לשיתוף פנימי, ובכך לייעל את הגישה אליו.</p>
+<p>בצד השני של הספקטרום, כאשר טווח זיכרון משמש מכשירים השייכים לדומיינים שיתוף Inner-ים שונים, אך הם נמצאים באותו דומיין שיתוף Outer, עלינו לסמן את אותו טווח כניתן לשיתוף Outer.</p>
+<h4 id="הערות-נוספות">
+  הערות נוספות:
+  <a class="heading-link" href="#%d7%94%d7%a2%d7%a8%d7%95%d7%aa-%d7%a0%d7%95%d7%a1%d7%a4%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<ul>
+<li>
+<p>כל גישה לנתונים ממיקומים Non-cacheable תמיד מתבצעת בצורה קוהרנטית עבור כל רכיבי עיבוד, ולכן מיקומים כאלה תמיד מטופלים כשייכים לדומיין השיתוף החיצוני.</p>
+</li>
+<li>
+<p>דומיין Inner צפוי להיות הקבוצה של יחידות העיבוד שנשלטות על ידי מערכת הפעלה אחת או hypervisor אחד, ובנוסף הארכיטקטורה מניחה שכל יחידות העיבוד המשתמשות באותה מערכת הפעלה או באותו hypervisor יהיו תחת אותו דומיין Inner.</p>
+</li>
+</ul>
+<h4 id="דוגמה-לשימוש-בתכונות-shareability">
+  דוגמה לשימוש בתכונות Shareability
+  <a class="heading-link" href="#%d7%93%d7%95%d7%92%d7%9e%d7%94-%d7%9c%d7%a9%d7%99%d7%9e%d7%95%d7%a9-%d7%91%d7%aa%d7%9b%d7%95%d7%a0%d7%95%d7%aa-shareability">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>במערכת שבה יש תת-מערכת עם שני cluster-ים של יחידות עיבוד, קיימת דרישה להבטחת שיתוף וזיכרון קוהרנטי במצבים שונים, כדלקמן:</p>
+<ul>
+<li>
+<p>בתוך כל cluster: ה-cache-ים של יחידות העיבוד ב-cluster שקופים ומשותפים עבור כל גישה למיקומי זיכרון שמוגדרים כ-Inner Shareable. המשמעות היא שבתוך אותו cluster, כל יחידת עיבוד רואה את אותו מידע באופן עקבי כאשר נעשות גישות למיקומים אלה.</p>
+</li>
+<li>
+<p>בין ה-cluster-ים:</p>
+<ul>
+<li>ה-cache-ים אינם חייבים להיות קוהרנטיים כאשר מדובר בגישה למיקומי זיכרון עם תכונת השיתוף Inner בלבד. כלומר, נתונים עשויים להיות שונים בין ה-cluster-ים עבור תכונה זו.</li>
+<li>עם זאת, הם כן קוהרנטיים כאשר מדובר בגישה למיקומי זיכרון עם תכונת השיתוף Outer. זאת אומרת שכל גישה למיקומים אלה תבטיח שהנתונים יהיו זהים ועקביים בין ה-cluster-ים.</li>
+</ul>
+</li>
+</ul>
+<p>במערכת כזו, כל cluster מוגדר כדומיין שיתוף Inner משלו, בעוד שכל הרכיבים בתת-המערכת שייכים לאותו דומיין שיתוף Outer.</p>
+<h5 id="הרחבת-התרחיש-למערכות-מורכבות-יותר">
+  הרחבת התרחיש למערכות מורכבות יותר:
+  <a class="heading-link" href="#%d7%94%d7%a8%d7%97%d7%91%d7%aa-%d7%94%d7%aa%d7%a8%d7%97%d7%99%d7%a9-%d7%9c%d7%9e%d7%a2%d7%a8%d7%9b%d7%95%d7%aa-%d7%9e%d7%95%d7%a8%d7%9b%d7%91%d7%95%d7%aa-%d7%99%d7%95%d7%aa%d7%a8">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>מערכת יכולה לכלול שתי תת-מערכות כאלו. אם ה-cache-ים המאוחדים של אחת מתת-המערכות אינם שקופים לגישות מתת-המערכת השנייה, הדבר מוביל לכך שהמערכת תהיה מחולקת לשני תחומי שיתוף Outer נפרדים.</p>
+<h5 id="יתרונות-רמות-השיתוף">
+  יתרונות רמות השיתוף:
+  <a class="heading-link" href="#%d7%99%d7%aa%d7%a8%d7%95%d7%a0%d7%95%d7%aa-%d7%a8%d7%9e%d7%95%d7%aa-%d7%94%d7%a9%d7%99%d7%aa%d7%95%d7%a3">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>שימוש בשתי רמות של שיתוף (פנימי וחיצוני) מאפשר למתכנני מערכות להוריד את עלויות הביצועים והאנרגיה עבור מיקומי זיכרון משותפים שלא נדרשים להיות חלק מדומיין השיתוף החיצוני.</p>
+<h3 id="דומיין-system">
+  דומיין System
+  <a class="heading-link" href="#%d7%93%d7%95%d7%9e%d7%99%d7%99%d7%9f-system">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>דומיין System הוא דומיין הרחב ביותר, שמשפיע על כל המערכת. פעולה המוגדרת על דומיין System תשפיע על כל ה-agent-ים במערכת: הן על אלו שאינם ניתנים לשיתוף, והן על הדומיינים ה-Inner-ים וה-Outer-ים הניתנים לשיתוף.</p>
+<h3 id="זיכרון-רגיל-non-shareable">
+  זיכרון רגיל Non-shareable
+  <a class="heading-link" href="#%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f-%d7%a8%d7%92%d7%99%d7%9c-non-shareable">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>במקרה של מיקומי זיכרון רגילים עם תכונת Non-shareable, המשמעות היא שהזיכרון צפוי להיות נגיש על ידי יחידת עיבוד אחת בלבד.</p>
+<p>כאשר מיקום זיכרון מסומן כלא משותף, החומרה אינה נדרשת להבטיח קוהרנטיות בין רכיבי עיבוד שונים שניגשים לאותו מיקום בזיכרון, אלא אם הזיכרון non-cacheable.</p>
+<p>עבור מיקומים Non-shareable, אם קיימים רכיבי עיבוד נוספים במערכת הזיכרון המשותפת (כגון יחידות עיבוד אחרות), תוכנה חייבת להפעיל הוראות לתחזוקת ה-cache על מנת למנוע בעיות קוהרנטיות שעלולות להתרחש כתוצאה משימוש ב-cache במהלך תקשורת בין רכיבי עיבוד אלה. בנוסף לתחזוקת ה-cache, יש צורך גם בפעולות מחסום זיכרון כדי להבטיח שהזיכרון ייגש בצורה מסודרת ולמנוע בעיות עקב חוסר קוהרנטיות בזיכרון.</p>
+<h3 id="הוראות-תחזוקת-cache">
+  הוראות תחזוקת cache
+  <a class="heading-link" href="#%d7%94%d7%95%d7%a8%d7%90%d7%95%d7%aa-%d7%aa%d7%97%d7%96%d7%95%d7%a7%d7%aa-cache">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>המפרט עבור הוראות תחזוקת cache מתאר מה הפעולות שכל הוראה מבטיחה לבצע במערכת. עם זאת, המפרט אינו מגביל אפשרויות אחרות שעשויות להתרחש כל עוד הן עומדות בדרישות הבסיסיות של התנהגות ה-cache, התנהגות ה-cache באיפוס, וטעינת ה-cache מראש.</p>
+<p>כלומר, כתוצאה מהפעלת הוראת תחזוקת cache, ייתכנו תופעות לוואי כמו:</p>
+<ul>
+<li>כל מיקום בזיכרון ה-cache עשוי להיות מנוקה.</li>
+<li>כל מיקום שאינו נעול ב-cache עשוי לעבור תהליך של clean ו-invalid.</li>
+</ul>
+<p>ארכיטקטורת Arm ממליצה למזער ככל האפשר את תופעות הלוואי הללו, כדי לשפר את הביצועים. כמו כן, מומלץ בחום לוודא שתופעות לוואי הנגרמות מפעולות תחזוקה המבוצעות במצב אבטחה מסוים, לא ישפיעו באופן מהותי על הביצועים במצב אבטחה אחר.</p>
+<h4 id="דומיין-חריג-להוראת-ic-ivau">
+  דומיין חריג להוראת <code>IC IVAU</code>:
+  <a class="heading-link" href="#%d7%93%d7%95%d7%9e%d7%99%d7%99%d7%9f-%d7%97%d7%a8%d7%99%d7%92-%d7%9c%d7%94%d7%95%d7%a8%d7%90%d7%aa-ic-ivau">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>במערכת מרובת מעבדים, כאשר נעשה שימוש בפקודת <code>IC IVAU</code> עבור מיקום זיכרון non-cacheable, ההוראה משודרת רק בדומיין Inner Shareable של יחידת העיבוד שמריצה את ההוראה הזו. זהו חריג מהכלל הכללי שבו מיקומי זיכרון non-cacheable מטופלים כזיכרון Outer Shareable בחלקים אחרים של הארכיטקטורה.</p>
+<h3 id="דומיינים-ב-amba-ace">
+  דומיינים ב-AMBA ACE
+  <a class="heading-link" href="#%d7%93%d7%95%d7%9e%d7%99%d7%99%d7%a0%d7%99%d7%9d-%d7%91-amba-ace">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>עוד דרך להבין את הרעיון של דומיינים ו-shareability היא לבדוק את הנושא בדרך יותר ארכיטקטונית עם פרוטוקול קוהרנטיות שמשתמש באותם הרעיונות והפרוטוקול AMBA ACE של Arm עושה את זה.</p>
+<p>הערות:
+- הפרוטוקול כבר אמור לצאת משימוש אבל אני מציג בעזרתו בגלל שהוא מספיק טוב כדי להדגים את הרעינות האלה.
+- הפרוטוקול נועד לשימוש במערכות SoC שלמות ולא ב-core או במספר מעבדי SMP, וכנראה שבמעבדים כאלה יש פתרונות קצת שונים אבל עדיין אני אסביר בעזרתו בגלל שהוא מספיק טוב כדי להדגים את הרעינות האלה.</p>
+<p>פרוטוקול ACE מתבסס על מושג המכונה shareability domains שהוא קבוצה של רכיבי מאסטר (הכוונה במאסטר זה רכיב עיבוד) שמאפשר לרכיב מאסטר אחד להחליט אילו רכיבי מאסטר אחרים לכלול כשהוא מייצר טרנזקציות קוהרנטיות או מחסום (מחסום זיכרון).</p>
+<p>במסגרת טרנזקציות קוהרנטיות, רכיב מאסטר עושה שימוש בדומיין השיתוף כדי לקבוע אילו רכיבי מאסטר אחרים עשויים להחזיק בעותק של הכתובת ב-cache המקומי שלהם. רכיב ה-interconnect מנצל מידע זה על מנת לקבוע, עבור כל טרנזקציה נתונה, אילו רכיבי מאסטרים נדרשים לבצע snooping כדי להשלים את הטרנזקציה בצורה נכונה.</p>
+<p>לגבי טרנזקציות מחסום, רכיב מאסטר עושה שימוש בדומיין השיתוף כדי לקבוע אילו רכיבי מאסטרים אחרים צריכים להיות מודעים למחסום שנקבע, כך שניתן לקבוע סדר בין פעולותיהם. הדומיין של טרנזקציית המחסום קובע גם את הצורך בהתפשטות של טרנזקציית המחסום, כמו גם את המאפיינים הנדרשים של המחסום כדי לקבוע את הסדר הנדרש בין הרכיבים.</p>
+<p>פרוטוקול ACE מגדיר את הרמות השונות של דומיין השיתוף בצורה דומה ל-Arm:</p>
+<ul>
+<li>
+<p>דומיין Non-shareable: דומיין זה כולל רכיב מאסטר יחיד בלבד.</p>
+</li>
+<li>
+<p>דומיין Inner Shareable: דומיין זה יכול לכלול מספר רכיבי מאסטר נוספים.</p>
+</li>
+<li>
+<p>דומיין Outer Shareable: דומיין זה כולל לפחות את כל רכיבי המאסטר שנמצאים בדומיין השיתוף הפנימי, אך יכול לכלול גם רכיבי מאסטר נוספים.</p>
+</li>
+<li>
+<p>דומיין System: דומיין זה כולל את כל רכיבי המאסטר הנמצאים במערכת כולה.</p>
+</li>
+</ul>
+<p>למרות שיכולים להתקיים מספר דומיינים מסוג Non-shareable, Inner Shareable ו-Outer Shareable במערכת, נדרשת קביעה עקבית לגבי רכיבי המאסטר הכלולים בכל דומיין. דוגמה לכך ניתן לראות באיור C1-3, שבו מאסטר 0 נמצא בדומיין שיתוף Inner עם מאסטר 1. לכן, על מאסטר 1 להיות גם הוא חלק מהדומיין שיתוף Inner של מאסטר 0.</p>
+<figure>
+    <img src="/posts/arm/domains/Figure_C1-3_Shareability_domains.png" alt="C1-3 Shareability domains from AMBA AXI and ACE Protocol Specification"class="dark-image"
+    ></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>בנוסף, יש להדגיש כי דומיינים מוגדרים כך שאינם חופפים זה לזה. עבור כל רכיב מאסטר בדומיין Outer Shareable, כל יתר רכיבי המאסטר בדומיין Inner Shareable שכולל את אותו רכיב מאסטר חייבים להיות חלק מאותו דומיין Outer Shareable.</p>
+<p>כאשר מדובר בטרנזקציות שצריכות להיות גלויות לכל יתר רכיבי המאסטר במערכת, יש להשתמש בדומיין System. חשוב לציין שטרנזקציות בדומיין System יכולות לכלול רכיבי מאסטר שאין להם cache-ים קוהרנטיים בחומרה, ולכן אסור לאחסן טרנזקציות אלו בשום רמה.</p>
+<p>האיור C1-4 מציג מערכת לדוגמה מנקודת המבט של מאסטר 1:</p>
+<figure>
+    <img src="/posts/arm/domains/Figure_C1-4_Example_system_using_shareability_domains.png" alt="Figure C1-4 Example system using shareability domains from AMBA AXI and ACE Protocol Specification"class="dark-image"
+    ></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<ul>
+<li>ה-cache של מאסטר 1 מהווה זיכרון cache מקומי.</li>
+<li>ה-cache-ים של מאסטרים 2 עד 6 הם cache-ים עמיתים ל-cache המקומי של מאסטר 1.</li>
+<li>ה-cache-ים של מאסטרים 1 עד 3 נמצאים בדומיין Inner Shareable.</li>
+<li>ה-cache-ים של מאסטרים 1 עד 6 נמצאים בדומיין Outer Shareable.</li>
+<li>ה-Cache 1 מהווה cache ב-downstream.</li>
+</ul>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/100941/0101/Memory-attributes">https://developer.arm.com/documentation/100941/0101/Memory-attributes</a>
+    </li>
+  
+    <li>
+      <a href="https://documentation-service.arm.com/static/65fdad3c1bc22b03bca90781?token=">https://documentation-service.arm.com/static/65fdad3c1bc22b03bca90781?token=</a>
+    </li>
+  
+    <li>
+      <a href="https://krinkinmu.github.io/2024/01/14/aarch64-virtual-memory.htmlhttps://krinkinmu.github.io/2024/01/14/aarch64-virtual-memory.html">https://krinkinmu.github.io/2024/01/14/aarch64-virtual-memory.htmlhttps://krinkinmu.github.io/2024/01/14/aarch64-virtual-memory.html</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/ihi0022/e/">https://developer.arm.com/documentation/ihi0022/e/</a>
+    </li>
+  
+    <li>
+      <a href="https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/memory-access-ordering---an-introduction">https://community.arm.com/arm-community-blogs/b/architectures-and-processors-blog/posts/memory-access-ordering---an-introduction</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-arm" dir="rtl">        רואה עוד ב arm
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-arm">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/arm/early-write-acknowledgment/">Early Write Acknowledgment</a>
+            </li>
+          
+        
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

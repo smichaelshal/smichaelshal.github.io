@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Reorder buffer · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  מבוא
+  
+    
+    Link to heading
+  
+
+ה-reorder buffer הוא יחידת חומרה המשמשת באופן נרחב יחד עם אלגוריתם Tomasulo לתמיכה בביצוע פקודות לא מסודרות וספקולטיביות. הוא מבטיח שההוראות יתבצעו בסדר המתואם.
+ה-buffer מיושם כמערך מעגלי, המיועד לספק תור לסדר הוראות שנמצאות בעיבוד לפי FIFO. הוא מאפשר רישום של תוצאות מול ההוראות כאשר הן מסתיימות, גם אם הן בוצעו מחוץ לסדר.
+מעבדי x86 מודרניים מבצעים loads ספקולטיביות מוקדמות לפני טעינות אחרות, ולעיתים עלולים &ldquo;להשמיד&rdquo; ספקולציה שגויה של סדר הזיכרון אם הם מזהים שהעותק שלהם של שורת ה-cache לא נשאר תקף מאז שה-load התבצעה בפועל, בהתאם להתרות הארכיטקטוניות. במקרה כזה, הם משליכים את תוכן ה-reorder buffer כדי לחזור למצב עקבי ולהתחיל מחדש את הביצוע. זה קורה בדרך כלל כאשר ליבה אחרת משנה את שורת ה-cache, אך עשוי להתרחש גם אם load חזה בטעות שלא תדרוש טעינה מחדש של store. (כמובן, מעבדי x86 אמיתיים יכולים לסדר מחדש בחופשיות טעינות לפני stores.)">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Reorder buffer">
+  <meta name="twitter:description" content="מבוא Link to heading ה-reorder buffer הוא יחידת חומרה המשמשת באופן נרחב יחד עם אלגוריתם Tomasulo לתמיכה בביצוע פקודות לא מסודרות וספקולטיביות. הוא מבטיח שההוראות יתבצעו בסדר המתואם.
+ה-buffer מיושם כמערך מעגלי, המיועד לספק תור לסדר הוראות שנמצאות בעיבוד לפי FIFO. הוא מאפשר רישום של תוצאות מול ההוראות כאשר הן מסתיימות, גם אם הן בוצעו מחוץ לסדר.
+מעבדי x86 מודרניים מבצעים loads ספקולטיביות מוקדמות לפני טעינות אחרות, ולעיתים עלולים “להשמיד” ספקולציה שגויה של סדר הזיכרון אם הם מזהים שהעותק שלהם של שורת ה-cache לא נשאר תקף מאז שה-load התבצעה בפועל, בהתאם להתרות הארכיטקטוניות. במקרה כזה, הם משליכים את תוכן ה-reorder buffer כדי לחזור למצב עקבי ולהתחיל מחדש את הביצוע. זה קורה בדרך כלל כאשר ליבה אחרת משנה את שורת ה-cache, אך עשוי להתרחש גם אם load חזה בטעות שלא תדרוש טעינה מחדש של store. (כמובן, מעבדי x86 אמיתיים יכולים לסדר מחדש בחופשיות טעינות לפני stores.)">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/processor-components/reorder-buffer/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Reorder buffer">
+  <meta property="og:description" content="מבוא Link to heading ה-reorder buffer הוא יחידת חומרה המשמשת באופן נרחב יחד עם אלגוריתם Tomasulo לתמיכה בביצוע פקודות לא מסודרות וספקולטיביות. הוא מבטיח שההוראות יתבצעו בסדר המתואם.
+ה-buffer מיושם כמערך מעגלי, המיועד לספק תור לסדר הוראות שנמצאות בעיבוד לפי FIFO. הוא מאפשר רישום של תוצאות מול ההוראות כאשר הן מסתיימות, גם אם הן בוצעו מחוץ לסדר.
+מעבדי x86 מודרניים מבצעים loads ספקולטיביות מוקדמות לפני טעינות אחרות, ולעיתים עלולים “להשמיד” ספקולציה שגויה של סדר הזיכרון אם הם מזהים שהעותק שלהם של שורת ה-cache לא נשאר תקף מאז שה-load התבצעה בפועל, בהתאם להתרות הארכיטקטוניות. במקרה כזה, הם משליכים את תוכן ה-reorder buffer כדי לחזור למצב עקבי ולהתחיל מחדש את הביצוע. זה קורה בדרך כלל כאשר ליבה אחרת משנה את שורת ה-cache, אך עשוי להתרחש גם אם load חזה בטעות שלא תדרוש טעינה מחדש של store. (כמובן, מעבדי x86 אמיתיים יכולים לסדר מחדש בחופשיות טעינות לפני stores.)">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-08-18T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-08-18T00:00:00+00:00">
+    <meta property="article:tag" content="Buffer">
+    <meta property="article:tag" content="Reorder-Buffer">
+    <meta property="article:tag" content="Ordering">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Cache">
+    <meta property="article:tag" content="Asm">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/store-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/combined-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/decoder/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/fetch/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/invalidate-queue/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/line-fill-buffer/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/processor-components/reorder-buffer/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/processor-components/reorder-buffer/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/processor-components/reorder-buffer/">
+              Reorder buffer
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-08-18T00:00:00Z">
+                אוגוסט 18, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                789 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/processor-components/">Processor-Components</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/buffer/">Buffer</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/reorder-buffer/">Reorder-Buffer</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/ordering/">Ordering</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/asm/">Asm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/x86/">X86</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="מבוא">
+  מבוא
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%95%d7%90">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>ה-reorder buffer הוא יחידת חומרה המשמשת באופן נרחב יחד עם אלגוריתם Tomasulo לתמיכה בביצוע פקודות לא מסודרות וספקולטיביות. הוא מבטיח שההוראות יתבצעו בסדר המתואם.</p>
+<p>ה-buffer מיושם כמערך מעגלי, המיועד לספק תור לסדר הוראות שנמצאות בעיבוד לפי FIFO. הוא מאפשר רישום של תוצאות מול ההוראות כאשר הן מסתיימות, גם אם הן בוצעו מחוץ לסדר.</p>
+<p>מעבדי x86 מודרניים מבצעים loads ספקולטיביות מוקדמות לפני טעינות אחרות, ולעיתים עלולים &ldquo;להשמיד&rdquo; ספקולציה שגויה של סדר הזיכרון אם הם מזהים שהעותק שלהם של שורת ה-cache לא נשאר תקף מאז שה-load התבצעה בפועל, בהתאם להתרות הארכיטקטוניות. במקרה כזה, הם משליכים את תוכן ה-reorder buffer כדי לחזור למצב עקבי ולהתחיל מחדש את הביצוע. זה קורה בדרך כלל כאשר ליבה אחרת משנה את שורת ה-cache, אך עשוי להתרחש גם אם load חזה בטעות שלא תדרוש טעינה מחדש של store. (כמובן, מעבדי x86 אמיתיים יכולים לסדר מחדש בחופשיות טעינות לפני stores.)</p>
+<p>התחייבות ל-cache L1d מתרחשת לאחר שההוראת store פורשת מה-reorder buffer, כלומר כאשר ידוע שההוראה store אינה ספקולטיבית, וה-store buffer המתאים לה הושלם והפך לנתון תקף להתחייב ל-cache ולגלות אותו בצורה גלובלית. ה-store buffer מנתק את הביצוע מהראות של ליבות אחרות ומבודד את הליבה הנוכחית מה-store-miss, כך שזהו רכיב חשוב גם במעבדים הנעשים לפי סדר.</p>
+<p>לפני ש-entry ב-store buffer &ldquo;מסתיימת&rdquo;, ניתן פשוט למחוק אותה יחד עם ערך ה-reorder buffer המצביע עליה, במקרה של חזרה על ספקולציות שגויות.</p>
+<p>בנוגע לשילוב כתיבה, אם יש מיקום זמני בכניסות ROB (כלומר, אם הוראות קרובות זו לזו נכתבות קרוב זה לזה בזמן), ניתן לשלב כתיבה על ערכי ROB, מה שעשוי להפחית את הצורך בפורטים נפרדים ל-ROB ול-physical register file. עם זאת, השפעה זו לא תמיד ברורה, במיוחד כאשר יש בנקי physical register file.</p>
+<p>הרגיסטר הפיזי הקודם שהוקצה לאותו רגיסטר ארכיטקטוני נשמר יחד עם ההוראה ב-reorder buffer, שהוא FIFO שמחזיק את ההוראות בסדר תוכנית בין שלבי הפענוח והסיום.</p>
+<p>תוצאות הביצוע נכתבות ל-reorder buffer, ל-reservation station.</p>
+<h2 id="במעבדי-intel">
+  במעבדי intel
+  <a class="heading-link" href="#%d7%91%d7%9e%d7%a2%d7%91%d7%93%d7%99-intel">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>מעבדי אינטל מוקדמים שתומכים בביצוע מחוץ לסדר השתמשו בתור תוצאות שנקרא reorder buffer, בעוד שמעבדים מחוץ לסדר מאוחרים יותר עושים שימוש ב-register maps.</p>
+<p>באופן ספציפי, מיקרו-מעבדים ממשפחת אינטל P6 כוללים גם reorder buffer (ROB) וגם register alias table (RAT). ה-ROB משמש בעיקר להתאוששות מטעויות בניבוי branch-ים.</p>
+<p>כדי לאפשר לרכיבים שונים לפעול במקביל, ממוקמים ביניהם buffers. לדוגמה, המפענח פיענח את הוראות הקלט ומאחסן את ה-µops המתקבלים בתור פענוח הוראות (instruction decode queue - IDQ). ה-renamer שואב µops מה-IDQ, מבצע את המשימות שלו ומאחסן את ה-µops ב-reorder buffer, תוך שהוא גם מעביר אותם ל-scheduler. כל רכיב pipeline יכול לעבד מספר הוראות או µops בכל מחזור, בהתאם לרוחב העיבוד המקביל שלו. מספר ה-µops המדויק שמעובד על ידי רכיב במחזור מסוים תלוי במאפייני רכיב ה-pipeline וגם במאפיינים של ה-µops המעובדים באותו מחזור.</p>
+<p>ה-reorder buffer מאחסן את ה-μops בסדרם המקורי עד לסיום ביצועם. הוא גם אחראי על הקצאת רגיסטרים, כלומר, מיפוי רגיסטרים ארכיטקטוניים לרגיסטרים פיזיים, ומבצע את תהליך ה-register renaming כדי למנוע תלות כוזבת בין μops.</p>
+<p>במיקרו-ארכיטקטורות מסוימות, ה-reorder buffer יכול גם לבצע ישירות µops מיוחדים, כולל NOPs, אפס ניבים (כגון XOR של רגיסטר עם עצמו), ומהלכי רגיסטר לרגיסטר כמו move elimination.</p>
+<p>לאחר מכן, ה-µops שנותרו מועברים ל-scheduler (המוכר גם כ-reservation station), שממיין את ה-µops בתור עד שכל אופרנד המקור שלהם יהיה מוכן.</p>
+<p>ה-renamer שואב µops מה-IDQ ומאחסן את כולם ב-reorder buffer, ממנו הוא גם מנפיק את ה-µops ל-scheduler . מספר ה-µops המרבי שה-renamer יכול לעבד בכל מחזור נקרא issue width.</p>
+<p>ה-µops נשארים ב-reorder buffer עד שהם מוכנים לפרוש. µop נחשב מוכן לפרוש כאשר הוא סיים את הביצוע וכל ה-µops הקודמים בסדר התוכנית מוכנים גם הם לפרוש.</p>
+<p>ה-renamer יכול לבצע ישירות מחלקות מסוימות של µops, כמו register moves, NOPs, או ניבי אפס; µops כאלה נשלחים ל-reorder buffer אך לא ל-scheduler. ניבי אפס הם הוראות שמגדירות תמיד את רגיסטר היעד ל-0, ללא תלות בערכים ברגיסטרי המקור. דוגמה לכך היא XOR של רגיסטר עם עצמו.</p>
+<p>דוגמה להתנהגות של ה-reorder buffer ניתן למצוא בשימוש בהוראת <code>MOV</code> או <code>MOVZX</code> במקרים מסוימים הן עשויות להיות הוראות אפס השהייה בכמה מיקרו-ארכיטקטורות, דבר שניתן לביצוע על ידי ה-reorder buffer (ביצוע move elimination). עם זאת, ביטול move אינו תמיד מצליח;</p>
+<p>אם לפחות אחד משני האופרנדים של הרגיסטר אינו אופרנד מרומז, ניתן להשתמש באותו אופרנד עבור שני האופרנדים. אולם, אם אחד האופרנדים נקרא וגם נכתב, לא ניתן להוסיף הוראה לשבירת תלות עבור תלות מרומזת זו. במקרה זה, לא ניתן לנתח את השהיה של שני האופרנדים בנפרד. יתרה מכך, ישנן הוראות שמתנהגות בצורה שונה אם אותו רגיסטר משמש למספר אופרנדים. לדוגמה, הוראות כמו XOR ו-SUB עם שני אופרנדים של רגיסטר, שהן ניבי אפס (zero idioms) (כגון XOR עם עצמו), תמיד יגדירו את הרגיסטר לאפס ללא תלות בתוכן הרגיסטר בפועל אם אותו רגיסטר משמש לשני האופרנדים. במיקרו-ארכיטקטורות האחרונות, הוראות אלו שוברות את התלות ברגיסטר שבו נעשה שימוש; בחלק מהמיקרו-ארכיטקטורות, הן עשויות להיות מופעלות על ידי ה-reorder buffer מבלי להשתמש בפורטי הביצוע. ישנן גם הוראות אחרות שמתנהגות אחרת בכמה מיקרו-ארכיטקטורות כאשר נעשה שימוש באותו רגיסטר, כמו הוראת SHLD.</p>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Out-of-order_execution">https://en.wikipedia.org/wiki/Out-of-order_execution</a>
+    </li>
+  
+    <li>
+      <a href="https://uops.info/background.html">https://uops.info/background.html</a>
+    </li>
+  
+    <li>
+      <a href="https://arxiv.org/pdf/1810.04610">https://arxiv.org/pdf/1810.04610</a>
+    </li>
+  
+    <li>
+      <a href="https://arxiv.org/pdf/2310.13212">https://arxiv.org/pdf/2310.13212</a>
+    </li>
+  
+    <li>
+      <a href="https://stackoverflow.com/questions/64141366/can-a-speculatively-executed-cpu-branch-contain-opcodes-that-access-ram/64148401#64148401">https://stackoverflow.com/questions/64141366/can-a-speculatively-executed-cpu-branch-contain-opcodes-that-access-ram/64148401#64148401</a>
+    </li>
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Re-order_buffer">https://en.wikipedia.org/wiki/Re-order_buffer</a>
+    </li>
+  
+    <li>
+      <a href="https://stackoverflow.com/questions/37725497/how-does-memory-reordering-help-processors-and-compilers">https://stackoverflow.com/questions/37725497/how-does-memory-reordering-help-processors-and-compilers</a>
+    </li>
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Register_renaming">https://en.wikipedia.org/wiki/Register_renaming</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-processor-components" dir="rtl">        רואה עוד ב processor-components
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-processor-components">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/store-buffer/">Store buffer</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/combined-buffer/">Combined buffer</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/decoder/">Decoder</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/fetch/">Fetch</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/invalidate-queue/">Invalidate queue</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/line-fill-buffer/">Line fill buffer</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

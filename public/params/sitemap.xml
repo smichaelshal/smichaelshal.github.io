@@ -5,13 +5,13 @@
     <loc>https://smichaelshal.github.io/params/categories/</loc>
     <xhtml:link
                 rel="alternate"
-                hreflang="en"
-                href="https://smichaelshal.github.io/categories/"
+                hreflang="he"
+                href="https://smichaelshal.github.io/he/categories/"
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="he"
-                href="https://smichaelshal.github.io/he/categories/"
+                hreflang="en"
+                href="https://smichaelshal.github.io/categories/"
                 />
     <xhtml:link
                 rel="alternate"
@@ -39,13 +39,13 @@
     <loc>https://smichaelshal.github.io/params/series/</loc>
     <xhtml:link
                 rel="alternate"
-                hreflang="en"
-                href="https://smichaelshal.github.io/series/"
+                hreflang="he"
+                href="https://smichaelshal.github.io/he/series/"
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="he"
-                href="https://smichaelshal.github.io/he/series/"
+                hreflang="en"
+                href="https://smichaelshal.github.io/series/"
                 />
     <xhtml:link
                 rel="alternate"
@@ -56,13 +56,13 @@
     <loc>https://smichaelshal.github.io/params/tags/</loc>
     <xhtml:link
                 rel="alternate"
-                hreflang="en"
-                href="https://smichaelshal.github.io/tags/"
+                hreflang="he"
+                href="https://smichaelshal.github.io/he/tags/"
                 />
     <xhtml:link
                 rel="alternate"
-                hreflang="he"
-                href="https://smichaelshal.github.io/he/tags/"
+                hreflang="en"
+                href="https://smichaelshal.github.io/tags/"
                 />
     <xhtml:link
                 rel="alternate"

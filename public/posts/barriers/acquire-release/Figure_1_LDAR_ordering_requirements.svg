@@ -1,0 +1,78 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" height="201" viewBox="0 0 537 200.707" width="537">
+    <defs/>
+    <g transform="translate(1.00,1.00)" id="group1">
+        <g transform="translate(121.11,80.32)" id="shape2">
+            <text xml:space="preserve" style="font-family:Courier New;font-size:13.48pt">
+                <tspan x="3.5" y="20.0" style="fill:#333e48">LDAR</tspan>
+            </text>
+        </g>
+        <g transform="translate(126.51,6.10)" id="shape3">
+            <text xml:space="preserve" style="font-family:Courier New;font-size:13.48pt">
+                <tspan x="3.5" y="20.0" style="fill:#333e48">LDR</tspan>
+            </text>
+        </g>
+        <g transform="translate(126.51,30.84)" id="shape4">
+            <text xml:space="preserve" style="font-family:Courier New;font-size:13.48pt">
+                <tspan x="3.5" y="20.0" style="fill:#333e48">STR</tspan>
+            </text>
+        </g>
+        <g transform="translate(99.15,-0.00)" id="group5">
+            <path stroke-width="1" transform="translate(96.55,68.03)" stroke="#333e48" d="M2.5,.0L2.5,2.5L.0,2.5" fill="none" id="shape6"/>
+            <path stroke-width="1" transform="translate(4.09,70.52)" stroke="#333e48" d="M89.4,.0L.0,.0L89.4,.0z" stroke-dasharray="6,4" fill="none" id="shape7"/>
+            <path stroke-width="1" transform="translate(0.00,68.03)" stroke="#333e48" d="M2.5,2.5L.0,2.5L.0,.0" fill="none" id="shape8"/>
+            <path stroke-width="1" transform="translate(0.00,3.99)" stroke="#333e48" d="M.0,61.0L.0,.0L.0,61.0z" stroke-dasharray="6,4" fill="none" id="shape9"/>
+            <path stroke-width="1" transform="translate(0.00,0.00)" stroke="#333e48" d="M.0,2.5L.0,.0L2.5,.0" fill="none" id="shape10"/>
+            <path stroke-width="1" transform="translate(5.59,0.00)" stroke="#333e48" d="M.0,.0L89.5,.0L.0,.0z" stroke-dasharray="6,4" fill="none" id="shape11"/>
+            <path stroke-width="1" transform="translate(96.55,0.00)" stroke="#333e48" d="M.0,.0L2.5,.0L2.5,2.5" fill="none" id="shape12"/>
+            <path stroke-width="1" transform="translate(99.05,5.49)" stroke="#333e48" d="M.0,.0L.0,61.0L.0,.0z" stroke-dasharray="6,4" fill="none" id="shape13"/>
+        </g>
+        <g transform="translate(198.20,36.91)" id="group14">
+            <path stroke-width="1" transform="translate(-0.00,-0.00)" stroke="#333e48" d="M.0,.0L56.6,.0L56.6,155.1" fill="none" id="shape15"/>
+            <path transform="translate(52.62,153.92)" fill-rule="nonzero" d="M.0,.0L4.0,6.9L8.0,.0L.0,.0z" fill="#333e48" id="shape16"/>
+        </g>
+        <g transform="translate(126.84,133.31)" id="shape17">
+            <text xml:space="preserve" style="font-family:Courier New;font-size:13.48pt">
+                <tspan x="3.5" y="20.0" style="fill:#333e48">LDR</tspan>
+            </text>
+        </g>
+        <g transform="translate(126.84,158.05)" id="shape18">
+            <text xml:space="preserve" style="font-family:Courier New;font-size:13.48pt">
+                <tspan x="3.5" y="20.0" style="fill:#333e48">STR</tspan>
+            </text>
+        </g>
+        <g transform="translate(99.55,127.28)" id="group19">
+            <path stroke-width="1" transform="translate(96.55,67.93)" stroke="#333e48" d="M2.5,.0L2.5,2.5L.0,2.5" fill="none" id="shape20"/>
+            <path stroke-width="1" transform="translate(3.99,70.42)" stroke="#333e48" d="M89.5,.0L.0,.0L89.5,.0z" stroke-dasharray="6,4" fill="none" id="shape21"/>
+            <path stroke-width="1" transform="translate(0.00,67.93)" stroke="#333e48" d="M2.5,2.5L.0,2.5L.0,.0" fill="none" id="shape22"/>
+            <path stroke-width="1" transform="translate(0.00,3.89)" stroke="#333e48" d="M.0,61.1L.0,.0L.0,61.1z" stroke-dasharray="6,4" fill="none" id="shape23"/>
+            <path stroke-width="1" transform="translate(0.00,0.00)" stroke="#333e48" d="M.0,2.5L.0,.0L2.5,.0" fill="none" id="shape24"/>
+            <path stroke-width="1" transform="translate(5.59,0.00)" stroke="#333e48" d="M.0,.0L89.4,.0L.0,.0z" stroke-dasharray="6,4" fill="none" id="shape25"/>
+            <path stroke-width="1" transform="translate(96.55,0.00)" stroke="#333e48" d="M.0,.0L2.5,.0L2.5,2.5" fill="none" id="shape26"/>
+            <path stroke-width="1" transform="translate(99.05,5.39)" stroke="#333e48" d="M.0,.0L.0,61.0L.0,.0z" stroke-dasharray="6,4" fill="none" id="shape27"/>
+        </g>
+        <g transform="translate(38.94,98.75)" id="group28">
+            <path stroke-width="1" transform="translate(3.99,5.69)" stroke="#333e48" d="M56.6,56.2L.0,56.2L.0,.0" fill="none" id="shape29"/>
+            <path transform="translate(0.00,0.00)" fill-rule="nonzero" d="M8.0,6.9L4.0,.0L.0,6.9L8.0,6.9z" fill="#333e48" id="shape30"/>
+        </g>
+        <path stroke-width="1" transform="translate(182.62,98.85)" stroke="#333e48" d="M113.7,.0L.0,.0L113.7,.0z" stroke-dasharray="6,4" fill="none" id="shape31"/>
+        <path stroke-width="1" transform="translate(0.00,98.85)" stroke="#333e48" d="M.0,.0L113.6,.0L.0,.0z" stroke-dasharray="6,4" fill="none" id="shape32"/>
+        <g transform="translate(375.33,34.29)" id="shape33">
+            <text xml:space="preserve" style="font-family:Lato-Medium, Lato;font-size:13.48pt">
+                <tspan x="1.0" y="22.0" style="fill:#333e48">Accesses can cross</tspan>
+            </text>
+            <text xml:space="preserve" style="font-family:Lato-Medium, Lato;font-size:13.48pt">
+                <tspan x="3.0" y="44.0" style="fill:#333e48">a barrier in one</tspan>
+            </text>
+            <text xml:space="preserve" style="font-family:Lato-Medium, Lato;font-size:13.48pt">
+                <tspan x="2.0" y="65.0" style="fill:#333e48">direction but not</tspan>
+            </text>
+            <text xml:space="preserve" style="font-family:Lato-Medium, Lato;font-size:13.48pt">
+                <tspan x="3.0" y="87.0" style="fill:#333e48">the other.</tspan>
+            </text>
+        </g>
+        <g transform="translate(310.03,70.42)" id="group34">
+            <path stroke-width="1" transform="translate(5.09,-0.00)" stroke="#333e48" d="M.0,25.7L51.5,.0L.0,25.7z" fill="none" id="shape35"/>
+            <path transform="translate(0.00,21.65)" fill-rule="nonzero" d="M7.9,7.2L.0,6.7L4.4,.0L7.9,7.2z" fill="#333e48" id="shape36"/>
+        </g>
+    </g>
+</svg>

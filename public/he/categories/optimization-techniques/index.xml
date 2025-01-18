@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Optimization-Techniques on Michael Shalitin</title>
+    <link>https://smichaelshal.github.io/he/categories/optimization-techniques/</link>
+    <description>Recent content in Optimization-Techniques on Michael Shalitin</description>
+    <generator>Hugo</generator>
+    <language>he</language>
+    <lastBuildDate>Sat, 05 Oct 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://smichaelshal.github.io/he/categories/optimization-techniques/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Speculation</title>
+      <link>https://smichaelshal.github.io/he/posts/optimization-techniques/speculation/</link>
+      <pubDate>Sat, 05 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/optimization-techniques/speculation/</guid>
+      <description>&lt;h1 id=&#34;ספקולציות&#34;&gt;&#xA;  ספקולציות&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#%d7%a1%d7%a4%d7%a7%d7%95%d7%9c%d7%a6%d7%99%d7%95%d7%aa&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h1&gt;&#xA;&lt;h2 id=&#34;מבוא&#34;&gt;&#xA;  מבוא&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#%d7%9e%d7%91%d7%95%d7%90&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h2&gt;&#xA;&lt;p&gt;ביצוע ספקולטיבי הוא שיטת אופטימיזציה במערכות מחשב, שבה מבוצעות משימות מראש, לפני שנודע בוודאות אם הן נדרשות. המטרה היא לחסוך זמן ולמנוע עיכובים בביצוע העבודה לאחר שמתברר שהיא נדרשת. אם בסופו של דבר מתברר שהמשימה לא הייתה הכרחית, המערכת מבטלת את רוב השינויים שבוצעו ומתעלמת מתוצאות הביצוע.&lt;/p&gt;&#xA;&lt;p&gt;מטרת הביצוע הספקולטיבי היא להגדיל את ניצול המשאבים במערכת ולהפחית עיכובים. השיטה משמשת בתחומים רבים, כמו חיזוי נתיבי branch במעבדים עם pipeline, חיזוי ערכי נתונים לניצול מקומיות ערכית, ושליפת נתונים מראש מהזיכרון.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Register renaming</title>
+      <link>https://smichaelshal.github.io/he/posts/optimization-techniques/register-renaming/</link>
+      <pubDate>Tue, 24 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/optimization-techniques/register-renaming/</guid>
+      <description>&lt;h2 id=&#34;מבוא&#34;&gt;&#xA;  מבוא&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#%d7%9e%d7%91%d7%95%d7%90&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h2&gt;&#xA;&lt;p&gt;בארכיטקטורת מחשבים, Register Renaming הוא טכניקה שמבצעת הפרדה בין רגיסטרים לוגיים לרגיסטרים פיזיים. כל רגיסטר לוגי מקושר לקבוצה של רגיסטרים פיזיים, וכאשר הוראת שפת מכונה מתייחסת לרגיסטר לוגי, המעבד ממפה אותו לרגיסטר פיזי ספציפי במהלך הביצוע. הרגיסטרים הפיזיים אינם נגישים ישירות, וניתן לגשת אליהם רק דרך השמות הקנוניים של הרגיסטרים הלוגיים.&lt;/p&gt;&#xA;&lt;p&gt;טכניקה זו מאפשרת להתגבר על תלות כוזבת בנתונים הנובעת משימוש חוזר ברגיסטרים על ידי הוראות עוקבות שאין ביניהן תלות אמיתית. ביטול התלות הכוזבת מגביר את המקבילות ברמת ההוראה בזרם הפקודות, מה שמאפשר לנצל טכניקות כמו ביצוע על-סקלרי וביצוע מחוץ לסדר לשיפור הביצועים.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Pipeline &amp; Hazard</title>
+      <link>https://smichaelshal.github.io/he/posts/optimization-techniques/pipeline--hazard/</link>
+      <pubDate>Tue, 17 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/optimization-techniques/pipeline--hazard/</guid>
+      <description>&lt;h2 id=&#34;מבוא&#34;&gt;&#xA;  מבוא&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#%d7%9e%d7%91%d7%95%d7%90&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h2&gt;&#xA;&lt;p&gt;טכניקה נפוצה במעבדים מודרנים היא pipeline, הטכניקה מאפשרת הרצה של הוראות לא תלויות בו זמנית (concurrency) והיא מאפשרת שיפור ביצועים של המעבד.&lt;/p&gt;&#xA;&lt;p&gt;הרעיון ב-pipeline הוא שכל הוראה בודדת מורכבת מכמה פעולות שניתן להפריד, ולכל סוג של פעולה כזאת יכול להיות רכיב אחר שמטפל בה, וככה ניתן להתחיל את ההוראה הבאה לביצוע עוד לפני שההוראה הקודמת הסתיימה.&lt;/p&gt;&#xA;&lt;p&gt;הטכניקה מזכירה את שיטת פס ייצור, בפס ייצור אין מכונה או אדם בודד שמייצרים את המוצר מהתחלה ועד הסוף, כל רכיב אחרי רק על פעולה אחת בודדת ופשוטה יחסית וכל הפעולות האלו מתרחשות בו זמנית.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>

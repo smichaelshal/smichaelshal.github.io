@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Cache coherence · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+
+  מבוא לקוהרנטיות
+  
+    
+    Link to heading
+  
+
+בעיית קוהרנטיות יכולה להתרחש כאשר מספר גורמים (כמו מספר ליבות) מנסים לגשת לנתון מסוים שיש לו מספר עותקים (למשל, עותקים שונים ב-cache-ים) ולפחות אחת הגישות היא כתיבה. כדי למנוע גישה לנתונים מיושנים (שגורמת לחוסר קוהרנטיות) נעשה שימוש בפרוטוקול קוהרנטיות.
+חוסר קוהרנטיות נגרם בעיקר בשל נוכחותם של מספר מעבדים עם גישה ל-cache-ים ולזיכרון. במערכות מודרניות, מעבדים אלו כוללים ליבות מעבד, מנועי DMA  והתקנים חיצוניים, אשר יכולים לקרוא ולכתוב לזיכרון ולפחות לחלקם יש cache.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Cache coherence">
+  <meta name="twitter:description" content="מבוא לקוהרנטיות Link to heading בעיית קוהרנטיות יכולה להתרחש כאשר מספר גורמים (כמו מספר ליבות) מנסים לגשת לנתון מסוים שיש לו מספר עותקים (למשל, עותקים שונים ב-cache-ים) ולפחות אחת הגישות היא כתיבה. כדי למנוע גישה לנתונים מיושנים (שגורמת לחוסר קוהרנטיות) נעשה שימוש בפרוטוקול קוהרנטיות.
+חוסר קוהרנטיות נגרם בעיקר בשל נוכחותם של מספר מעבדים עם גישה ל-cache-ים ולזיכרון. במערכות מודרניות, מעבדים אלו כוללים ליבות מעבד, מנועי DMA והתקנים חיצוניים, אשר יכולים לקרוא ולכתוב לזיכרון ולפחות לחלקם יש cache.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/cache/cache-coherence/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Cache coherence">
+  <meta property="og:description" content="מבוא לקוהרנטיות Link to heading בעיית קוהרנטיות יכולה להתרחש כאשר מספר גורמים (כמו מספר ליבות) מנסים לגשת לנתון מסוים שיש לו מספר עותקים (למשל, עותקים שונים ב-cache-ים) ולפחות אחת הגישות היא כתיבה. כדי למנוע גישה לנתונים מיושנים (שגורמת לחוסר קוהרנטיות) נעשה שימוש בפרוטוקול קוהרנטיות.
+חוסר קוהרנטיות נגרם בעיקר בשל נוכחותם של מספר מעבדים עם גישה ל-cache-ים ולזיכרון. במערכות מודרניות, מעבדים אלו כוללים ליבות מעבד, מנועי DMA והתקנים חיצוניים, אשר יכולים לקרוא ולכתוב לזיכרון ולפחות לחלקם יש cache.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-09-15T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-09-15T00:00:00+00:00">
+    <meta property="article:tag" content="Cache">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Memory">
+    <meta property="article:tag" content="Coherence-Protocol">
+    <meta property="article:tag" content="Instruction">
+    <meta property="article:tag" content="Dma">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/multi-copy-atomicity/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/cache-maintenance/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/snoop--directory/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/cache/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/cache/cache-coherence/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/cache/cache-coherence/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/cache/cache-coherence/">
+              Cache coherence
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-09-15T00:00:00Z">
+                ספטמבר 15, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                3203 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/cache/">Cache</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory/">Memory</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/coherence-protocol/">Coherence-Protocol</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/instruction/">Instruction</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/dma/">Dma</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache-coherence/">Cache-Coherence</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <hr>
+<h2 id="מבוא-לקוהרנטיות">
+  מבוא לקוהרנטיות
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%95%d7%90-%d7%9c%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>בעיית קוהרנטיות יכולה להתרחש כאשר מספר גורמים (כמו מספר ליבות) מנסים לגשת לנתון מסוים שיש לו מספר עותקים (למשל, עותקים שונים ב-cache-ים) ולפחות אחת הגישות היא כתיבה. כדי למנוע גישה לנתונים מיושנים (שגורמת לחוסר קוהרנטיות) נעשה שימוש בפרוטוקול קוהרנטיות.</p>
+<p>חוסר קוהרנטיות נגרם בעיקר בשל נוכחותם של מספר מעבדים עם גישה ל-cache-ים ולזיכרון. במערכות מודרניות, מעבדים אלו כוללים ליבות מעבד, מנועי DMA  והתקנים חיצוניים, אשר יכולים לקרוא ולכתוב לזיכרון ולפחות לחלקם יש cache.</p>
+<p>קוהרנטיות cache שואפת להפוך את ה-cache-ים במערכת זיכרון משותף לבלתי נראים מבחינה פונקציונלית, כאילו כל ה-cache-ים שייכים למערכת בעלת ליבה אחת בלבד. היא משיגה זאת על ידי הפצת כתיבה ממעבד אחד ל-cache-ים של מעבדים אחרים במערכת.</p>
+<p>חשוב לציין, שבניגוד לעקביות, שהיא מפרט ארכיטקטוני המגדיר את נכונות הזיכרון המשותף, קוהרנטיות אינה עוסקת בהגדרת המודל של עקביות עצמו אלא משמשת כאמצעי לתמוך במודל העקביות. בפרט, פרוטוקולי קוהרנטיות ממלאים תפקיד חשוב בהבטחת עקביות הזיכרון במערכת.</p>
+<p>אפשר להשיג קוהרנטיות על ידי השבתה מוחלטת של ה-cache למיקומי זיכרון משותפים, אך שיטה זו נוטה להקטין את הביצועים באופן משמעותי.</p>
+<h3 id="מתי-קוהרנטיות-רלוונטית">
+  מתי קוהרנטיות רלוונטית?
+  <a class="heading-link" href="#%d7%9e%d7%aa%d7%99-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%a8%d7%9c%d7%95%d7%95%d7%a0%d7%98%d7%99%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>קוהרנטיות נוגעת לכל מבני האחסון שמחזיקים בלוקים מתוך מרחב הכתובות המשותף. מבנים אלה כוללים את ה-cache הנתונים ברמות השונות, וגם את הזיכרון הראשי. בנוסף, בחלק מהארכיטקטורות זה כולל את ה-instructions-cache ברמה L1 ו-TLBs (לפעמים ה-TLB יכול להחזיק מיפויים שאינם עותקים בלבד של בלוקים מתוך הזיכרון המשותף).</p>
+<p>קוהרנטיות אינה נראית ישירות למתכנת. במקום זאת, ה-pipeline של המעבד ופרוטוקול הקוהרנטיות עובדים יחד כדי לאכוף את מודל העקביות, ורק מודל העקביות הוא החשוף למתכנת.</p>
+<h3 id="הדרישות-המרכזיות-לקוהרנטיות-cache">
+  הדרישות המרכזיות לקוהרנטיות cache:
+  <a class="heading-link" href="#%d7%94%d7%93%d7%a8%d7%99%d7%a9%d7%95%d7%aa-%d7%94%d7%9e%d7%a8%d7%9b%d7%96%d7%99%d7%95%d7%aa-%d7%9c%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-cache">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<ul>
+<li>
+<p><strong>התפשטות כתיבה</strong>: כאשר משתנים נתונים המאוחסנים ב-cache, יש לוודא שהשינויים מתעדכנים גם בעותקים האחרים של אותו בלוק בזיכרונות ה-cache של שאר המעבדים במערכת.</p>
+</li>
+<li>
+<p><strong>סידור טרנזקציות</strong>: כל פעולות הקריאה והכתיבה שמתבצעות לאותו מיקום בזיכרון צריכות להיראות לכל המעבדים באותו סדר. כך מובטחת עקביות בסדר הגישה לנתונים המשותפים בין כל המרכיבים במערכת.</p>
+</li>
+</ul>
+<p>בעוד שתיאורטית ניתן להבטיח קוהרנטיות ברמת כל פעולת קריאה וכתיבה, בפועל קוהרנטיות מיושמת לרוב ברמת cache line, משום שזה יעיל יותר מבחינת ביצועים.</p>
+<p>קוהרנטיות cache לבדה אינה מספיקה כדי להבטיח התנהגות זיכרון תקינה במערכות שבהן נתונים משותפים נשמרים ב-cache. היא מהווה רק חלק מצומצם מהאילוצים שמגדיר מודל הזיכרון של המערכת. לדוגמה, קוהרנטיות cache אינה מתייחסת לסדר הפעולות הנובע מיחסי סדר בין פעולות זיכרון שונות במיקומים שונים. יתרה מכך, חלק מהאילוצים שמגדיר מודל הזיכרון חלים גם במערכות שאינן תומכות ב-cache-ים כלל. בנוסף, במערכות רבות, קשה להפריד בין פרוטוקול קוהרנטיות ה-cache לפרוטוקול הכללי שנועד לשמירה על עקביות הזיכרון, אך לרוב, פרוטוקול הקוהרנטיות מהווה חלק חיוני בתוכנית הכוללת לתמיכה במודל הזיכרון של המערכת.</p>
+<p>קוהרנטיות cache מתארת עקרון לפיו במערכת מרובת מעבדים, כל המעבדים חייבים לקבל תצוגה עקבית של תוכן הזיכרון המשותף. כלומר, כאשר מעבדים שונים מבצעים פעולות כתיבה לאותו מיקום בזיכרון, חייב להיות סדר גלובלי מוסכם של פעולות הכתיבה הללו (הנקרא &ldquo;סדר הקוהרנטיות&rdquo;), כך שכל מעבד יראה את השינויים באותו סדר. סדר זה חייב להיות עקבי עם סדר הפעולות שהוגדרו בתוכנית עבור אותו מיקום בזיכרון.</p>
+<p>חשוב להבדיל בין קוהרנטיות לעקביות, בספרות המקצועית ההבדל ביניהם הוא שקוהרנטיות מתייחסת לכל מיקום זיכרון בנפרד (מיקום זיכרון יחיד), בעוד שעקביות מתייחסת למערכת כולה ולכל מיקומי הזיכרון באופן כללי במערכת.</p>
+<h3 id="קוהרנטיות-מנוהלת-תוכנה">
+  קוהרנטיות מנוהלת תוכנה
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%9e%d7%a0%d7%95%d7%94%d7%9c%d7%aa-%d7%aa%d7%95%d7%9b%d7%a0%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>קוהרנטיות מנוהלת תוכנה היא גישה לניהול שיתוף נתונים. ביישום זה, הנתונים מאוחסנים ב-cache, אך ניהול הקוהרנטיות שמתבצע באמצעות תוכנה (בעיקר דרייברים וספריות ברמה נמוכה מבצעים פעולות כאלו) אחראי לנקות נתונים שהם במצב dirty או לבטל עותקים ישנים מה-cache. גישה זו עלולה להוסיף זמן עיבוד, להקשות על פיתוח התוכנה ולהפחית ביצועים כאשר שיעור השיתוף בין הליבות גבוה.</p>
+<h3 id="קוהרנטיות-מנוהלת-חומרה">
+  קוהרנטיות מנוהלת חומרה
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%9e%d7%a0%d7%95%d7%94%d7%9c%d7%aa-%d7%97%d7%95%d7%9e%d7%a8%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בגישה מנוהלת חומרה, הקוהרנטיות בין ה-data-cache-ים ברמה 1 בתוך cluster נשמרת על ידי החומרה. כאשר ליבה מופעלת, היא משתתפת אוטומטית במערכת הקוהרנטיות, כל עוד ה-data-cache וה-MMU שלה פעילים והכתובת נחשבת לקוהרנטית.</p>
+<p>תמיכה בקוהרנטיות מנוהלת חומרה מוסיפה מורכבות לחומרה הקשורה ל-interconnect ול-cluster, אך היא מפשטת מאוד את התוכנה ומאפשרת פיתוח יישומים שלא היו אפשריים רק באמצעות קוהרנטיות תוכנה.</p>
+<p>במערכות עם קוהרנטיות חומרה הקוהרנטיות נשמרת לרוב בפירוט שמתאים למספר מילים בזיכרון, אשר בדרך כלל תואם לגודל ה-cache line. פירוט זה מכונה coherence granularity. גודל גדול יותר של coherence granularity מסייע בהפחתת התקורה הקשורה לניהול ביטים של מצבי תג ב-cache. בדרך כלל, עותקים ב-cache נשלפים לפי גודל של cache line שלמה, וכאשר מתבצע ביטול, cache line שלמה מבוטלת גם אם הכתיבה שהביאה לכך נוגעת רק למילה בודדת.</p>
+<p>כשה-coherence granularity גדול זה מציב פשרה מבחינת ביצועים: כאשר יש מקומיות מרחבית טובה, נתונים יכולים להפיק תועלת מהעברת נתונים בגודל cache line שלמה, אך כאשר יש מקומיות מרחבית גרועה, הדבר עלול להוביל ליותר cache misses בשל תופעת false sharing.</p>
+<h2 id="קוהרנטיות-בין-רכיבים-שונים">
+  קוהרנטיות בין רכיבים שונים
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%91%d7%99%d7%9f-%d7%a8%d7%9b%d7%99%d7%91%d7%99%d7%9d-%d7%a9%d7%95%d7%a0%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>במקרים מסוימים, שינוי הנתונים יכול להתרחש בצורה שהפרוטוקול קוהרנטיות לא יכול לטפל בו עקב השפעות של מנגנוני יעול של המעבד כמו prefetching של הוראות וקיום רכיבים שלא משתתפים בפרוטוקול קוהרנטיות.</p>
+<p>במצבים כאלה, התוכנה חייבת להשתמש בהוראות המיועדות להסדרת ה-cache או הוראות invalidation כדי להבטיח שהגישה לנתונים תהיה קוהרנטית לאחר מכן.</p>
+<h3 id="קוהרנטיות-הוראות">
+  קוהרנטיות הוראות
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%94%d7%95%d7%a8%d7%90%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בארכיטקטורות כמו ARM וארכיטקטורות אחרות, שליפת פקודות אינן בהכרח קוהרנטיות.</p>
+<h4 id="קוהרנטיות-הוראות-להוראה">
+  קוהרנטיות הוראות להוראה
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%94%d7%95%d7%a8%d7%90%d7%95%d7%aa-%d7%9c%d7%94%d7%95%d7%a8%d7%90%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>$\text{instruction fetch} \to \text{instruction fetch}$
+שליפה אחת של פקודות עשויה להיות לא עקבית עם שליפה קודמת לפי סדר התוכנית.</p>
+<h4 id="קוהרנטיות-הוראה-לנתונים">
+  קוהרנטיות הוראה לנתונים
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%94%d7%95%d7%a8%d7%90%d7%94-%d7%9c%d7%a0%d7%aa%d7%95%d7%a0%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>$\text{instruction fetch} \to \text{data fetch}$
+כאשר מתבצע fetch ואז קריאה מאותו מיקום בזיכרון, הקריאה אינה מחויבת לראות את הכתיבה לאותו מיקום באופן קוהרנטי.</p>
+<h4 id="קוהרנטיות-נתונים-להוראה">
+  קוהרנטיות נתונים להוראה
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%a0%d7%aa%d7%95%d7%a0%d7%99%d7%9d-%d7%9c%d7%94%d7%95%d7%a8%d7%90%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>$\text{data fetch} \to \text{instruction fetch}$
+כאשר מתבצעת קריאה ואחריה fetch מאותו מיקום בזיכרון, הקריאה אינה מחויבת לראות את הכתיבה לאותו מיקום באופן קוהרנטי. במילים אחרות, ייתכן שה-fetch של הוראה לא יראה את השינויים שנעשו בכתיבה הקודמת.</p>
+<h3 id="גישה-קוהרנטית-עם-dma">
+  גישה קוהרנטית עם DMA
+  <a class="heading-link" href="#%d7%92%d7%99%d7%a9%d7%94-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%aa-%d7%a2%d7%9d-dma">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הטמעה של DMA בצורה קוהרנטית יכולה להתבצע פשוט על ידי הוספת cache קוהרנטי לבקר ה-DMA, מה שמאפשר לו להשתתף בפרוטוקול הקוהרנטיות של המערכת. במודל כזה, בקר ה-DMA יתנהג כמו ליבה ייעודית מבחינת הקוהרנטיות, מה שמבטיח שקריאות DMA תמיד יגיבו לגרסה העדכנית ביותר של בלוק הנתונים ושהכתיבות של DMA יבצעו ביטול של כל העותקים הישנים של הבלוק.</p>
+<p>עם זאת, הוספת cache קוהרנטי לבקר DMA אינה תמיד אופטימלית מסיבות שונות. ראשית, דפוסי מקומיות של בקרי DMA שונים מאוד מאלו של ליבות קונבנציונליות, לעיתים רחוקות בקרי DMA משתמשים באותם נתונים שוב בטווח זמן קצר והגישות זורמות דרך הזיכרון. לכן, ה-cache של DMA בדרך כלל לא מנצל היטב את התועלת שניתן להפיק מגודלו. שנית, כאשר בקר DMA מבצע כתיבה לבלוק, הוא נוטה לכתוב את כל הבלוק בבת אחת, מה שהופך את שליפת הבלוק באמצעות פעולה כמו ReadUnique (בפרוטוקלי AMBA) לבזבזנית, מכיוון שכל הנתונים מוחלפים. פרוטוקולי קוהרנטיות שונים מטפלים במצבים כאלה על ידי שימוש בפעולות קוהרנטיות מיוחדות, כמו הוספת בקשה חדשה מסוג MakeUnique שתבקש הרשאה לכתיבה רק אם מדובר בכתיבה ולא תדרוש שליחה של נתונים חדשים. אפשרות נוספת היא שימוש בהודעת WriteUniqueFull, שמעדכנת את הבלוק בזיכרון ומבטלת את כל העותקים האחרים, כולל העותקים במצבים של UD ו-SD.</p>
+<p>אפשרות נוספת היא להימנע מהצורך בקוהרנטיות של cache חומרה על ידי דרישה ממערכת ההפעלה לשטוף את ה-cache בצורה סלקטיבית. לדוגמה, לפני התחלת DMA לקריאה או כתיבה ב-page מסוים, מערכת ההפעלה יכולה לאלץ את כל ה-cache-ים לשטוף את ה-page הנוגע באמצעות פרוטוקול דמוי TLB Shootdown או באמצעות תמיכה חומרתית אחרת לניקוי page-ים. גישה זו נחשבת לפחות יעילה ומיועדת בדרך כלל למערכות משובצות, מכיוון שמערכת ההפעלה צריכה לשטוף את כל ה-page באופן שמרני, גם אם רק חלק קטן ממנו נמצא בקבצים הנדרשים.</p>
+<h2 id="פרוטוקול-קוהרנטיות">
+  פרוטוקול קוהרנטיות
+  <a class="heading-link" href="#%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>מימושים התומכים ב-caching חייבים להיעזר בפרוטוקול קוהרנטיות cache על מנת לשמור על קוהרנטיות בין הזיכרון הראשי לבין ה-cache ושמירה על קוהרנטיות בין ה-cache-ים עצמם.</p>
+<p>פרוטוקול קוהרנטיות, הוא מערכת של כללים המיושמת על ידי קבוצה של מעבדים מבוזרים בתוך המערכת. קיימים מגוון רחב של פרוטוקולי קוהרנטיות, אך העקרון המרכזי הוא שכל הווריאציות מבטיחות שהכתיבה של מעבד אחד תהיה גלויה לשאר המעבדים על ידי הפצת הכתיבה לכל ה-cache-ים.</p>
+<p>פרוטוקול קוהרנטיות שומר על קוהרנטיות על ידי אכיפת האינוריאנטים הבאים:</p>
+<ol>
+<li>
+<p><strong>כותב אחד וריבוי קוראים (Single-Writer, Multiple-Read (SWMR))</strong>: עבור כל מיקום זיכרון A, בכל זמן נתון (לוגי), ישנה רק ליבה אחת בלבד שיכולה לכתוב ל-A (ויכולה גם לקרוא אותה), או מספר ליבות שיכולות לקרוא את A בלבד מבלי לכתוב אליו.</p>
+</li>
+<li>
+<p><strong>ערך ללא שינוי (Data-Value Invariant)</strong>: הערך של מיקום הזיכרון בתחילת עידן חייב להיות זהה לערך של אותו מיקום זיכרון בסוף העידן הקודם שבו בוצעה קריאה או כתיבה.</p>
+</li>
+</ol>
+<p>כדי ליישם את האינוריאנטים הללו, מקשרים לכל מבנה אחסון, כל cache וזיכרון מכונת מצב סופי שנקראת בקר קוהרנטיות (coherence controller). האוסף של בקרי הקוהרנטיות הללו יוצר מערכת מבוזרת שבה הבקרים מתקשרים זה עם זה באמצעות הודעות, על מנת להבטיח שכל בלוק זיכרון שומר על האינוריאנטים SWMR ו-Data-Value לאורך זמן.</p>
+<p>האינטראקציות בין מכונות המצב הסופי הללו מוגדרות על ידי פרוטוקול הקוהרנטיות. בקרי הקוהרנטיות אחראים למספר תחומים: בקר הקוהרנטיות ב-cache, לדוגמה, נקרא לעיתים בקר cache.</p>
+<p>בקר ה-cache אחראי לטפל בבקשות משני מקורות עיקריים:</p>
+<ul>
+<li>
+<p><strong>בצד הליבה</strong>: בקר ה-cache מתקשר עם ליבת המעבד. הוא מקבל בקשות לקריאות ולכתיבות מהליבה ומחזיר את ערכי הקריאות לליבה. כאשר מתרחש cache miss, הבקר יוזם טרנזקציה קוהרנטית על ידי שליחת בקשת קוהרנטיות, כמו בקשה להרשאת קריאה בלבד, עבור הבלוק המכיל את המיקום שניגשת אליו הליבה. בקשת הקוהרנטיות נשלחת דרך רשת interconnection לבקרי קוהרנטיות אחרים במערכת. טרנזקציה זו כוללת את הבקשה וכן את שאר ההודעות הנדרשות להשלמתה, כגון הודעות תגובה עם נתונים שנשלחות מבקר קוהרנטיות אחר למבקש. סוגי הטרנזקציות וההודעות שנשלחות במסגרת כל טרנזקציה משתנים בהתאם לפרוטוקול הקוהרנטיות הספציפי במערכת.</p>
+</li>
+<li>
+<p><strong>בצד הרשת</strong>: בקר ה-cache מתקשר עם שאר המערכת דרך רשת interconnection. הוא מקבל בקשות קוהרנטיות ותגובות קוהרנטיות שצריך לעבד. עיבוד ההודעות הקוהרנטיות הנכנסות תלוי גם הוא בפרוטוקול הקוהרנטיות הספציפי המנוהל במערכת.</p>
+</li>
+</ul>
+<p>בקר זיכרון דומה לבקר cache, אך בדרך כלל יש לו רק צד רשת. כלומר, הוא לא מוציא בקשות קוהרנטיות עבור פעולות קריאה או כתיבה, ולא מקבל תגובות קוהרנטיות.</p>
+<p>ה-agent-ים אחרים במערכת, כמו התקני io, עשויים להתנהג כמו בקרי cache, בקרי זיכרון או לשלב את התכנים של שניהם, בהתאם לצרכים הספציפיים שלהם. כל בקר קוהרנטיות פועל על פי קבוצת מכונות מצב סופי - למעשה, מכונת מצב סופי אחת עבור כל בלוק באופן לוגי - ומעבד אירועים (כגון הודעות קוהרנטיות נכנסות) בהתאם למצב הנוכחי של הבלוק. כאשר אירוע מסוים, E (למשל, בקשת store מהליבה), מתרחש עבור בלוק B, בקר הקוהרנטיות מבצע פעולות (כגון הוצאת בקשת קוהרנטיות להרשאת קריאה-כתיבה) התלויות באירוע E ובמצב הנוכחי של B. לאחר ביצוע הפעולות הללו, הבקר עשוי לעדכן את מצב הבלוק B בהתאם.</p>
+<p>ההבדלים בין פרוטוקולי קוהרנטיות נובעים מהשונות במפרטי הבקר השונים. הבדלים אלה כוללים קבוצות שונות של מצבי בלוק, טרנזקציות, אירועים ומעברים בין מצבים.</p>
+<h3 id="מאפייני-פרוטוקול-קוהרנטיות">
+  מאפייני פרוטוקול קוהרנטיות
+  <a class="heading-link" href="#%d7%9e%d7%90%d7%a4%d7%99%d7%99%d7%a0%d7%99-%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>קיימים כל מיני מאפיינים לפרוטוקול קוהרנטיות ובעזרתם אפשר לחלק את הפרוטוקולים לקבוצות ולראות תכונות בולטות בין הפרוטוקולים.</p>
+<h4 id="מאפייני-סנכרון">
+  מאפייני סנכרון
+  <a class="heading-link" href="#%d7%9e%d7%90%d7%a4%d7%99%d7%99%d7%a0%d7%99-%d7%a1%d7%a0%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הפרוטוקולים שונים במועדי ובאופן הסנכרון שיתקיים, קיימים שני סוגים עיקריים של פרוטוקולי קוהרנטיות:</p>
+<ol>
+<li>בגישה הראשונה, פרוטוקול הקוהרנטיות מבצע הפצת כתיבה ל-cache-ים באופן סינכרוני, כלומר הכתיבה מועברת לכולם במקביל.</li>
+<li>בגישה השנייה, פרוטוקול הקוהרנטיות מבצע את ההפצה באופן אסינכרוני, כלומר הכתיבה מופצת בהדרגה, תוך שמירה על מודל העקביות של המערכת.</li>
+</ol>
+<p>במעבדים מודרניים, כתיבה לרוב מופצת באופן אסינכרוני, מה שאומר שהכתיבה עשויה להתבצע לפני שהיא הופכת לגלויה לכל המעבדים במערכת. תהליך זה יכול להוביל לצפייה בערכים מיושנים בזמן אמת. עם זאת, כדי לשמור על עקביות נכונה, פרוטוקולי קוהרנטיות צריכים להבטיח שהסדר שבו הכתיבה הופכת לגלויה יהיה בהתאם לכללי הסדר שנקבעו על ידי מודל העקביות של המערכת.</p>
+<h4 id="קוהרנטיות-בתוך-המעבד-ובין-המעבדים">
+  קוהרנטיות בתוך המעבד ובין המעבדים
+  <a class="heading-link" href="#%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%91%d7%aa%d7%95%d7%9a-%d7%94%d7%9e%d7%a2%d7%91%d7%93-%d7%95%d7%91%d7%99%d7%9f-%d7%94%d7%9e%d7%a2%d7%91%d7%93%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>בדרך כלל ניתן להבחין בין שני מרכיבים עיקריים בקוהרנטיות cache:</p>
+<ul>
+<li>פרוטוקול הקוהרנטיות שמטפל בניהול הקוהרנטיות בתוך היררכיית ה-cache של כל מעבד בנפרד.</li>
+<li>פרוטוקול הקוהרנטיות שמנהל את הקוהרנטיות בין cache-ים של מעבדים שונים במערכת.</li>
+</ul>
+<p>ההבחנה הזו מאפשרת לטפל בנפרד בקוהרנטיות בתוך המעבד ובין המעבדים, מה שמייעל את הניהול של קוהרנטיות במערכות מבוזרות.</p>
+<h4 id="פרוטוקולי-invalidate-לעומת-update">
+  פרוטוקולי Invalidate לעומת Update
+  <a class="heading-link" href="#%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c%d7%99-invalidate-%d7%9c%d7%a2%d7%95%d7%9e%d7%aa-update">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כדי להבטיח שהעותקים ב-cache-ים השונים יישארו מעודכנים, כאשר מתבצעת כתיבה לזיכרון, יש לבטל או לעדכן את העותקים הישנים, המכונים נתונים מעופשים (stale), בעותקים האחרים. ניתן לבצע זאת באמצעות שתי גישות: ביטול (invalidate) של הנתונים המעופשים או עדכון הערך המאוחסן ב-cache לערך החדש שנכתב. תהליך זה של ביטול או עדכון מלווה לעיתים קרובות בהודעת אישור שמעידה על השלמת הפעולה. רוב העיצובים של פרוטוקולי קוהרנטיות משתמשים או בגישה של ביטול או בגישה של עדכון, אך ישנם עיצובים היברידיים שבהם המערכת יכולה לבחור באופן סטטי או דינמי בין שתי השיטות, בהתאם למיקום הזיכרון או לתנאים אחרים.</p>
+<p>בפרוטוקול קוהרנטיות, אחת ההחלטות העיקריות בתכנון היא כיצד לנהוג כאשר ליבה כותבת לבלוק זיכרון. קיימות שתי אפשרויות עיקריות:</p>
+<h5 id="פרוטוקולי-invalidate">
+  פרוטוקולי Invalidate
+  <a class="heading-link" href="#%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c%d7%99-invalidate">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>כאשר ליבה רוצה לכתוב לבלוק, היא יוזמת טרנזקציה קוהרנטית שמביאה לביטול של העותקים של הבלוק בכל ה-cache-ים האחרים. ברגע שהעותקים בוטלו והפכו ללא חוקיים, הליבה המבקשת יכולה לבצע את הכתיבה ללא חשש שהליבות האחרות יקראו את הערך הישן של הבלוק. אם ליבה אחרת רוצה לקרוא את הבלוק לאחר שהעותק שלו בוטל, עליה ליזום טרנזקציה קוהרנטית חדשה כדי לקבל את הבלוק, ובכך תקבל עותק מעודכן מהליבה שביצעה את הכתיבה. תהליך זה מבטיח שמירה על הקוהרנטיות.</p>
+<h5 id="פרוטוקולי-update">
+  פרוטוקולי Update
+  <a class="heading-link" href="#%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c%d7%99-update">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>כאשר ליבה רוצה לכתוב לבלוק, היא יוזמת טרנזקציה קוהרנטית שמביאה לעדכון כל העותקים של הבלוק בכל ה-cache-ים האחרים כדי לשקף את הערך החדש שנכתב.</p>
+<p>פרוטוקולי Update מפחיתים את זמן ההשהיה לקריאה של בלוק חדש שנכתב, משום שהליבה אינה נדרשת ליזום ולחכות להשלמת טרנזקציה חדשה. עם זאת, פרוטוקולי Update בדרך כלל צורכים יותר רוחב פס מפרוטוקולי Invalidate, מכיוון שהודעות ה-Update כוללות מידע נוסף (כתובת וערך חדש) לעומת הודעות Invalidate (שכוללות רק כתובת).</p>
+<p>פרוטוקולי Update גם מסבכים את היישום של מודלים שונים של עקביות זיכרון. לדוגמה, שמירה על multi-copy atomicity נעשית מורכבת יותר כאשר יש צורך לעדכן מספר עותקים של בלוק בזיכרון. בשל המורכבות הרבה של פרוטוקולי Update, הם מיושמים רק לעיתים נדירות.</p>
+<h3 id="תנאי-סיום-בפרוטוקול-קוהרנטיות">
+  תנאי סיום בפרוטוקול קוהרנטיות
+  <a class="heading-link" href="#%d7%aa%d7%a0%d7%90%d7%99-%d7%a1%d7%99%d7%95%d7%9d-%d7%91%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>תנאי הסיום של פרוטוקול קוהרנטיות דורשים שכל פעולת כתיבה שהונפקה על ידי מעבד תסתיים לבסוף באופן שהכתיבה תיראה על ידי כל המעבדים באותו סדר עקבי. כלומר, סדר ההשלמה של פעולות הכתיבה חייב להיות אחיד ונראה לכל המעבדים במערכת. דרישה זו חיונית במיוחד במערכות שבהן נתונים משוכפלים ב-cache-ים בין כמה מעבדים, שכן היא מבטיחה שכל שינוי בנתונים יהיה גלוי ומסונכרן בין כל הרכיבים.</p>
+<p>בנוסף, הקוהרנטיות מחייבת שכל פעולת כתיבה לאותה כתובת בזיכרון תופיע בכל המעבדים באותו הסדר. כלומר, אם מספר מעבדים כותבים לאותה כתובת בזיכרון, כל המעבדים האחרים צריכים לראות את סדר הכתיבות באופן זהה (דרישה ל-multi-copy atomicity)</p>
+<h3 id="point-of-coherence">
+  Point of Coherence
+  <a class="heading-link" href="#point-of-coherence">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>נקודת הקוהרנטיות היא מיקום רעיוני בתוך המערכת שאליו מגיעות כל הכתיבות והמחסומים במהלך פעולתן. ניתן לדמות את נקודת הקוהרנטיות כמקום הסופי שבו מתבצעת הכתיבה, לאחר שהיא עוברת דרך כל ה-cache-ים וה-buffer-ים הרלוונטיים ומגיעה לזיכרון הראשי לשם אחסון סופי של הנתונים.</p>
+<p>העיקרון המרכזי של נקודת הקוהרנטיות הוא שכתיבות לאותה כתובת זיכרון חייבות להגיע לנקודה זו בסדר קוהרנטיות אחיד. סדר זה מגדיר את הסדר שבו כל מעבד במערכת יראה את הכתיבות. ייתכן שמערכת הזיכרון עצמה תקבע את סדר הכתיבות מראש ותשלח אותן לנקודת הקוהרנטיות לפי סדר מוגדר, או שהיא תעביר את הכתיבות לפי סדר הגעתן לנקודה זו, ומשם תקבע את הסדר. מה שחשוב הוא שברגע שכתיבה מסוימת מגיעה לנקודת הקוהרנטיות, מיקומה בסדר הקוהרנטיות נקבע ולא ניתן לשנותו. כלומר, כתיבות עתידיות לא יוכלו לעקוף כתיבות קודמות בסדר זה.</p>
+<p>פרט לדרישות שמטילים מחסומי זיכרון, אין הכרח שסדר ההתפשטות של הכתיבות בין המעבדים או הדרך שבה הן מגיעות לנקודת הקוהרנטיות יהיה מוגדר מראש. כתיבות יכולות להגיע לנקודת הקוהרנטיות בסדר שונה מזה שבו נשלחו במקור. לדוגמה, ייתכן ששני מעבדים יכתבו לאותה כתובת זיכרון בזמנים שונים, אך הכתיבה השנייה תגיע לנקודת הקוהרנטיות ותהפוך לגלויה לפני הכתיבה הראשונה.</p>
+<p>הדרישה המרכזית היא שקוהרנטיות אחת בלבד תהיה תקפה עבור משתנה נתון בזמן נתון. דרישה זו מתממשת באמצעות ה-cache line המכיל את המשתנה, שיכול לעבור בין מעבדים לפי הצורך. נוסף לכך, המערכת יכולה להפיק תועלת מיכולת scalability של נקודת הקוהרנטיות עבור כל cache line, כך שהיא תוכל לתמוך גם במערכות גדולות ומורכבות יותר. יישום חומרה פשוט שיכול להתרחב בצורה יעילה במערכות גדולות מסתמך על שימוש ב-store buffer-ים, שמסייעים בשמירה על קוהרנטיות וסדר הכתיבות.</p>
+<p>עוד דרך לראות את ה-point of coherence הוא המקום בהיררכיית הזיכרון שבו מאוחסן הערך האחרון של מיקום זיכרון, ושם מובטחות גישה קוהרנטית למיקום זה.
+הוא מייצג את המיקום הספציפי שבו ניתן למצוא את הערך הקוהרנטי העדכני ביותר של בלוק זיכרון, לאחר השלמת כל הפעולות הממתינות.</p>
+<h3 id="serialization-point">
+  serialization point
+  <a class="heading-link" href="#serialization-point">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>דרישת הסדר הכולל בטיפול בבקשות קוהרנטיות יוצרת השפעות משמעותיות על עיצוב רשת interconnection, במיוחד בפרוטוקולים מסורתיים מבוססי snooping. מאחר שבקרי קוהרנטיות שונים יכולים להנפיק בקשות במקביל, יש צורך ברשת שתארגן את הבקשות לפי סדר כולל שייקבע בצורה עקבית. מנגנון זה נקרא נקודת הסדרה (serialization point), ותפקידו לקבוע את הסדר שבו הבקשות יישלחו לבקרים ויטופלו.</p>
+<p>כאשר בקר קוהרנטיות שולח בקשת קוהרנטיות, רשת ה-interconnection מתאמת את הבקשה בהתאם לנקודת ההסדרה ושולחת אותה לכל הבקרים. הבקר ששולח את הבקשה יכול לגלות באיזה סדר היא טופלה על ידי ביצוע snooping לבקשות המגיעות מהבקרים האחרים, כך שיוכל לדעת אילו בקשות קודמות או עוקבות בקשר לבקשה שלו.</p>
+<p>בואו ניקח דוגמה פשוטה למערכת המשתמשת ב-bus לשידור בקשות קוהרנטיות. במערכת כזו, בקרי הקוהרנטיות חייבים לפעול עם לוגיקת סלקציה שמבטיחה שבכל רגע רק בקשה אחת תעבור על ה-bus. לוגיקת הסלקציה פועלת כנקודת ההסדרה בכך שהיא קובעת את הסדר שבו הבקשות יישלחו על ה-bus. ברגע שהלוגיקה הזו מארגנת את הבקשה, הבקשה יכולה להתבצע, אך הבקר המנפיק יידע את הסדר הכולל שבו הבקשה שלו שולבה רק על ידי ביצוע snooping ב-bus. במהלך זה הוא יגלה אילו בקשות אחרות קיימות לפני או אחרי הבקשה שלו.</p>
+<p>כתוצאה מכך, בקרי הקוהרנטיות יכולים להבין את הסדר הכולל של הבקשות רק מספר מחזורי שעון לאחר שנקודת ההסדרה קבעה את הסדר בפועל.</p>
+<p>ה-serialization point מתייחסת לרגע או למקום בזמן שבו פעולה בזיכרון משותף מסודרת באופן גלובלי ביחס לפעולות אחרות.
+זוהי הנקודה שבה כל המעבדים מסכימים על סדר פעולות הזיכרון. סדר זה חיוני לעקביות, מכיוון שהוא מבטיח שכל המעבדים יצפו בפעולות זיכרון באותו רצף.
+לדוגמה, במערכת עם מספר cache-ים, כאשר מתרחשת כתיבה למשתנה משותף, ה-serialization point הוא הזמן או המנגנון שקובעים מתי כתיבה זו תהיה גלויה לכל המעבדים.</p>
+<h3 id="serialization-point-vs-point-of-coherence">
+  serialization point vs point of coherence
+  <a class="heading-link" href="#serialization-point-vs-point-of-coherence">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-serialization point מתארת את סדר הפעולות ומתי הן מזוהות גלובלית על ידי כל המעבדים, בעוד ש-point of coherence הוא על המיקום שבו קיים ערך הנתונים העדכני והנכון ביותר.</p>
+<p>נקודת סריאליזציה היא מושג זמני הקשור להבטחת עקביות זיכרון, בעוד שנקודת קוהרנטיות היא מושג מרחבי הקשור למציאת הערך הקוהרנטי של cache line.</p>
+<hr>
+<p><a href="https://inria.hal.science/hal-02509910/document"  class="external-link" target="_blank" rel="noopener">https://inria.hal.science/hal-02509910/document</a></p>
+<h3 id="זיכרון-לא-קוהרנטי">
+  זיכרון לא קוהרנטי
+  <a class="heading-link" href="#%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f-%d7%9c%d7%90-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>לא כל מיקום זיכרון מוגדר כקוהרנטי וזה נפוץ בסוגים שונים של מידע שלרוב לא משתנים הרבה כמו ה-instruction cache ב-AArch64.</p>
+<h4 id="הדגמה-של-חוסר-קוהרנטיות-ב-instruction-cache">
+  הדגמה של חוסר קוהרנטיות ב-instruction cache
+  <a class="heading-link" href="#%d7%94%d7%93%d7%92%d7%9e%d7%94-%d7%a9%d7%9c-%d7%97%d7%95%d7%a1%d7%a8-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa-%d7%91-instruction-cache">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<ul>
+<li>
+<p>קשר <code>fe</code> (fetch-to-execute): קשר זה מקשר בין אירוע ה-fetch של ההוראה לבין כל אירועי הביצוע הנלווים (כגון כתיבה וקריאת זיכרון או מחסומים) של אותה ההוראה. הוא מתאר את התהליך שבו ההוראה שנשלפה מתבצעת בפועל.</p>
+</li>
+<li>
+<p>קשר <code>irf</code> (instruction-read-from): קשר זה מתייחס לכתיבה לכל ה-fetch-ים שקוראים מאותו קוד, בדומה לקשר <code>rf</code>. הוא משקף את הקשר בין ההוראה הנשלפת לאירועים אחרים המתקיימים סביב הקריאות ממנה.</p>
+</li>
+<li>
+<p>קשר <code>fpo</code> (fetch-program order): קשר זה מתאר את הסדר שבו מתבצעות שליפות ההוראות, בהתאם לסדר התוכנית המקורי, בדומה ליחס <code>po</code>.</p>
+</li>
+</ul>
+<p>תופעה זו ממחישה את מבחן CoFF:</p>
+<figure>
+    <img src="/posts/cache/cache-coherence/fig03_CoFF.png"class="dark-image"
+    ><figcaption class="image-title">fig03 CoFF from ARMv8-A system semantics: instruction fetch in relaxed architectures (inria.hal.science)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>במבחן זה, thread 1 מבצע שתי קריאות לכתובת <code>f</code>, שבה thread 0 מחליף את ההוראה. התרחיש המעניין מתרחש כאשר הקריאה הראשונה ל-<code>f</code> (הוראת BL היא branch-and-link) מצליחה להביא ולבצע את ההוראה החדשה <code>B l1</code>, בעוד שהקריאה השנייה מביאה ומבצעת את ההוראה המקורית <code>B l0</code>.</p>
+<h4 id="קצוות-מהמצב-ההתחלתי">
+  קצוות מהמצב ההתחלתי
+  <a class="heading-link" href="#%d7%a7%d7%a6%d7%95%d7%95%d7%aa-%d7%9e%d7%94%d7%9e%d7%a6%d7%91-%d7%94%d7%94%d7%aa%d7%97%d7%9c%d7%aa%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הקצוות המתוארים מהמצב ההתחלתי נמשכים מעיגול קטן. מכיוון שאיננו משנים את הקוד עבור רוב המיקומים, לרוב אנו משמיטים את אירועי ה-fetch של ההוראות הללו ומציגים רק תת-גרף של האירועים המעניינים, כפי שמוצג בגרף בצד. עבור ארכיטקטורת ARM, ביצוע זה מתיר ומצופה גם בניסויים.</p>
+<p>במקרים אלו, אנו מניחים שהקוד כולל פונקציה בכתובת <code>f</code> שמחזיקה באותה צורה: branch שעשוי להיות מוחלף, אשר בוחר בלוק שמבצע כתיבה לרגיסטר <code>X10</code> לפני החזרה. לעיתים, קוד זה משוכפל לכתובות שונות (כגון <code>f1</code>, <code>f2</code> וכו&rsquo;) או מורחב לפונקציה <code>g</code>, עם שלושה תרחישים שונים. לפעמים אנו מסלקים את הקוד הנפוץ לצורך הפשטה.</p>
+<hr>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Cache_coherence">https://en.wikipedia.org/wiki/Cache_coherence</a>
+    </li>
+  
+    <li>
+      <a href="https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf">https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/den0024/a/Multi-core-processors/Multi-core-cache-coherency-within-a-cluster?lang=en">https://developer.arm.com/documentation/den0024/a/Multi-core-processors/Multi-core-cache-coherency-within-a-cluster?lang=en</a>
+    </li>
+  
+    <li>
+      <a href="https://inria.hal.science/hal-02509910/document">https://inria.hal.science/hal-02509910/document</a>
+    </li>
+  
+    <li>
+      <a href="https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf">https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf</a>
+    </li>
+  
+    <li>
+      <a href="http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf">http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-cache" dir="rtl">        רואה עוד ב cache
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-cache">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/cache/multi-copy-atomicity/">Multi-copy atomicity</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/cache/cache-maintenance/">Cache maintenance</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/cache/snoop--directory/">Snoop &amp; Directory</a>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/cache/cache/">Cache</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

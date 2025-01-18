@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Decoder · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="מעבדים מבצעים הוראות באמצעות טכניקת ה-pipeline, שבה כל הוראה עוברת סדרת שלבים: תחילה היא מפוענחת, לאחר מכן מתבצע הכנת הפרמטרים, ולבסוף ההוראה מבוצעת. כאשר ה-pipeline ארוך, זה אומר שאם מתרחשת תקלה ב-pipeline (כלומר, כאשר זרימת ההוראות עוצרת), לוקח זמן להחזיר אותו למצב של פעולה רגילה. תקלות ב-pipeline יכולות להתרחש כאשר קשה לחזות את מיקום ההוראה הבאה או כאשר לוקח זמן רב לטעון את ההוראה הבאה מהזיכרון.
+ב-pipeline, ה&quot;טריק&quot; הוא להתחיל לפענח את ההוראה הבאה עוד לפני שההוראה הנוכחית עזבה את המעבד, בדומה לפס ייצור. כך, מפענח הכתובות נשאר בתפקוד רציף ולא נותר ללא עבודה.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Decoder">
+  <meta name="twitter:description" content="מעבדים מבצעים הוראות באמצעות טכניקת ה-pipeline, שבה כל הוראה עוברת סדרת שלבים: תחילה היא מפוענחת, לאחר מכן מתבצע הכנת הפרמטרים, ולבסוף ההוראה מבוצעת. כאשר ה-pipeline ארוך, זה אומר שאם מתרחשת תקלה ב-pipeline (כלומר, כאשר זרימת ההוראות עוצרת), לוקח זמן להחזיר אותו למצב של פעולה רגילה. תקלות ב-pipeline יכולות להתרחש כאשר קשה לחזות את מיקום ההוראה הבאה או כאשר לוקח זמן רב לטעון את ההוראה הבאה מהזיכרון.
+ב-pipeline, ה&#34;טריק&#34; הוא להתחיל לפענח את ההוראה הבאה עוד לפני שההוראה הנוכחית עזבה את המעבד, בדומה לפס ייצור. כך, מפענח הכתובות נשאר בתפקוד רציף ולא נותר ללא עבודה.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/processor-components/decoder/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Decoder">
+  <meta property="og:description" content="מעבדים מבצעים הוראות באמצעות טכניקת ה-pipeline, שבה כל הוראה עוברת סדרת שלבים: תחילה היא מפוענחת, לאחר מכן מתבצע הכנת הפרמטרים, ולבסוף ההוראה מבוצעת. כאשר ה-pipeline ארוך, זה אומר שאם מתרחשת תקלה ב-pipeline (כלומר, כאשר זרימת ההוראות עוצרת), לוקח זמן להחזיר אותו למצב של פעולה רגילה. תקלות ב-pipeline יכולות להתרחש כאשר קשה לחזות את מיקום ההוראה הבאה או כאשר לוקח זמן רב לטעון את ההוראה הבאה מהזיכרון.
+ב-pipeline, ה&#34;טריק&#34; הוא להתחיל לפענח את ההוראה הבאה עוד לפני שההוראה הנוכחית עזבה את המעבד, בדומה לפס ייצור. כך, מפענח הכתובות נשאר בתפקוד רציף ולא נותר ללא עבודה.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-08-18T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-08-18T00:00:00+00:00">
+    <meta property="article:tag" content="Buffer">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Intel">
+    <meta property="article:tag" content="X86">
+    <meta property="article:tag" content="Decoder">
+    <meta property="article:tag" content="Opcode">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/store-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/combined-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/fetch/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/invalidate-queue/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/line-fill-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/reorder-buffer/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/processor-components/decoder/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/processor-components/decoder/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/processor-components/decoder/">
+              Decoder
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-08-18T00:00:00Z">
+                אוגוסט 18, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                1824 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/processor-components/">Processor-Components</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/buffer/">Buffer</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/intel/">Intel</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/x86/">X86</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/decoder/">Decoder</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/opcode/">Opcode</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <p>מעבדים מבצעים הוראות באמצעות טכניקת ה-pipeline, שבה כל הוראה עוברת סדרת שלבים: תחילה היא מפוענחת, לאחר מכן מתבצע הכנת הפרמטרים, ולבסוף ההוראה מבוצעת. כאשר ה-pipeline ארוך, זה אומר שאם מתרחשת תקלה ב-pipeline (כלומר, כאשר זרימת ההוראות עוצרת), לוקח זמן להחזיר אותו למצב של פעולה רגילה. תקלות ב-pipeline יכולות להתרחש כאשר קשה לחזות את מיקום ההוראה הבאה או כאשר לוקח זמן רב לטעון את ההוראה הבאה מהזיכרון.</p>
+<p>ב-pipeline, ה&quot;טריק&quot; הוא להתחיל לפענח את ההוראה הבאה עוד לפני שההוראה הנוכחית עזבה את המעבד, בדומה לפס ייצור. כך, מפענח הכתובות נשאר בתפקוד רציף ולא נותר ללא עבודה.</p>
+<p>השליפה של הוראות מפוענחות מראש מבטלת את הצורך בפענוח חוזר של הוראות מורכבות באורך משתנה ל-micro-ops פשוטות ואחידות באורכן. תהליך זה מפשט את חיזוי ההוראות, שליפתן, סידורן ויישורן. cache ה-μop מפחית את העומס על שלבי השליפה והפענוח, מקטין את צריכת הכוח ומשפר את אספקת ה-frontend של micro-ops מפוענחות. בנוסף, cache ה-μop מייעל את הביצועים על ידי אספקה עקבית יותר של micro-ops מפוענחות ל-backend, ובכך נמנע מצווארי בקבוק בלוגיקת השליפה והפענוח של המעבד.</p>
+<p>במעבדי אינטל, ה-predecoder שולף בלוקים מיושרים של 16 בתים מ-cache ההוראות (עד בלוק אחד בכל מחזור). תפקידו המרכזי הוא לזהות את נקודת ההתחלה של כל הוראה, משימה מאתגרת במיוחד בשל השונות באורך ההוראות, הנע בין בית אחד ל-15 בתים. זיהוי זה דורש לעיתים בדיקה של מספר בתים בהוראה כדי לקבוע את אורכה. לאחר הפענוח הראשוני, ההוראות מועברות לתור ההוראות (IQ).</p>
+<p>קיים מקרה מיוחד עבור הוראות עם קידומות באורך משתנה (LCP), שבהן ה-predecoder נאלץ להשתמש באלגוריתם פענוח איטי יותר, מה שמוביל לעיכוב בעיבוד כל הוראה כזו.</p>
+<p>במעבדים, ה-µops המפוענחים מוזרמים לרוב מתוך cache ה-µOP (הנקרא גם Decoded Stream Buffer - DSB) או מתוך יחידת זיהוי זרם לולאה (Loop Stream Detector - LSD). לעומת זאת, בלוקים בסיסיים שאינם בלולאה נלקחים בדרך כלל מ-cache ההוראות (instruction cache - IC) ומפוענחים על ידי המפענחים.</p>
+<p>ה-pipeline במעבד מחולק לשני חלקים עיקריים: ה-front end וה-back end. ה-front end אחראי על שליפת ההוראות ופענוחן ל-µops, בעוד שה-back end, המכונה גם מנוע הביצוע (execution engine), אחראי על ביצוע ה-µops, שמירה על סדר עדיפות בשל תלות בכתיבה ובקריאה, ובסופו של דבר על ביצוע ההוראות. ניתן לחלק את ה-front end וה-back end למספר רכיבים שונים:</p>
+<p>ה-front end כולל את cache ההוראות (instruction cache), את ה-predecoder, את המפענח (decoder), את ה-DSB ואת ה-LSD.</p>
+<p>המפענח אחראי על פענוח הוראות קלט ואחסון ה-µops שהתקבלו בתור פענוח ההוראות (instruction decode queue - IDQ). לאחר מכן, ה-renamer מקבל את ה-µops מתוך ה-IDQ, מבצע את המשימות הנדרשות, מאחסן את ה-µops ב-reorder buffer ומוציא אותם ל-scheduler.</p>
+<p>כל רכיב ב-pipeline יכול לעבד מספר מסוים של הוראות או µops בכל מחזור, בהתאם לרוחב העיבוד המקביל שלו. כפי שנמצא במחקרים קודמים, כמות ה-µops שעובדים על ידי רכיב מסוים במחזור תלויה הן במאפייני רכיב ה-pipeline והן באופי ה-µops המעובדים.</p>
+<p>בשלבים שונים של ה-pipeline, ניתן לבצע מיזוג, פיצול או ביטול הוראות. לדוגמה, ניתן למזג זוגות מסוימים של הוראות בתור ההוראות (instruction queue), הוראות אלו נקראות &ldquo;macro fused&rdquo; והן מטופלות כהוראה אחת על ידי שאר ה-pipeline. באופן דומה, שני µops מסוגי הוראות מסוימים יכולים להתמזג יחד בשלב הפענוח, ולטופל כ-µop אחד עד שהם מפוצלים על ידי ה-renamer או כשהם נכנסים ל-scheduler. מצב זה מכונה לעיתים קרובות micro fusion. לפני הפיצול, ה-µops המפוענחים נקראים fused-domain µops. ישנם גם µops מסוימים שיכולים להתבצע על ידי ה-renamer עצמו ולא נשלחים כלל ל-scheduler.</p>
+<p>בהתאם לסוג ההוראה ומצב ה-pipeline, הוראות עוברות דרך רכיבי pipeline שונים. הוראות שהן חלק מלולאה מעובדות בדרך כלל על ידי ה-predecoder וה-decoder רק פעם אחת, ובאיטרציות הבאות הן מוגשות מ-LSD או DSB. הוראות שאינן חלק מלולאה מעובדות בדרך כלל על ידי ה-predecoder וה-decoder.</p>
+<h3 id="decoder">
+  Decoder
+  <a class="heading-link" href="#decoder">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>יחידת הפענוח (Decoder) אחראית לפענוח של עד ארבע הוראות בכל מחזור, ולאחסון ה-µops המפוענחים בתור פענוח ההוראות (IDQ). יחידת הפענוח מורכבת משלושה מפענחים פשוטים ומפענח מורכב אחד. המפענח המורכב יכול לפענח הוראות המכילות עד ארבעה µops, בעוד שהמפענחים הפשוטים מטפלים בהוראות המכילות µop אחד בלבד. המפענח המורכב תמיד מטפל בהוראה הראשונה שנשלפת במחזור. יחידת הפענוח מקצה פקודה נכנסת למפענח מתאים בהתבסס על מצב היחידה ומאפייני ההוראות הנכנסות.</p>
+<h3 id="decoded-stream-buffer-dsb">
+  Decoded Stream Buffer (DSB)
+  <a class="heading-link" href="#decoded-stream-buffer-dsb">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Decoded Stream Buffer (DSB), הידוע גם כ-µop cache, מאחסן µops מפוענחים. עבור לולאות שבהן הפענוח מהווה צוואר בקבוק, ה-DSB יכול לשפר את התפוקה על ידי אחסון ה-µops המפוענחים במהלך האיטרציה הראשונה של הלולאה, ולאחר מכן הזרמתם ל-renamer באיטרציות הבאות.</p>
+<p>ה-µops שמפוענחים מאוחסנים ב-Decoded Stream Buffer (DSB, או µOP cache), בהתאם לתנאים מסוימים. אחסון זה יכול לשפר את התפוקה של לולאות שבהן הפענוח מהווה צוואר בקבוק.</p>
+<h3 id="loop-stream-detector-lsd">
+  Loop Stream Detector (LSD)
+  <a class="heading-link" href="#loop-stream-detector-lsd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Loop Stream Detector (LSD) מזהה מתי µops של לולאה מתאימים באופן מלא ל-IDQ. במצבים כאלה, הוא נועל את ה-µops ב-IDQ ומזרים אותם ישירות ל-renamer ללא צורך בפנייה ל-DSB או למפענחים. עם זאת, לא ניתן להזרים את ה-µop האחרון של איטרציית הלולאה הנוכחית ואת ה-µop הראשון של האיטרציה הבאה באותו מחזור. עבור לולאות קטנות, זה יכול להיות צוואר בקבוק משמעותי, מכיוון שמספר ה-µops המוזרמים בכל מחזור עלול להיות קטן מרוחב ההנפקה של המיקרו-ארכיטקטורה. במקרים כאלה, ה-LSD עשוי לפתוח את הלולאה כדי להגדיל את מספר ה-µops המוזרמים בכל מחזור.</p>
+<h3 id="predecoder">
+  Predecoder
+  <a class="heading-link" href="#predecoder">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Predecoder אחראי להבאת הוראות מ-cache ההוראות בבלוקים מיושרים של 16 בתים. הוא מזהה את תחילתה של כל פקודה בבלוקים אלה ומאחסן את ההוראות המפוענחות מראש בתור ההוראות (Instruction Queue - IQ). זה חשוב, מכיוון שכל פקודה יכולה להיות באורך של בין 1 ל-15 בתים, וזיהוי תחילת ההוראה העוקבת עשוי לדרוש בדיקה של מספר בתים מההוראה הנוכחית.</p>
+<p>ה-Predecoder מסוגל לפענח מראש עד חמש הוראות בכל מחזור. אם יש יותר מחמש הוראות בבלוק של 16 בתים, חמש ההוראות הבאות יפוענחו במחזור הבא, וכך הלאה.</p>
+<p>כאשר הוראה חוצה את גבול ה-16 בתים, עשוי להיגרם עיכוב של מחזור אחד בפענוח המוקדם שלה, בהתאם למיקום של ה-opcode של ההוראה בבלוק. נוסף על כך, אם ההוראות מכילות קידומות משתנות באורך (length-changing prefix - LCP), ה-Predecoder יצטרך להשתמש באלגוריתם מיוחד, מה שיגרום לעיכוב של שלושה מחזורים על כל הוראה כזו.</p>
+<hr>
+<p><a href="https://en.wikichip.org/wiki/intel/microarchitectures/skylake_%28client%29"  class="external-link" target="_blank" rel="noopener">https://en.wikichip.org/wiki/intel/microarchitectures/skylake_(client)</a></p>
+<p><strong>תפקיד ה-Front-End</strong></p>
+<p>ה-front-end מיועד להזין את ה-back-end בזרם יציב של פעולות, באמצעות פענוח ההוראות שנשלפות מהזיכרון. ה-front-end כולל שני מסלולים עיקריים: הנתיב המסורתי (legacy path) ונתיב ה-µOP cache. הנתיב המסורתי מטפל בהוראות x86 באורך משתנה, שמובאות מ-cache ההוראות ברמה 1, מונחות בתור ולאחר מכן מפוענחות ל-µOPs פשוטות וקבועות באורכן. הנתיב השני, והעדיף, הוא נתיב ה-µOP cache, בו ההוראות שכבר פוענחו מאוחסנות ב-cache וניתנות לשליחה ישירה ל-decode queue.</p>
+<p>למרות המסלול שההוראה עוברת, בסופו של דבר היא מגיעה ל-decode queue. תור ה-IDQ מייצג את הגבול בין ה-front-end ל-execution engine, ומסמן את תחילת התהליך שבו מתבצע ביצוע מחוץ לסדר.</p>
+<p><strong>האתגר של ה-Front-End</strong></p>
+<p>ה-front-end אחראי על תהליך מורכב של שליפת הוראות x86 מהזיכרון, פענוחן, והעברתן ליחידות הביצוע. המטרה שלו היא לספק באופן מתמיד זרם מספק של µOPs כדי שה-back-end יוכל לפעול במלוא העוצמה. כאשר ה-back-end לא מנוצל במלואו, ביצועי הליבה נפגעים. ביצועים נמוכים של ה-front-end מובילים לביצועים נמוכים של הליבה. המשימה מורכבת עוד יותר בשל השינויים בנתיבי הביצוע כמו branch-ים והמורכבות של הוראות x86 עצמן.</p>
+<p><strong>Pre-Decode Buffer</strong></p>
+<p>בתחילה, ההוראות נשלפות מ-cache L2 אל cache L1, שבו הן עדיין נשארות macro-ops, כלומר הוראות ארכיטקטוניות באורך משתנה מסוג x86. בשלב זה, הן מועברות ל-pre-decode buffer לצורך הכנה ראשונית.</p>
+<p>הוראות x86 הן מורכבות ובעלות אורך משתנה, דבר המקשה על זיהוי גבולות ההוראה ב-pre-decode buffer. כל הוראה יכולה להשתנות באורכה מבית אחד עד 15 בתים, ולכן תהליך הפענוח דורש בדיקה של מספר בתים בהוראה. בנוסף לזיהוי גבולות ההוראה, ה-pre-decoder גם מפענח קידומות ונבדקות תכונות כמו branch-ים. בדומה לארכיטקטורות קודמות, ל-pre-decoder יש תפוקה של עד 6 macro-ops למחזור או עד שמיצו את 16 הבתים של הבלוק הנוכחי, המוקדם מביניהם.</p>
+<p>יש לציין שה-predecoder אינו טוען בלוק חדש של 16 בתים עד שמיצוי מלא של הבלוק הקודם מתבצע. לדוגמה, אם במחזור הראשון יעובדו 6 הוראות מתוך 7, המחזור השני יתבזבז על עיבוד ההוראה האחרונה. זה יגרום לתפוקה נמוכה בהרבה של 3.5 הוראות למחזור, דבר שאינו אופטימלי. מקרה דומה מתרחש אם בלוק של 16 בתים מכיל 4 הוראות בלבד עם בית אחד נוסף מההוראה החמישית. במקרה זה, תהליך הפענוח ידרוש שני מחזורים. כמו כן, קיימים מקרים מיוחדים שבהם קידומות ארוכות יגררו עלויות נוספות בתהליך ה-predecoder. בדרך כלל, הקוד האמיתי קטן מ-4 בתים, מה שמוביל לתפוקה טובה יותר.</p>
+<p><strong>חיזוי Branch-ים</strong></p>
+<p>כל המערכת פועלת בשיתוף עם יחידת חיזוי ה-branch-ים (ה-branch prediction), שמנסה לנחש את זרימת ההוראות הבאה. בארכיטקטורת Skylake, מנבא ה-branch שופר, עם הפחתה בעונש (latency) על חיזוי שגוי של יעד קפיצה ישירה. בנוסף, המנבא ב-Skylake מסוגל לבדוק יותר בזרם הבייטים בהשוואה לארכיטקטורות קודמות, אך פרטי השיפורים המדויקים לא נחשפו על ידי אינטל.</p>
+<h4 id="תור-ההוראות-ומיזוג-macro-ops-fusion">
+  תור ההוראות ומיזוג macro-ops (Fusion)
+  <a class="heading-link" href="#%d7%aa%d7%95%d7%a8-%d7%94%d7%94%d7%95%d7%a8%d7%90%d7%95%d7%aa-%d7%95%d7%9e%d7%99%d7%96%d7%95%d7%92-macro-ops-fusion">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הוראות שעברו פענוח ראשוני מועברות לתור ההוראות (IQ). בתור זה, Skylake מבצע macro-ops-fusion, בו הוא יכול לשלב שני macro-ops לפעולה מורכבת אחת במקרים מסוימים. לדוגמה, כאשר מופיעה הוראת בדיקה או השוואה עם קפיצה מותנית מיד לאחריה, היא מתמזגת להוראת השוואה ו-branch יחיד. הוראות ממוזגות אלו נשארות כפעולה אחת לאורך כל ה-pipeline ומתבצעות כפעולה יחידה על ידי יחידת ה-branch, מה שחוסך ברוחב פס בשלבי העיבוד השונים. עם זאת, רק מיזוג אחד כזה יכול להתבצע בכל מחזור.</p>
+<h4 id="פענוח-decoding">
+  פענוח (Decoding)
+  <a class="heading-link" href="#%d7%a4%d7%a2%d7%a0%d7%95%d7%97-decoding">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>בכל מחזור, עד ארבע הוראות שעברו פענוח ראשוני (pre-decoded) מועברות למפענחים (decoders). המפענחים מתחלפים בין שני ה-thread-ים בכל מחזור, בדומה למנגנון השליפה. כל מפענח מתרגם את פעולות המאקרו ופולט µOPs באורך קבוע.</p>
+<p>מפענח פשוט מסוגל לתרגם הוראות שפולטות µOP מתמזג בודד, בעוד שמפענח מורכב יכול לפענח בין אחד לארבעה µOPs מתמזגים.</p>
+<figure>
+    <img src="/posts/processor-components/decoder/skylake_decode.webp"class="dark-image"
+    ><figcaption class="image-title">skylake decode from microarchitectures skylake (client) (en.wikichip.org)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<h4 id="msrom-ומנוע-המחסנית-stack-engine">
+  MSROM ומנוע המחסנית (Stack Engine)
+  <a class="heading-link" href="#msrom-%d7%95%d7%9e%d7%a0%d7%95%d7%a2-%d7%94%d7%9e%d7%97%d7%a1%d7%a0%d7%99%d7%aa-stack-engine">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>בארכיטקטורת x86 קיימות פעולות ייעודיות לניהול מחסנית, כגון PUSH, POP, CALL ו-RET, שפועלות על מצביע המחסנית (ESP). ללא חומרה ייעודית, פעולות אלו היו נשלחות ל-back-end לביצוע באמצעות ה-ALUs הכלליים, דבר שהיה מנצל רוחב פס ומשאבי יחידות הביצוע וה-scheduler. מאז Pentium M, אינטל עושה שימוש במנוע מחסנית (Stack Engine) כדי להתמודד עם פעולות אלו.</p>
+<p>מנוע המחסנית כולל שלושה חיבורים ייעודיים, בהם הוא משתמש כדי לבצע ולעדכן את ה-µOPs של המחסנית. לדוגמה, הוראת PUSH מתורגמת לפעולת store וחיסור של 4 מ-ESP. במקרה זה, החיסור מבוצע על ידי מנוע המחסנית. המנוע ממוקם אחרי המפענחים ועוקב אחרי זרם ה-µOPs שעוברים דרכו. כאשר נתפסת פעולה לשינוי המחסנית, היא מטופלת על ידי המנוע, מה שמקל על העומס ב-pipeline על ידי הפחתת הצורך לשלוח את פעולות המחסנית ליחידות הביצוע הכלליות. בצורה זו, החישוב של מצביע המחסנית במנוע המחסנית מהיר ויעיל יותר מאשר ביצוע פעולות אלו ב-pipeline באמצעות ה-ALUs.</p>
+<h4 id="cache-µop-ומורכבות-פענוח-x86">
+  cache µOP ומורכבות פענוח x86
+  <a class="heading-link" href="#cache-%c2%b5op-%d7%95%d7%9e%d7%95%d7%a8%d7%9b%d7%91%d7%95%d7%aa-%d7%a4%d7%a2%d7%a0%d7%95%d7%97-x86">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>פענוח הוראות x86 הוא תהליך מורכב בשל אורכן המשתנה, חוסר העקביות והמבנה המסובך שלהן. משימה זו גוזלת לא מעט משאבי ביצועים וצריכת כוח. כדי להימנע מהעומס הזה, ה-pipeline מעדיף להימנע מפענוח חוזר של ההוראות. כאן נכנס לתמונה cache ה-µOP, או buffer הזרם המפוענח (DSB), שתפקידו לספק את הפענוחים שכבר בוצעו.</p>
+<p>ה-cache µOP מחולק בצורה תחרותית בין שני ה-thread-ים והוא גם מסוגל לשמור מצביעים למיקרוקוד.</p>
+<h4 id="מיזוג-µop-וגלאי-לולאות-lsd">
+  מיזוג µOP וגלאי לולאות (LSD)
+  <a class="heading-link" href="#%d7%9e%d7%99%d7%96%d7%95%d7%92-%c2%b5op-%d7%95%d7%92%d7%9c%d7%90%d7%99-%d7%9c%d7%95%d7%9c%d7%90%d7%95%d7%aa-lsd">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-IDQ מבצע אופטימיזציות נוספות כאשר הוא ממלא את תור ההוראות. אחד ממנגנוני האופטימיזציה הוא גלאי הלולאות (Loop Stream Detector - LSD), שמסוגל לזהות לולאות המתאימות לתור ההוראות ולנעול אותן בו. כלומר, ה-LSD יכול להזרים את אותו רצף של µOPs ישירות מה-IDQ שוב ושוב, ללא צורך בשליפה, פענוח או ניצול נוסף של cache-ים ומשאבים אחרים. הזרמת הלולאה נמשכת ללא הפסקה עד שמתרחשת תחזית שגויה של branch. כאשר ה-LSD פעיל, יתר ה-front-end מושבת למעשה.</p>
+<p>ה-LSD יעיל במיוחד עבור אלגוריתמים נפוצים רבים, כמו לולאות חוזרות, לולאות חישוב אינטנסיביות וחיפושים, שנמצאים במגוון תוכנות ויישומים.</p>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://lwn.net/Articles/252125/">https://lwn.net/Articles/252125/</a>
+    </li>
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Vector_processor">https://en.wikipedia.org/wiki/Vector_processor</a>
+    </li>
+  
+    <li>
+      <a href="https://arxiv.org/pdf/2310.13212">https://arxiv.org/pdf/2310.13212</a>
+    </li>
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/CPU_cache">https://en.wikipedia.org/wiki/CPU_cache</a>
+    </li>
+  
+    <li>
+      <a href="https://dl.acm.org/doi/pdf/10.1145/3524059.3532396">https://dl.acm.org/doi/pdf/10.1145/3524059.3532396</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-processor-components" dir="rtl">        רואה עוד ב processor-components
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-processor-components">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/store-buffer/">Store buffer</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/combined-buffer/">Combined buffer</a>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/fetch/">Fetch</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/invalidate-queue/">Invalidate queue</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/line-fill-buffer/">Line fill buffer</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

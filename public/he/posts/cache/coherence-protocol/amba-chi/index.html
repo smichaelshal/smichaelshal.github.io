@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  AMBA CHI · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  מהו AMBA?
+  
+    
+    Link to heading
+  
+
+פרוטוקול AMBA (קיצור של Advanced Microcontroller Bus Architecture) הוא פרוטוקול שפותח על ידי ARM ומיועד לסטנדרטיזציה של התקשורת בין רכיבי חומרה שונים במערכות SoC. משפחת פרוטוקולים זו מכסה מגוון רחב של היבטים בתכנון המערכת, כולל טופולוגיית bus, בוררות (arbitration) בין רכיבים המבקשים גישה למשאבים משותפים, ניהול signaling, תכנון interconnect, ניהול צריכת חשמל ואבטחה. הפרוטוקול AMBA כולל מספר מפרטים שונים שמותאמים לצרכים מגוונים של טרנזקציות וסוכנים במערכת, כולל AHB, APB, AXI, ACE ו-CHI. כל אחד מפרוטוקולים אלו מתמקד בהיבט מסוים של התקשורת בין רכיבי המערכת.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AMBA CHI">
+  <meta name="twitter:description" content="מהו AMBA? Link to heading פרוטוקול AMBA (קיצור של Advanced Microcontroller Bus Architecture) הוא פרוטוקול שפותח על ידי ARM ומיועד לסטנדרטיזציה של התקשורת בין רכיבי חומרה שונים במערכות SoC. משפחת פרוטוקולים זו מכסה מגוון רחב של היבטים בתכנון המערכת, כולל טופולוגיית bus, בוררות (arbitration) בין רכיבים המבקשים גישה למשאבים משותפים, ניהול signaling, תכנון interconnect, ניהול צריכת חשמל ואבטחה. הפרוטוקול AMBA כולל מספר מפרטים שונים שמותאמים לצרכים מגוונים של טרנזקציות וסוכנים במערכת, כולל AHB, APB, AXI, ACE ו-CHI. כל אחד מפרוטוקולים אלו מתמקד בהיבט מסוים של התקשורת בין רכיבי המערכת.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/cache/coherence-protocol/amba-chi/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="AMBA CHI">
+  <meta property="og:description" content="מהו AMBA? Link to heading פרוטוקול AMBA (קיצור של Advanced Microcontroller Bus Architecture) הוא פרוטוקול שפותח על ידי ARM ומיועד לסטנדרטיזציה של התקשורת בין רכיבי חומרה שונים במערכות SoC. משפחת פרוטוקולים זו מכסה מגוון רחב של היבטים בתכנון המערכת, כולל טופולוגיית bus, בוררות (arbitration) בין רכיבים המבקשים גישה למשאבים משותפים, ניהול signaling, תכנון interconnect, ניהול צריכת חשמל ואבטחה. הפרוטוקול AMBA כולל מספר מפרטים שונים שמותאמים לצרכים מגוונים של טרנזקציות וסוכנים במערכת, כולל AHB, APB, AXI, ACE ו-CHI. כל אחד מפרוטוקולים אלו מתמקד בהיבט מסוים של התקשורת בין רכיבי המערכת.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-09-07T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-09-07T00:00:00+00:00">
+    <meta property="article:tag" content="Coherence-Protocol">
+    <meta property="article:tag" content="Amba-Chi">
+    <meta property="article:tag" content="Amba">
+    <meta property="article:tag" content="Arm">
+    <meta property="article:tag" content="Cache">
+    <meta property="article:tag" content="Cpu">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/cache/coherence-protocol/moesi/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/cache/coherence-protocol/amba-chi/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/cache/coherence-protocol/amba-chi/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/cache/coherence-protocol/amba-chi/">
+              AMBA CHI
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-09-07T00:00:00Z">
+                ספטמבר 7, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                7826 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/coherence-protocol/">Coherence-Protocol</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/coherence-protocol/">Coherence-Protocol</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba-chi/">Amba-Chi</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba/">Amba</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/arm/">Arm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba-ace/">Amba-Ace</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/ordering/">Ordering</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/mesi/">Mesi</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h3 id="מהו-amba">
+  מהו AMBA?
+  <a class="heading-link" href="#%d7%9e%d7%94%d7%95-amba">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>פרוטוקול AMBA (קיצור של Advanced Microcontroller Bus Architecture) הוא פרוטוקול שפותח על ידי ARM ומיועד לסטנדרטיזציה של התקשורת בין רכיבי חומרה שונים במערכות SoC. משפחת פרוטוקולים זו מכסה מגוון רחב של היבטים בתכנון המערכת, כולל טופולוגיית bus, בוררות (arbitration) בין רכיבים המבקשים גישה למשאבים משותפים, ניהול signaling, תכנון interconnect, ניהול צריכת חשמל ואבטחה. הפרוטוקול AMBA כולל מספר מפרטים שונים שמותאמים לצרכים מגוונים של טרנזקציות וסוכנים במערכת, כולל AHB, APB, AXI, ACE ו-CHI. כל אחד מפרוטוקולים אלו מתמקד בהיבט מסוים של התקשורת בין רכיבי המערכת.</p>
+<h3 id="מהי-מערכת-קוהרנטית">
+  מהי מערכת קוהרנטית?
+  <a class="heading-link" href="#%d7%9e%d7%94%d7%99-%d7%9e%d7%a2%d7%a8%d7%9b%d7%aa-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>מערכת קוהרנטית היא מערכת שבה מספר מעבדים או agent-ים יכולים לגשת לאותם מיקומי זיכרון ולבצע בהם שינויים תוך כדי שמירה על תצוגה עקבית של הנתונים בין כל הרכיבים. כל שינוי במיקום זיכרון מסוים צריך להיות נגיש לכל ה-agent-ים בזמן אמת, כך שכולם יראו את המידע המעודכן בצורה עקבית. זה מאפשר עיבוד יעיל ומהיר יותר של נתונים ומקל על תהליכי התכנות והניפוי. עם זאת, שמירה על קוהרנטיות מביאה עימה גם אתגרים טכניים, כמו ניהול עקביות בין מספר agent-ים, הימנעות מקונפליקטים בין פעולות קריאה וכתיבה, וכן שמירה על latency נמוך ורוחב פס מספק. לפיכך, יש צורך בפרוטוקול מוגדר היטב שיסדיר את אופן התקשורת והסנכרון בין ה-agent-ים כדי להבטיח את הקוהרנטיות.</p>
+<h3 id="מהו-amba5-chi">
+  מהו AMBA5 CHI?
+  <a class="heading-link" href="#%d7%9e%d7%94%d7%95-amba5-chi">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>פרוטוקול AMBA5 CHI (קיצור של Coherent Hub Interface) הוא פרוטוקול שנועד להחליף את פרוטוקול AMBA4 ACE, תוך תמיכה בקוהרנטיות cache במערכות בעלות מספר רב של מאסטרים, כגון CPUs ו-GPUs. פרוטוקול זה מאפשר שיתוף נתונים בין מספר רב של מעבדים או agent-ים במסגרת תחום קוהרנטי, כאשר הם ניגשים לזיכרון דרך רכיב מרכזי שנקרא Hub קוהרנטי. ה-Hub מתפקד כמתווך וכבקר זיכרון עבור התחום הקוהרנטי.</p>
+<h2 id="מאפייני-cache-line">
+  מאפייני Cache line
+  <a class="heading-link" href="#%d7%9e%d7%90%d7%a4%d7%99%d7%99%d7%a0%d7%99-cache-line">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>ל-AMBA CHI יש  מודל קוהרנטיות דומה ל-ACE, והוא מציג מספר המצבי ה-cache line, בניגוד למשפחת פרוטוקולי MESI הפרוטוקול מציג מצבים שבנויים על ידי מספר מאפיינים, וחלק מהמאפיינים יכול להתקיים במקביל על אותו cache line.</p>
+<p>מוצגים כאן המאפיינים של ה-cache line, והם מוצגים בצורה של קבוצות מנוגדות, כלומר כל קבוצה מכילה מאפיינים שלא יכולים להיות במקביל על אותה cache line אבל מאפיינים בקבוצות שונות יכולים להתקיים במקביל.</p>
+<h3 id="valid-invalid">
+  Valid, Invalid
+  <a class="heading-link" href="#valid-invalid">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<ul>
+<li>
+<p>מאפיין Valid: ה-cache line תקפה (Valid), כלומר היא קיימת ב-cache.</p>
+</li>
+<li>
+<p>מאפיין Invalid: ה-cache line לא תקפה (Invalid), כלומר היא לא קיימת ב-cache.</p>
+</li>
+</ul>
+<h3 id="unique-shared">
+  Unique, Shared
+  <a class="heading-link" href="#unique-shared">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<ul>
+<li>
+<p>מאפיין Unique: ה-cache line היא העותק היחיד שקיים.</p>
+</li>
+<li>
+<p>מאפיין Shared: ה-cache line יכולה להיות משותפת (עם מספר עותקים) ב-cache-ים שונים אבל לא בטוח שיש עוד עותקים.</p>
+</li>
+</ul>
+<h3 id="clean-dirty">
+  Clean, Dirty
+  <a class="heading-link" href="#clean-dirty">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<ul>
+<li>
+<p>מאפיין Clean: ה-cache שמחזיק ב-cache line לא אחראי על עדכון הזיכרון הראשי וה-cache line מכילה ערך שיכול להיות שונה מהזיכרון הראשי או זהה לזיכרון הראשי.</p>
+</li>
+<li>
+<p>מאפיין Dirty: האחריות של ה-cache שמחזיק ב-cache line היא להבטיח שהערך מתעדכן בזיכרון הראשי (ההבטחה לא בהכרח אומרת שה-cahce בעצמו יבצע את העדכון), ה-cache line יכול להכיל ערך שונה מהזיכרון הראשי אבל לא חייב להכיל ערך שונה.</p>
+</li>
+</ul>
+<h3 id="full-partial-empty">
+  Full, Partial, Empty
+  <a class="heading-link" href="#full-partial-empty">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<ul>
+<li>מאפיין Full: כל הבתים שה-cache line מכילה חוקיים (במצב Valid).</li>
+<li>מאפיין Partial: חלק מהבתים שה-cache line מכילה יכולים להיות חוקיים (במצב Valid) אבל גם יכול להיות שאין בכלל או כל הבתים חוקיים.</li>
+<li>מאפיין Empty: ה-cache line לא מכילה בכלל בתים חוקיים (במצב Valid).</li>
+</ul>
+<h4 id="מאפיין-empty">
+  מאפיין Empty
+  <a class="heading-link" href="#%d7%9e%d7%90%d7%a4%d7%99%d7%99%d7%9f-empty">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כש-cache line היא Empty היא מוחזקת במצב Unique כדי למנוע עותקים אחרים של אותה cache line.</p>
+<p>מצבים בהם cache line ריקה יכולה להיווצר כוללים לדוגמה את המקרים הבאים:</p>
+<ul>
+<li>
+<p>רכיב requester יכול בכוונה להשיג cache line ריקה לפני תחילת כתיבה, וזאת במטרה להפחית את צריכת רוחב הפס של המערכת. במקרה שבו ה-requester מתכנן לכתוב לשורת ה-cache, הוא יכול לקבל cache line ריקה עם הרשאות אחסון, במקום לקבל שורה מלאה וחוקית של נתונים קיימים.</p>
+</li>
+<li>
+<p>רכיב requester שמחזיק כבר בעותק של שורת ה-cache יכול לעבור למצב ריק כאשר מתבקשת הרשאת אחסון. העותק שבידיו יהיה לא חוקי (invalid) עד שה-requester יקבל הרשאת אחסון. כאשר בקשה זו תושלם, ה-requester יוכל להחזיק ב-cache line ריקה עם הרשאות אחסון.</p>
+</li>
+</ul>
+<h2 id="מצבי-cache-line">
+  מצבי Cache line
+  <a class="heading-link" href="#%d7%9e%d7%a6%d7%91%d7%99-cache-line">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="מצב-invalid">
+  מצב Invalid
+  <a class="heading-link" href="#%d7%9e%d7%a6%d7%91-invalid">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-cache line לא קיימת ב-cache.</p>
+<h3 id="מצב-unique-dirty">
+  מצב Unique Dirty
+  <a class="heading-link" href="#%d7%9e%d7%a6%d7%91-unique-dirty">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-cache line קיימת רק ב-cache הזה בלבד והיא בעלת האחריות לעדכון הזיכרון הראשי, ה-cache שמחזיק את ה-cache line יכול לבצע כתיבה כי הוא היחיד שמחזיק בה, וכבר יש לו הרשאות כתיבה.</p>
+<p>בבקשת snoop ה-cache צריך להעביר את ה-cache line ל-requester המבקש ולשנות את המצב של ה-cache line בהתאם (ואולי גם לכתוב את הנתונים לזיכרון הראשי אם הבקשת snoop דורשת את זה).</p>
+<h3 id="מצב-unique-dirty-partial">
+  מצב Unique Dirty Partial
+  <a class="heading-link" href="#%d7%9e%d7%a6%d7%91-unique-dirty-partial">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-cache line הזו קיימת ב-cache הזה בלבד והיא בעלת האחריות לעדכון הזיכרון הראשי. זה יכול להיות כמה בתים חוקיים, כשחלקם יכול להיות אף אחד או את כולם.</p>
+<p>לאחר שה-requester מקבל בעלות על cache line ריקה, הוא רשאי אך אינו מחויב לאחסן נתונים ב-cache line. אם ה-requester מחליף חלק מנתוני ה-cache line תשאר במצב Unique Dirty Partial, כלומר, ה-cache line תכיל נתונים חלקיים שעברו שינוי.</p>
+<p>המצב הזה הוא מצב זמני ופרטי ולא יכול להיות קבוע, ולכן בבקשת snoop ה-cache לא ניתן להעביר את ה-cache line ל-requester המבקש כי חסר לו מידע כדי להעביר cache line מלאה, וצריך לבצע טרנזקציות מתאימות כדי לקבל את שאר המידע הרלוונטי כדי לקבל את המידע המלא. ודוגמה לתהליך כזה הוא כשה-cache line מפונה, יש למזג נתונים מה-cache או הזיכרון ברמה הבאה עם ה-cache line שמפונה כדי ליצור את שורת ה-cache התקינה המלאה.</p>
+<h3 id="מצב-shared-dirty">
+  מצב Shared Dirty
+  <a class="heading-link" href="#%d7%9e%d7%a6%d7%91-shared-dirty">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-cache line בעלת האחריות לעדכון הזיכרון הראשי, מכיוון שה-cache line משותפת (Shared), ייתכן שהיא קיימת ב-cache מקומי אחד או יותר, אבל זה לא מובטח. אם ה-cache line קיימת במספר cache-ים, ה-cache-ים האלו יהיו בעלי שורה זו ב-Shared Clean.</p>
+<h3 id="מצב-unique-clean">
+  מצב Unique Clean
+  <a class="heading-link" href="#%d7%9e%d7%a6%d7%91-unique-clean">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-cache line לא בעלת האחריות לעדכון הזיכרון הראשי, והיא קיימת רק ב-cache מקומי יחיד. ניתן לשנות אותו מבלי ליידע cache-ים אחרים.</p>
+<h3 id="מצב-unique-clean-empty">
+  מצב Unique Clean Empty
+  <a class="heading-link" href="#%d7%9e%d7%a6%d7%91-unique-clean-empty">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-cache line קיימת רק ב-cache הזה, אך אף אחד מהבתים חוקי. ניתן לשנות את ה-cache line מבלי להודיע ל-cache-ים אחרים.</p>
+<h3 id="מצב-shared-clean">
+  מצב Shared Clean
+  <a class="heading-link" href="#%d7%9e%d7%a6%d7%91-shared-clean">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-cache line עשויה להיות מוחזקת ב-cache מקומי אחד או יותר. ייתכן שה-cache line השתנתה ביחס לזיכרון הראשי, אך cache זה אינו אחראי לכתיבת השורה חזרה לזיכרון בעת פינוי.</p>
+<h2 id="מיפוי-בין-moesi-ל-amba-chi">
+  מיפוי בין MOESI ל-AMBA CHI
+  <a class="heading-link" href="#%d7%9e%d7%99%d7%a4%d7%95%d7%99-%d7%91%d7%99%d7%9f-moesi-%d7%9c-amba-chi">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>יש תמיכה של AMBA CHI ב-MOESI, וכמו שאפשר לראות בטבלה הבאה, התמיכה הגיעה די בחינם, ולא היה צורך לעשות שינויים על מנת לאפשר את התמיכה.</p>
+<table>
+  <thead>
+      <tr>
+          <th>MOESI</th>
+          <th>AMBA</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Modified</td>
+          <td>UniqueDirty</td>
+      </tr>
+      <tr>
+          <td>Owned</td>
+          <td>SharedDirty</td>
+      </tr>
+      <tr>
+          <td>Exclusive</td>
+          <td>UniqueClean</td>
+      </tr>
+      <tr>
+          <td>Shared</td>
+          <td>SharedClean</td>
+      </tr>
+      <tr>
+          <td>Invalid</td>
+          <td>Invalid</td>
+      </tr>
+  </tbody>
+</table>
+<p>בנוסף, לפי דעתי הגישה הזאת נוחה יותר על מנת להבין את הפעולות עצמן במערכת כי בעזרת AMBA יש קשר הדוק בין השמות של המצבים שה-cache line נמצאת בו לבין הטרנקציות שמתרחשות במערכת.</p>
+<h2 id="רכיבים-ב-amba-chi">
+  רכיבים  ב-AMBA CHI
+  <a class="heading-link" href="#%d7%a8%d7%9b%d7%99%d7%91%d7%99%d7%9d-%d7%91-amba-chi">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="interconnect">
+  Interconnect
+  <a class="heading-link" href="#interconnect">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Interconnect (או בקיצור ICN) הוא מנגנון התקשורת המשמש בפרוטוקול CHI להעברת מידע בין צמתי פרוטוקול. מנגנון זה יכול להיות מיושם במגוון טופולוגיות, כמו רשת של switch-ים המחוברים ב-ring, crossbar, או רשתות אחרות. ה-Interconnect עשוי לכלול גם צמתי פרוטוקול שונים, כגון צומת Home וצמתים אחרים, בהתאם לצרכי התקשורת במערכת.</p>
+<h3 id="requester">
+  Requester
+  <a class="heading-link" href="#requester">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Requester הוא רכיב במערכת שתפקידו ליזום טרנזקציה על ידי שליחת הודעת בקשה. מדובר ברכיב שמתחיל את תהליך התקשורת באופן עצמאי, כאשר הוא נדרש למשאב מסוים או לנתונים מסוימים. המונח Requester מתייחס גם לרכיב interconnect שמוציא הודעות בקשה ב-downstream כחלק מתהליך ניהול התקשורת, בין אם מדובר בבקשה יזומה ישירות או בתגובה לטרנזקציות אחרות המתרחשות במערכת. כלומר, רכיב ה-Requester לא רק שולח בקשות עצמאיות אלא גם עשוי להגיב לטרנזקציות שהושקו על ידי רכיבים אחרים במערכת.</p>
+<p>סוגי Requester-ים:</p>
+<ul>
+<li>
+<p>צמתים קוהרנטיים לחלוטין (RN-F): צמתי Requester אלה מכילים זיכרון cache התומך בקוהרנטיות מלאה. כתוצאה מכך, הם יכולים לקבל ולהגיב ל-snoop-ים, שהם בקשות שמטרתן לשמור על עקביות הנתונים ב-cache-ים במערכת מרובת agent-ים.</p>
+</li>
+<li>
+<p>צמתים I/O קוהרנטיים (RN-I): צמתי Requester אלו אינם מכילים cache קוהרנטי ולכן אינם מסוגלים לקבל snoops. בדרך כלל, הם משמשים לצורך חיבור התקני I/O למערכת.</p>
+</li>
+</ul>
+<p>הערה:
+במאמר הזה אני משתמש במונח Requester אבל הכוונה היא ל-RN-F.</p>
+<h3 id="subordinate">
+  Subordinate
+  <a class="heading-link" href="#subordinate">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Subordinate הוא ה-agent במערכת שאחראי לקבל את הטרנזקציות מה-Requester ולבצע אותן כהלכה. תפקידו הוא להשלים את הבקשות באופן תקין, בין אם מדובר בגישה לנתונים, משאבים או זיכרון. בדרך כלל, ה-Subordinate הוא ה-agent הנמוך ביותר בהיררכיית התקשורת של המערכת, כלומר, הנקודה הסופית אליה מגיעות הטרנזקציות לביצוע. לעיתים מתייחסים אליו גם כאל &ldquo;משלים&rdquo; (Completer) או &ldquo;נקודת קצה&rdquo; (Endpoint), שכן הוא ה-agent שסוגר את המעגל ומבצע את הפעולה שהתבקשה בטרנזקציה, דוגמה ל-Subordinate זה הזיכרון הראשי.</p>
+<ul>
+<li>
+<p>צומת SN-F עבור זיכרון רגיל: צמתים אלו מחוברים להתקני זיכרון המגבים את שטח הזיכרון הקוהרנטי. לדוגמה, בקר זיכרון יתחבר לצומת SN-F מסוג זה.</p>
+</li>
+<li>
+<p>צומת SN-I עבור זיכרון היקפי או רגיל: צמתים אלו מחוברים לציוד היקפי I/O או לזיכרון לא קוהרנטי, המספק גישה למשאבים שאינם מחויבים לעמוד בקוהרנטיות מלאה.</p>
+</li>
+</ul>
+<p>הערה:
+במאמר הזה אני משתמש במונח Subordinate אבל הכוונה היא ל-SN-F.</p>
+<h3 id="home">
+  Home
+  <a class="heading-link" href="#home">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Home Node (HN) הוא יחידה בתוך המערכת, המשמשת כנקודת ריכוז עבור טרנזקציות של פרוטוקול קוהרנטיות המגיעות מצמתי Requester. תפקידו הוא לנהל ולתאם את הגישה לנתונים או למשאבים המשותפים, והוא ממוקם בתוך ה-interconnect, המהווה את החיבור המרכזי בין מרכיבי המערכת השונים.</p>
+<p>צמתי Home יכולים להיות קוהרנטיים או לא קוהרנטיים בהתאם לתפקידם.
+צמתי Home קוהרנטיים לחלוטין (HN-F): צמתי Home אלו אחראים לניהול וסידור כל הבקשות לזיכרון קוהרנטי במערכת. הם גם מוציאים פעולות snoop לצמתי RN-F כדי לשמור על קוהרנטיות בין כל הצמתי ה-Requester-ים.</p>
+<p>במערכת המבוססת על פרוטוקול CHI, כאשר מתבצעת בקשת קריאה, הנתונים הנדרשים יכולים להגיע ממספר מקורות אפשריים:</p>
+<ul>
+<li>ה-cache שנמצא בתוך ה-interconnect.</li>
+<li>צומת Subordinate.</li>
+<li>עמית RN-F: צומת Requester אחר במערכת בעל יכולות קוהרנטיות מלאות, שיכול לספק את הנתונים הנדרשים לבקשת הקריאה.</li>
+</ul>
+<p>תרחיש אחד אפשרי הוא שה-Home Node מבקש מ-RN-F או מצומת ה-Subordinate להחזיר את הנתונים ישירות אליו (אל ה-Home). לאחר מכן, ה-Home Node מבצע את התיאום הנדרש ומעביר עותק של הנתונים שקיבל אל ה-Requester.</p>
+<p>כדי לשפר את יעילות המערכת ולצמצם שלבים מיותרים בתהליך זה, ניתן לאפשר לספק הנתונים (למשל, ה-RN-F או ה-Subordinate) להעביר את תגובת הנתונים ישירות ל-Requester שביקש את הנתונים, מבלי שהנתונים יעברו דרך ה-Home Node תחילה. דרך פעולה זו מפחיתה את ההשהיה (latency) ומשפרת את זרימת הטרנזקציות, שכן היא מבטלת את הצורך במעבר נוסף דרך ה-Home, היכולת היא בעצם תמיכה ב-2 יכולות: Direct Memory Transfer (DMT) ו-Direct Cache Transfer (DCT).</p>
+<p>הערה:
+במאמר הזה אני משתמש במונח Home אבל הכוונה היא ל-HN-F.</p>
+<h3 id="snoop--snoopee">
+  Snoop &amp; Snoopee
+  <a class="heading-link" href="#snoop--snoopee">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Snoop היא הודעת בקשה שמיודעת ל-Requester ויש כל מיני סוגים של פעולות שיכולות להתבצע כתוצאה ממנה ב-Requester היעד, לדוגמה בקשת snoop לקבל cache line מסויימת</p>
+<p>ה-Snoopee הוא Requester שמקבל snoop (כלומר עושים עליו פעולת snoop ועליו לפעול בהתאם).</p>
+<h3 id="allocate">
+  allocate
+  <a class="heading-link" href="#allocate">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>היא פעולת הקצאת משאבים שנעשה ב-node מסויים, לדוגמה זה יכול להיות הקצאת מקום ב-cache של ה-node כדי לאפשר קבלת מידע מבקשת כתיבה, או למשל הקצאה של משאבים לסיפוק של בקשה מסוימת אם היא צריכה להחזיר תגובת ack.</p>
+<p>בסיום הטרנזקציה שגרמה לפעולת allocate ה-node שביצע את ה-allocate צריך לשחרר את המשאבים ולכן הוא יבצע פעולת deallocate.</p>
+<h3 id="סיווג-תפקיד-רכיבים-במערכת">
+  סיווג תפקיד רכיבים במערכת
+  <a class="heading-link" href="#%d7%a1%d7%99%d7%95%d7%95%d7%92-%d7%aa%d7%a4%d7%a7%d7%99%d7%93-%d7%a8%d7%9b%d7%99%d7%91%d7%99%d7%9d-%d7%91%d7%9e%d7%a2%d7%a8%d7%9b%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>רכיבים שונים במערכת יכולים להיות מסווגים כ-&ldquo;Requester&rdquo; או &ldquo;Completer&rdquo;, תלוי בתפקידם בטרנזקציה:</p>
+<ul>
+<li>
+<p>צומת Requester: רכיב שמתחיל טרנזקציה על ידי שליחת הודעת בקשה. זהו רכיב שמסוגל ליזום טרנזקציות עצמאיות, או לפעמים רכיב interconnect שמוציא הודעת בקשה במורד הזרם כחלק מטרנזקציה אחרת. כלומר, ה-Requester לא חייב להיות מקור הבקשה הראשוני, אלא יכול גם לתפקד כחלק משרשרת טרנזקציות במערכת.</p>
+</li>
+<li>
+<p>צומת Completer: רכיב שמקבל טרנזקציה ומגיב לה. ה-Completer יכול להיות רכיב interconnect, כמו HN, או רכיב מחוץ למערכת ה-interconnect, כגון subordinate, שמבצע את הטרנזקציה בפועל.</p>
+</li>
+</ul>
+<h3 id="מודל-זיכרון">
+  מודל זיכרון
+  <a class="heading-link" href="#%d7%9e%d7%95%d7%93%d7%9c-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<h4 id="multi-copy-atomicity">
+  Multi-copy atomicity
+  <a class="heading-link" href="#multi-copy-atomicity">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>מודל הזיכרון של AMBA CHI מחייב יישום של Multi-copy atomicity. משמעות הדבר היא שכל רכיב התואם לפרוטוקול חייב להבטיח שבקשות הכתיבה שלו מקיימות את התנאים של Multi-copy atomicity. כתיבה נחשבת כעומדת בתנאי זה אם מתקיימים שני תנאים עיקריים:</p>
+<ul>
+<li>
+<p>כל פעולות הכתיבה לאותו מיקום מתבצעות בסדר מוגדר, כך שכל ה-Requester-ים רואים (observed) את פעולות הכתיבה באותו סדר. יש Requester-ים שאולי לא יראו את כל הכתיבות.</p>
+</li>
+<li>
+<p>קריאה מאותו מיקום לא תוכל להחזיר את הערך שנכתב עד שכל ה-Requester-ים יוכלו לראות את הכתיבה (כלומר אסור ש-Requester אחד יוכל לראות את הערך החדש ו-Requester אחר יראה ערך ישן).</p>
+</li>
+</ul>
+<h4 id="downstream">
+  Downstream
+  <a class="heading-link" href="#downstream">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-Downstream מוגדר מנקודת המבט של ה-Requester. כשה-Requester שולח בקשה, ה-Downstream cache הוא ה-cache שאליו ניגשת הבקשה באמצעות טרנזקציות הבקשה בפרוטוקול CHI. כלומר, ה-cache ממוקם &ldquo;במורד ה-stream&rdquo; ביחס ל-Requester.</p>
+<h4 id="upstream">
+  Upstream
+  <a class="heading-link" href="#upstream">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>במהלך טרנזקציה, יש אינטראקציה בין ה-Requester לבין רכיבי Subordinate אחד או יותר, כאשר התקשורת יכולה לעבור גם דרך רכיבי ביניים נוספים. במצב כזה, ה-Upstream מייצג את הכיוון מהצומת הנוכחי (כגון רכיב ביניים) חזרה לכיוון הצומת ה-Requester המקורי שהוציא את הטרנזקציה. כלומר, כל רכיב ביניים שמבצע טרנזקציה מתייחס ל-Upstream בתור הכיוון שמוביל אל צומת ה-Requester המקור, כולל הצומת עצמו.</p>
+<p>יש לציין כי ההגדרות של &ldquo;במורד הזרם&rdquo; (Downstream) ו&quot;במעלה הזרם&quot; (Upstream) נקבעות לפי הטרנזקציה בכללותה, ולא על סמך זרימת נתונים ספציפיים בתוך הטרנזקציה.</p>
+<h4 id="pos---point-of-serialization">
+  PoS - Point of Serialization
+  <a class="heading-link" href="#pos---point-of-serialization">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-Point of Serialization (PoS) היא הנקודה בתוך ה-interconnect שבה נקבע סדר הביצוע של הבקשות המגיעות מ-agent-ים שונים. בנקודה זו, המערכת קובעת את סדר הפעולות על מנת להבטיח עקביות בביצוע הטרנזקציות, מה שמאפשר שמירה על סדר פעולות קריאה וכתיבה מצד ה-agent-ים השונים במערכת.</p>
+<h4 id="poc---point-of-coherence">
+  PoC - Point of Coherence
+  <a class="heading-link" href="#poc---point-of-coherence">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-Point of Coherence (PoC) היא הנקודה במערכת שבה מובטח שכל ה-agent-ים שיכולים לגשת לזיכרון יראו את אותו העותק העדכני של מיקום הזיכרון. כלומר, ב-PoC מתקיים סנכרון בין כל הגישות לזיכרון, כך שכולם עובדים מול אותו מצב נתונים. במערכת טיפוסית שמבוססת על CHI, ה-PoC נמצא ב-Home הקוהרנטי (HN-F) שב-interconnect.</p>
+<h2 id="טרנזקציותב-amba-chi">
+  טרנזקציות ב-AMBA CHI
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa%d7%91-amba-chi">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>טרנזקציה היא קבוצת הודעות שהמערכת מחליפה בין node-ים כדי להשלים בקשה שמגיעה מ-node כלשהו.</p>
+<h3 id="תגובות-in-order-לעומת-out-of-order">
+  תגובות In order לעומת Out-of order
+  <a class="heading-link" href="#%d7%aa%d7%92%d7%95%d7%91%d7%95%d7%aa-in-order-%d7%9c%d7%a2%d7%95%d7%9e%d7%aa-out-of-order">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>אחד היתרונות המרכזיים של bus pipeline שאינו פועל באופן אטומי הוא היכולת לטפל בבקשות באופן רציף, ללא צורך להמתין להשלמת תגובה לבקשה קודמת. מבנה זה מאפשר ל-bus לנצל את המשאבים המשותפים בצורה טובה יותר ולהשיג רוחב פס גבוה יותר, כל זאת מבלי להגדיל את מספר ה-thread-ים או להוסיף משאבים נוספים. עם זאת, בניית טרנזקציות אטומיות בתנאים כאלה הופכת למורכבת יותר (אך עדיין אפשרית). טרנזקציה אטומית מבטיחה כי כל פעולה על בלוק מסוים תסתיים לפני שתחל פעולה חדשה על אותו הבלוק, אולם אין חובה לקיים את אותה ההבטחה עבור בלוקים שונים.</p>
+<p>גישה אחת ליישום bus שאינו אטומי היא שימוש בטרנזקציות מפוצלות (split-transaction). ב-bus pipeline, התגובות לבקשות נשלחות תמיד באותו הסדר שבו התקבלו הבקשות, אך ב-split-transaction bus, התגובות לבקשות עשויות להגיע בסדר שונה מזה שבו התקבלו הבקשות.</p>
+<p>פרוטוקול AMBA CHI עובד עם טרנזקציות מפוצלות (split-transaction).</p>
+<figure>
+    <img src="/posts/cache/coherence-protocol/amba-chi/Split-Pipelined-transactions.png"class="dark-image"
+    ><figcaption class="image-title">Split-Pipelined-transactions from A Primer on Memory Consistency and Cache Coherence Second Edition (pages.cs.wisc.edu)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<h4 id="יתרונות-וחסרונות-של-bus-מפוצל-טרנזקציות">
+  יתרונות וחסרונות של bus מפוצל טרנזקציות
+  <a class="heading-link" href="#%d7%99%d7%aa%d7%a8%d7%95%d7%a0%d7%95%d7%aa-%d7%95%d7%97%d7%a1%d7%a8%d7%95%d7%a0%d7%95%d7%aa-%d7%a9%d7%9c-bus-%d7%9e%d7%a4%d7%95%d7%a6%d7%9c-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>היתרון העיקרי של bus מפוצל טרנזקציות לעומת bus pipeline הוא בכך שהוא מאפשר למערכת לספק תגובות עם השהיות קצרות יותר מבלי להמתין לתגובות בעלות השהיות ארוכות יותר. לדוגמה, אם בקשה 1 מתייחסת לבלוק שאינו נמצא ב-cache ולכן מחייב גישה לזיכרון הראשי, בעוד בקשה 2 מתייחסת לבלוק שכבר נמצא ב-cache, אז pipeline bus היה מאלץ את התגובה לבקשה 2 להמתין עד להשלמת הטיפול בבקשה 1. מצב זה היה יוצר עיכוב בביצועים. לעומת זאת, ב-split-transaction bus, התגובה לבקשה 2 יכולה להישלח מיד, ללא תלות בתגובה לבקשה 1, ובכך נמנע עיכוב מיותר.</p>
+<h4 id="אתגרים-ביישום-bus-מפוצל-טרנזקציות">
+  אתגרים ביישום bus מפוצל טרנזקציות
+  <a class="heading-link" href="#%d7%90%d7%aa%d7%92%d7%a8%d7%99%d7%9d-%d7%91%d7%99%d7%99%d7%a9%d7%95%d7%9d-bus-%d7%9e%d7%a4%d7%95%d7%a6%d7%9c-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>בעיה מרכזית שמופיעה כאשר משתמשים ב-bus מפוצל היא הצורך בהתאמת התגובות לבקשות המתאימות. ב-bus אטומי, התגובה האחרונה תמיד תתאים לבקשה האחרונה שהתקבלה, דבר שמפשט את ניהול התגובות. ב-pipeline bus, המבקש צריך לעקוב אחר מספר הבקשות שממתינות למענה כדי להתאים תגובה לבקשה הנכונה. עם זאת, ב-bus מפוצל, המערכת חייבת לצרף לכל תגובה מידע שמציין את זהות הבקשה או המבקש, כדי להבטיח שהתגובה תגיע לבקשה הנכונה, וכדי למנוע בלבול במצבים שבהם התגובות מתקבלות בסדר שונה מזה שבו נשלחו הבקשות.</p>
+<h3 id="התמודדות-עם-מצב-deadlock-בפרוטוקול-קוהרנטיות">
+  התמודדות עם מצב Deadlock בפרוטוקול קוהרנטיות
+  <a class="heading-link" href="#%d7%94%d7%aa%d7%9e%d7%95%d7%93%d7%93%d7%95%d7%aa-%d7%a2%d7%9d-%d7%9e%d7%a6%d7%91-deadlock-%d7%91%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c-%d7%a7%d7%95%d7%94%d7%a8%d7%a0%d7%98%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>בפרוטוקולי קוהרנטיות במערכות עם cache, יכול להיווצר מצב של deadlock כאשר יש תלות מעגלית בין משאבים, כלומר, כל משאב ממתין למשאב אחר שיסיים את עבודתו לפני שהוא ממשיך, וכך אף משאב לא מסוגל להתקדם. תרחישים כאלה יכולים להתרחש במספר רמות שונות של מערכת הקוהרנטיות. לדוגמה, במערכת שבה שני מעבדים שולחים בקשות ל-cache אחד של השני, מצב של deadlock יתרחש אם כל אחד מהמעבדים ממתין לתגובה מהשני לפני שהוא יכול לעבד את הבקשה שלו. בנוסף, deadlock יכול להיגרם גם עקב buffering של הודעות שלא מעובדות במלואן בהיררכיית ה-cache או בעיבודן ברשת התקשורת בין הרכיבים.</p>
+<p>פתרון נפוץ למניעת מצב זה הוא הפרדה בין נתיבי התקשורת של הודעות הבקשה להודעות התגובה, כך שכל אחד מהם ישתמש בערוץ לוגי נפרד או בנתיבים וירטואליים שונים (כמו בפרוטוקול AMBA CHI) . הפרדה כזו מונעת חסימות שנגרמות כאשר הודעות משני סוגים שונים ממתינות זו לזו באותו ערוץ, ובכך נמנע מצב של deadlock. עם זאת, כאשר יש הפרדה בנתיבי התקשורת, עלול להיווצר חוסר עקביות בסדר הגעת ההודעות מאותה נקודת מקור לנקודת יעד, דבר שמצריך פתרונות נוספים כמו שימוש במחסומי זיכרון או בטרנזרציות עם מאפייני סידור כדי להבטיח סדר אחיד והגיוני של פעולות התקשורת.</p>
+<h3 id="אישור-השלמה-completion-acknowledgment---compack">
+  אישור השלמה (Completion acknowledgment - CompAck)
+  <a class="heading-link" href="#%d7%90%d7%99%d7%a9%d7%95%d7%a8-%d7%94%d7%a9%d7%9c%d7%9e%d7%94-completion-acknowledgment---compack">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-<code>CompAck</code> הוא מנגנון המבטיח את סדר השלמת הטרנזקציות במערכת. באמצעות אישור זה, ניתן לשלוט בסדר היחסי של טרנזקציות שהונפקו על ידי ה-Requester ובין טרנזקציות ה-Snoop הנגרמות על ידי בקשות שונות. המנגנון מבטיח שטרנזקצית Snoop שמסודרת לאחר הטרנזקציה מה-Requester מובטחת להתקבל לאחר תגובת הטרנזקציה.</p>
+<p>הסדר שבו טרנזקציית Read מושלמת ונשלח אישור <code>CompAck</code> הוא כדלקמן:</p>
+<ol>
+<li>
+<p>ה-Requester מקבל אחת מההודעות הבאות: <code>Comp</code>, <code>RespSepData</code>, או <code>CompData</code>, או לאחר קבלת שילוב של <code>RespSepData</code> ו- <code>DataSepResp</code>.</p>
+</li>
+<li>
+<p>ה-Requester שולח <code>CompAck</code>.</p>
+</li>
+<li>
+<p>ה-Home חייב להמתין לקבלת <code>CompAck</code> לפני שליחת בקשת Snoop נוספת לאותה כתובת.</p>
+</li>
+</ol>
+<p>סדר זה מבטיח שה-Requester יקבל השלמת טרנזקציה ובקשת Snoop לאותה כתובת של ה-cache line באותו הסדר שבו הם נשלחו על ידי ה-Home, ומבטיח שהפעולות לכתובת מסוימת ב-cache יתבצעו בסדר הנכון.</p>
+<p>כאשר ל-Requester יש טרנזקציה פעילה המשתמשת באישור <code>CompAck</code>, (למעט במקרים של מספר טרנזקציות ספציפיות כמו <code>ReadNoSnp</code>), מובטח שטרנזקציית Snoop לא תישלח לאותה כתובת בין הזמן שבו מתקבל ה-<code>CompAck</code> לבין הזמן שבו ה-<code>CompAck</code> נשלח.</p>
+<p>שימוש ב-<code>CompAck</code> עבור טרנזקציה נקבע לפי שדה <code>ExpCompAck</code> שנקבע על ידי ה-Requester בבקשה המקורית.</p>
+<p>חשוב לציין שלא כל טרנזקציה במערכת CHI דורשת הודעת Completion Acknowledgment.</p>
+<h4 id="עצירת-טרנזקציות-לשמירה-על-הסדר">
+  עצירת טרנזקציות לשמירה על הסדר
+  <a class="heading-link" href="#%d7%a2%d7%a6%d7%99%d7%a8%d7%aa-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%9c%d7%a9%d7%9e%d7%99%d7%a8%d7%94-%d7%a2%d7%9c-%d7%94%d7%a1%d7%93%d7%a8">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>צמתי ה-HN-F יכולים לשלוט בסדר הטרנזקציות במערכת על ידי עצירת טרנזקציות מסוימות. למשל, אם כבר קיימת טרנזקציה בביצוע (outstanding) שפועלת על cache line מסוימת, ו-Requester אחר מנפיק טרנזקציה חדשה שמובילה לפעולת snoop לאותה שורת cache, ה-HN-F יכול להשהות את הטרנזקציה המאוחרת כדי לשמור על הסדר.</p>
+<p>לאחר שהטרנזקציה הקוהרנטית המקורית שהונפקה על ידי ה-RN-F מושלמת, ה-RN-F שולח <code>CompAck</code> ל-HN-F. בעקבות זאת, ה-HN-F משחרר את פעולות ה-snoop שחיכו להשלמת אותה טרנזקציה.</p>
+<p>מנגנון זה מזכיר את הפונקציונליות של מנגנוני RACK/WACK בפרוטוקול ACE, בהם שומרים על סדר טרנזקציות באמצעות מנגנוני אישור.</p>
+<h4 id="תגובה-ונתונים-נפרדים-בטרנזקציית-קריאה">
+  תגובה ונתונים נפרדים בטרנזקציית קריאה
+  <a class="heading-link" href="#%d7%aa%d7%92%d7%95%d7%91%d7%94-%d7%95%d7%a0%d7%aa%d7%95%d7%a0%d7%99%d7%9d-%d7%a0%d7%a4%d7%a8%d7%93%d7%99%d7%9d-%d7%91%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%99%d7%aa-%d7%a7%d7%a8%d7%99%d7%90%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>בטרנזקציית קריאה, ישנה אפשרות לקבל תגובות נפרדות עבור השלמת הקריאה ועבור הנתונים שנקראו. כדי לתמוך במנגנון זה, נוספו שתי הודעות חדשות:</p>
+<ul>
+<li>
+<p>הודעת <code>RespSepData</code> שהיא מסמנת שהקריאה הגיעה לנקודת הסידור. ה-Home שולח הודעה זו ל-Requester. באמצעות הודעה זו, משך החיים של בקשת הקריאה ב-Home מתקצר, בגלל שה-Requester יכול לשלוח מיד את תגובת ה-<code>CompAck</code> לאחר קבלת קריאה שאינה מסודרת.</p>
+</li>
+<li>
+<p>הודעת <code>DataSepResp</code>, שהיא מתייחסת לנתונים בלבד, שמטרתה לשלוח את נתוני הקריאה. הודעה זו יכולה להישלח על ידי ה-Home או על ידי Subordinate, בהתאם אם נעשה שימוש במנגנון DMT.</p>
+</li>
+</ul>
+<h4 id="משמעות-הסדר-של-respsepdata-ו-datasepresp">
+  משמעות הסדר של <code>RespSepData</code> ו-<code>DataSepResp</code>
+  <a class="heading-link" href="#%d7%9e%d7%a9%d7%9e%d7%a2%d7%95%d7%aa-%d7%94%d7%a1%d7%93%d7%a8-%d7%a9%d7%9c-respsepdata-%d7%95-datasepresp">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כאשר ה-Requester מקבל את הודעת ה-<code>DataSepResp</code> ראשון (לפני ה-<code>RespSepData</code>), ניתן להתייחס לטרנזקציית הקריאה ככזו שנצפתה גלובלית. הסיבה לכך היא שאין יותר פעולות שיכולות לשנות את הנתונים שכבר התקבלו במסגרת הקריאה. כלומר, מרגע שהתקבלה תגובת <code>DataSepResp</code>, הנתונים שנקראו הם סופיים ואין עוד סיכון לשינוי במידע שנמסר.</p>
+<p>כאשר ה-Requester מקבל תגובת <code>RespSepData</code> מה-Home, הדבר מעיד על כך שהבקשה הרלוונטית לטרנזקציה סודרה ב-Home. מרגע זה, ה-Requester לא יקבל שום בקשת Snoop עבור טרנזקציות שנשלחו לפני תגובת ה-<code>RespSepData</code>. לפני שה-Home שולח את תגובת ה-<code>RespSepData</code> ל-Requester, עליו לוודא שאין בקשות Snoop פעילות לאותו Requester ולאותה כתובת ספציפית. עם זאת, חשוב לציין שקבלת <code>RespSepData</code> לא מבטיח שה-Home השלים את כל פעולות ה-snooping הנדרשות מול node-ים אחרים במערכת, אלא רק לגבי ה-Requester הנוכחי.</p>
+<h3 id="סידור-טרנזקציות">
+  סידור טרנזקציות
+  <a class="heading-link" href="#%d7%a1%d7%99%d7%93%d7%95%d7%a8-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>מעבר לשימוש בתגובת <code>Comp</code> לצורך שמירה על הסדר של בקשות שנשלחות על ידי ה-Requester , ב-AMBA CHI יש מנגנונים נוספים שמבטיחים סידור של בקשות בין ה-Requester, ל-Home כמו שדה ה-Order שמשמש לצורך קבלת אישור שה-Requester התקבל בהצלחה.</p>
+<p>הסדר בין ה-Requester ל-node-ים השונים נתמך על ידי שדה Order שמופיע בכל בקשה הנשלחת.</p>
+<h3 id="טרנזקציות-קריאה">
+  טרנזקציות קריאה
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%a7%d7%a8%d7%99%d7%90%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<h4 id="תגובות-להשלמת-טרנזקציות-קריאה">
+  תגובות להשלמת טרנזקציות קריאה
+  <a class="heading-link" href="#%d7%aa%d7%92%d7%95%d7%91%d7%95%d7%aa-%d7%9c%d7%94%d7%a9%d7%9c%d7%9e%d7%aa-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%a7%d7%a8%d7%99%d7%90%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>התגובות להשלמת הטרנזקציות <code>CompData</code> ו-<code>DataSepResp</code> כוללות שדה בשם <code>Resp</code>, אשר משמש לציון הפרטים הבאים:</p>
+<h5 id="שדה-cache-state">
+  שדה Cache state
+  <a class="heading-link" href="#%d7%a9%d7%93%d7%94-cache-state">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>השדה מציין את מצב ה-cache line הסופי ב-Requester עבור כל סוגי הקריאות, למעט <code>ReadNoSnp</code> ו-<code>ReadOnce</code>. השדה מצויין בשם בתגובה באמצעות תוספת של שם המצב בקיצור.</p>
+<p>לדוגמה התגובה <code>CompData_UC</code> מתארת שה-Requester שקיבל את התגובה צריך להעביר את המצב של ה-cache line שלו ל-Unique Clean.</p>
+<h5 id="שדה-pass-dirty">
+  שדה Pass Dirty
+  <a class="heading-link" href="#%d7%a9%d7%93%d7%94-pass-dirty">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>השדה מציין האם האחריות לעדכן את הזיכרון עוברת אל ה-Requester. אם השדה <code>Pass Dirty</code> מופעל, המשמעות היא שה-Requester מקבל אחריות על עדכון הזיכרון במקרה שהנתונים הנוכחיים מלוכלכים, ומצב זה מצוין בשם התגובה באמצעות הסיומת <code>PD</code></p>
+<p>לדוגמה התגובה <code>CompData_UD_PD</code> מתארת שה-Requester שקיבל את התגובה קיבל גם את האחריות לכתוב את הערך של ה-cache line לזיכרון הראשי (או לדאוג שמישהו אחר יעשה את זה בעתיד), ובשילוב עם השדה Cache state ה-Requester צריך להעביר את המצב של ה-cache line שלו ל-Unique Dirty.</p>
+<h4 id="סידור-ותגובת-readreceipt">
+  סידור ותגובת <code>ReadReceipt</code>
+  <a class="heading-link" href="#%d7%a1%d7%99%d7%93%d7%95%d7%a8-%d7%95%d7%aa%d7%92%d7%95%d7%91%d7%aa-readreceipt">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ההודעה מסוג <code>ReadReceipt</code> מסמנת שהמערכת יכולה להנפיק את הבקשה הבאה לאחר שהבקשה הקודמת סודרה והתקבלה כראוי.</p>
+<p>כאשר ה-subordinate שולח תגובת <code>ReadReceipt</code>, הוא מתחייב לשמור על הסדר שבו קיבל את הבקשות השונות. כלומר, הוא מבטיח שהבקשות יטופלו ויבוצעו לפי הסדר שבו הגיעו, כדי לשמור על עקביות והתנהלות נכונה של הטרנזקציות במערכת.</p>
+<p>מטרת ההודעה היא להבטיח שהבקשה התקבלה ותטופל לפי סדר הבקשות שהוגדר.</p>
+<p>הודעת <code>ReadReceipt</code> נשלחת כאשר ישנה בקשה המחייבת שמירה על סדר בהשוואה לבקשות אחרות מאותו Requester.</p>
+<h4 id="readnosnp">
+  <code>ReadNoSnp</code>
+  <a class="heading-link" href="#readnosnp">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-<code>ReadNoSnp</code> היא בקשת קריאה שנעשית על ידי Requester עבור אזור כתובת שאינו snoopable, או שבקשה זו יכולה להישלח מ-Home לכל אזור כתובת כדי לקבל עותק של הנתונים הכתובים (addressed data).</p>
+<p>בטרנזקציית <code>ReadNoSnp</code>, מדובר בקריאה שאינה מבצעת הקצאה (Non-allocating). הנתונים שמתקבלים כתוצאה מהקריאה לא צפויים להישמר ב-cache, ואם הם כן נשמרים, הם לא נשמרים בצורה קוהרנטית עם שאר המערכת.</p>
+<p>בנוסף, אין צורך להודיע ל-Home על השלמת הטרנזקציה, כלומר אין צורך לשלוח תגובת <code>CompAck</code> ל-Home כדי לסמן שהבקשה הושלמה.</p>
+<ul>
+<li>כאשר משתמשים בטרנזקציית <code>ReadNoSnp</code> מ-Home ל-Subordinate, על Home לקבל הודעת <code>ReadReceipt</code> מה-Subordinate או לחכות לתגובת <code>CompAck</code> מה-Requester, בהתאם למבנה הטרנזקציה.</li>
+</ul>
+<p>על ה-Requester להתעלם ממצב ה-cache בתגובת <code>CompData</code> או <code>DataSepResp</code> ל-<code>ReadNoSnp</code> ולהניח באופן מרומז שמצב ה-cache הוא Invalid.</p>
+<hr>
+<hr>
+<h4 id="readnosnpsep">
+  <code>ReadNoSnpSep</code>
+  <a class="heading-link" href="#readnosnpsep">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-<code>ReadNoSnpSep</code> היא בקשת קריאה הנשלחת מ-Home ל-Subordinate, ובקשה זו מיועדת ל-completer לשלוח רק את תגובת הנתונים, ללא צורך בתגובה להשלמת הטרנזקציה.</p>
+<p>סוג זה של טרנזקציה משמש כאשר התגובות עבור השלמת הקריאה והנתונים הנקראים נשלחות בנפרד, כלומר תהליך הקריאה מושלם בשני שלבים נפרדים – שלב אחד עבור ההשלמה ושלב נוסף עבור שליחת הנתונים.</p>
+<p>כאשר משתמשים ב-<code>ReadNoSnpSep</code> מ-Home ל-Subordinate, על ה-Home לקבל הודעת ReadReceipt מה-Subordinate.</p>
+<h4 id="readclean">
+  <code>ReadClean</code>
+  <a class="heading-link" href="#readclean">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-<code>ReadClean</code> היא בקשת קריאה לאזור כתובת snoopable במטרה לקבל עותק נקי של cache line. בקשה זו מיועדת לשימוש כאשר ה-Requester מקצה את השורה ל-cache שאינו תומך בשורות מלוכלכות, כמו ה-Instruction cache (לרוב הוא שומר רק מידע אם ה-cache line היא valid או invalid).
+במצב זה, על הנתונים שמתקבלים להיות במצבי UC או SC בלבד.</p>
+<p>הטרנזקציה מחייבת את השדה <code>ExpCompAck</code> להיות דלוק (כלומר מחייבת לשלוח <code>CompAck</code> בסוף הטרנזקציה).</p>
+<h4 id="readshared">
+  <code>ReadShared</code>
+  <a class="heading-link" href="#readshared">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-<code>ReadShared</code> היא בקשת קריאה לאזור כתובת snoopable, ומשמשת לביצוע פעולת load של cache line. הבקשה מאפשרת ל-Requester לקבל עותק של cache line לצורך קריאה בלבד, במצבי UC, UD, SC או SD.</p>
+<p>במקרים שבהם ל-Requester יש אפשרות לקבל נתונים במצב SD, נעשה שימוש ב-<code>ReadShared</code> במקום ב-<code>ReadNotSharedDirty</code>, שמיועדת למקרים בהם אין תמיכה בקבלת נתונים במצב SD.</p>
+<h4 id="readunique">
+  <code>ReadUnique</code>
+  <a class="heading-link" href="#readunique">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-<code>ReadUnique</code> היא בקשת קריאה לאזור כתובת snoopable, ומשמשת לביצוע store ל-cache line. השורה שתתקבל תינתן ל-Requester רק במצבים UC או UD.</p>
+<p>הטרנזקציה מחייבת את השדה <code>ExpCompAck</code> להיות דלוק (כלומר מחייבת לשלוח <code>CompAck</code> בסוף הטרנזקציה).</p>
+<h4 id="makereadunique">
+  <code>MakeReadUnique</code>
+  <a class="heading-link" href="#makereadunique">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-<code>MakeReadUnique</code> היא בקשת קריאה לאזור כתובת snoopable, שמטרתה לקבל עותק ייחודי של cache line. בקשה זו אופיינית כאשר ל-Requester יש עותק משותף של cache line, והוא מעוניין לקבל הרשאה לאחסן את השורה כעותק ייחודי.</p>
+<p>כאשר ה-Requester מקבל בקשת snoop שגורמת ל-invalidate, אם יש צורך לשמור את הנתונים, מובטח ש-Requester יקבל עותק ייחודי של השורה בלי הצורך להוציא מחדש בקשה.</p>
+<p>הטרנזקציה מחייבת את השדה <code>ExpCompAck</code> להיות דלוק (כלומר מחייבת לשלוח <code>CompAck</code> בסוף הטרנזקציה).</p>
+<h3 id="טרנזקציות-dataless">
+  טרנזקציות Dataless
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-dataless">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>צמתי Requester משתמשים בטרנזקציות Dataless כדי לבצע פעולות קוהרנטיות מבלי להעביר נתונים ל-Requester או ממנו.</p>
+<h4 id="תגובות-להשלמת-טרנזקציות-dataless">
+  תגובות להשלמת טרנזקציות Dataless
+  <a class="heading-link" href="#%d7%aa%d7%92%d7%95%d7%91%d7%95%d7%aa-%d7%9c%d7%94%d7%a9%d7%9c%d7%9e%d7%aa-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-dataless">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>תגובת <code>Comp</code> כוללת שדה בשם <code>Resp</code>, שמציין את הפרטים הבאים:</p>
+<h5 id="cache-state">
+  Cache state
+  <a class="heading-link" href="#cache-state">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>השדה <code>Resp</code> מתאר את המצב הסופי שבו יכולה להימצא cache line אצל ה-Requester לאחר ביצוע הטרנזקציה, למעט עבור טרנזקציות מסוג תחזוקת cache. עבור טרנזקציות תחזוקת cache צריך להתעלם מהשדה והמצב של cache line נשאר ללא שינוי.</p>
+<h4 id="cleanunique">
+  <code>CleanUnique</code>
+  <a class="heading-link" href="#cleanunique">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>טרנזקציה זו נועדה לאפשר ל-Requester לשנות את מצב ה-cache שלו למצב Unique עבור כתובת נתונה. זה מאפשר ל-Requester לבצע כתיבה ל-cache line המדוברת. התרחיש הנפוץ הוא כאשר ל-Requester יש עותק משותף של ה-cache line, והוא מבקש הרשאה להפוך את העותק הזה ל-Unique כדי שיוכל לכתוב עליו. כל עותק מלוכלך של אותו cache line ב-cache-ים שביצעו snoop ייכתב בחזרה לזיכרון כדי לשמור על הקוהרנטיות.</p>
+<p>הטרנזקציה מחייבת את השדה <code>ExpCompAck</code> להיות דלוק (כלומר מחייבת לשלוח <code>CompAck</code> בסוף הטרנזקציה).</p>
+<h4 id="makeunique">
+  <code>MakeUnique</code>
+  <a class="heading-link" href="#makeunique">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>טרנזקציה זו מאפשרת ל-Requester לקבל בעלות על שורת ה-cache מבלי לדרוש תגובת נתונים, כלומר, ללא העברת תוכן ה-cache line. הטרנזקציה מבוצעת כאשר ה-Requester מתכוון לכתוב את כל תוכן ה-cache line, ולכן אין צורך להעביר נתונים קיימים. כל עותק מלוכלך של השורה ב-cache-ים אחרים יהפוך ל-invalid מבלי להעביר את הנתונים (כלומר נתונים מלוכלכים ימחקו).</p>
+<p>הטרנזקציה מחייבת את השדה <code>ExpCompAck</code> להיות דלוק (כלומר מחייבת לשלוח <code>CompAck</code> בסוף הטרנזקציה).</p>
+<h4 id="טרנזקציות-dataless-לתחזוקת-cache">
+  טרנזקציות Dataless לתחזוקת cache
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-dataless-%d7%9c%d7%aa%d7%97%d7%96%d7%95%d7%a7%d7%aa-cache">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>פעולות תחזוקת cache (המכונות גם CMO - Cache Maintenance Operations) משמשות לניהול המבנה והמצב של ה-cache-ים בעזרת תוכנה, על מנת לשמור על עקביות הזיכרון במערכת.</p>
+<h5 id="cleanshared">
+  <code>CleanShared</code>
+  <a class="heading-link" href="#cleanshared">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>תגובה לטרנזקציית <code>CleanShared</code> מבטיחה שכל עותקי ה-cache של ה-cache line הרלוונטית ישתנו למצב clean. אם יש עותקים מלוכלכים ב-cache-ים, הם ייכתבו בחזרה לזיכרון כדי לשמור על עקביות. כך מבטיחים שמצב ה-cache-ים מסונכרן עם הזיכרון.</p>
+<h5 id="cleaninvalid">
+  <code>CleanInvalid</code>
+  <a class="heading-link" href="#cleaninvalid">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>תגובה לטרנזקציית <code>CleanInvalid</code> מבטיחה שכל העותקים המאוחסנים של ה-cache line המסוים ייכנסו למצב Invalid, כלומר לא יהיה ניתן להשתמש בהם עוד. כמו כן, עותקים מלוכלכים יאולצו להיכתב בחזרה לזיכרון כדי למנוע אובדן נתונים.</p>
+<h5 id="makeinvalid">
+  <code>MakeInvalid</code>
+  <a class="heading-link" href="#makeinvalid">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>תגובה לטרנזקציית <code>MakeInvalid</code> מבטיחה שכל עותקי ה-cache של השורה המדוברת יהפכו ל-invalid. פעולה זו מתירה למחוק את העותקים המלוכלכים מה-cache מבלי לשמור אותם בזיכרון.</p>
+<h3 id="טרנזקציות-כתיבה">
+  טרנזקציות כתיבה
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%9b%d7%aa%d7%99%d7%91%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>טרנזקציות כתיבה מעבירות נתונים מצומת Requester לצומת Completer, אשר יכול להיות cache ברמה הבאה, זיכרון או רכיב היקפי כלשהו. סוג הנתונים המועבר, בין אם הוא קוהרנטי או לא קוהרנטי, תלוי בסוג הטרנזקציה שבוצעה.</p>
+<h4 id="תגובת-writedata">
+  תגובת WriteData
+  <a class="heading-link" href="#%d7%aa%d7%92%d7%95%d7%91%d7%aa-writedata">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<h5 id="שדה-cache-state-1">
+  שדה Cache state
+  <a class="heading-link" href="#%d7%a9%d7%93%d7%94-cache-state-1">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>שדה זה מציין את מצב cache line לפני שנשלחת תגובת WriteData. מצב זה יכול להשתנות לעומת המצב שבו ה-cache line הייתה בעת שליחת בקשת הטרנזקציה המקורית. שינוי זה עשוי להתרחש אם בקשת snoop שמופנית לאותה כתובת התקבלה אצל ה-Requester לאחר שליחת בקשת הטרנזקציה המקורית, אך לפני שה-Requester שולח את תגובת WriteData.</p>
+<p>לדוגמה כש-Requester מסויים מבצע כתיבה ל-cache line במצב UD אז לפני שהוא שולח את המידע לאחר שהוא קיבל תגובה עם אישור על הקצאה הוא משנה את ה-cache line ל-I ושולח את התגובה <code>CBWrData_UD_PD</code>.</p>
+<h5 id="שדה-pass-dirty-1">
+  שדה Pass Dirty
+  <a class="heading-link" href="#%d7%a9%d7%93%d7%94-pass-dirty-1">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>שדה זה מציין אם האחריות לעדכן את הזיכרון עוברת מה-Requester. במידה והאחריות להעברת הנתונים המלוכלכים לזיכרון עוברת ל-Requester, הדבר מסומן באמצעות הסיומת <code>_PD</code> בשם התגובה.</p>
+<h4 id="סידור-בטרנזקציות-כתיבה">
+  סידור בטרנזקציות כתיבה
+  <a class="heading-link" href="#%d7%a1%d7%99%d7%93%d7%95%d7%a8-%d7%91%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%9b%d7%aa%d7%99%d7%91%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ב-CHI, טרנזקציות מסודרות בהתאם ל-Endpoint Order ו-Request Order, והם מוגדרים כך:</p>
+<ul>
+<li>
+<p>ה-Endpoint Order: שומר על הסדר של טרנזקציות שמגיעות מ-Requester יחיד המיועדות לטווח כתובות יחיד של Subordinate. לדוגמה, ב-Endpoint Order, מספר פעולות גישה למכשיר מונפקות ל-register bank של Subordinate.</p>
+</li>
+<li>
+<p>ה-Request Order: שומר על הסדר של טרנזקציות שמגיעות מ-Requester יחיד לאותה כתובת ספציפית. סדר זה נדרש, למשל, כאשר ישנן מספר בקשות שמונפקות לכתובת חופפת שהיא non-cacheable, כמו Device-GRE.</p>
+</li>
+</ul>
+<p>הערה:
+כאשר מוגדר סדר Request Order, הסדר של Endpoint Order משתמע אוטומטית.</p>
+<p>רק סוגי בקשות מסוימים יכולים לנצל את סדרי ה-Request Order וה-Endpoint Order. סוגי הבקשות האלה כוללים:</p>
+<ul>
+<li>
+<p>בקשות מסוג <code>ReadNoSnp</code> ו-<code>ReadOnce</code>:</p>
+<ul>
+<li>ה-Requester מנפיק בקשה מסוג <code>ReadNoSnp</code> או <code>ReadOnce</code> שדורשת שמירה על סדר.</li>
+<li>ה-Subordinate מקבל את הבקשה ומחזיר תשובה בהודעת <code>ReadReceipt</code>. הודעה זו מאשרת שניתן להנפיק את הבקשה הבאה ששומרת על הסדר.</li>
+<li>באמצעות הנפקת הודעת <code>ReadReceipt</code>, ה-Subordinate מבטיח כי הבקשות יישמרו ויטופלו לפי סדר קבלתן.</li>
+</ul>
+</li>
+<li>
+<p>בקשות מסוג <code>WriteNoSnp</code> ו-<code>WriteUnique</code> מטופלות כך:</p>
+<ul>
+<li>ה-Requester מגיש בקשה מסוג <code>WriteNoSnp</code> או <code>WriteUnique</code>, הדורשת שמירה על סדר (Ordered).</li>
+<li>ה-Subordinate מגיב בהודעת <code>DBIDResp</code>, המאותתת שהוא מוכן לקבל את ההודעה. הודעת <code>DBIDResp</code> מסמנת שיש slot פנוי ב-Data Buffer לקליטת נתוני הכתיבה, ומאפשרת ל-Requester להמשיך ולהנפיק את הבקשה המסודרת הבאה.</li>
+<li>הנפקת הודעת <code>DBIDResp</code> מצד ה-Subordinate מבטיחה שהבקשות ישמרו ויטופלו לפי סדר קבלתן.</li>
+</ul>
+</li>
+</ul>
+<p>סדר האירועים במצב כזה מתנהל כך:</p>
+<ol>
+<li>ה-Requester יוזם בקשת קריאה מספר 1 ל-Subordinate, כאשר מוגדר <code>ReqOrder</code>.</li>
+<li>ה-Requester מגיש גם בקשת קריאה מספר 2 לאותו Subordinate, עם <code>ReqOrder</code> מוגדר, אך נחסם מלשלוח אותה כי בקשה מספר 1 עדיין ממתינה להשלמה.</li>
+<li>ה-Subordinate מגיב להודעה של בקשת קריאה מספר 1 עם <code>ReadReceipt</code>, המאשר שהבקשה התקבלה.</li>
+<li>לאחר מכן 2 האירועים הבאים יכולים לקרות בכל סדר:
+<ol>
+<li>ה-Requester שולח את בקשת קריאה מספר 2 ל-Subordinate.</li>
+<li>ה-Subordinate משיב ל-Requester עם נתוני הקריאה עבור בקשת קריאה מספר 1.</li>
+</ol>
+</li>
+</ol>
+<h4 id="שדה-הקצאת-מידע-dbid">
+  שדה הקצאת מידע DBID
+  <a class="heading-link" href="#%d7%a9%d7%93%d7%94-%d7%94%d7%a7%d7%a6%d7%90%d7%aa-%d7%9e%d7%99%d7%93%d7%a2-dbid">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-<code>DBID</code> (קיצור של Data Buffer ID) מופיע רק בהודעות תשובות ומידע. מזהה זה משמש את צומת היעד כדי להודיע על זמינות לקבלת נתוני כתיבה, וכדי להקצות טרנזקציות הדורשות Completion Acknowledgement.</p>
+<ul>
+<li>
+<p>כאשר מדובר בכתיבות, ה-Requester אינו רשאי לשלוח נתוני כתיבה (Write Data) עד לקבלת ערך <code>DBID</code> בתגובה מה-completer.</p>
+</li>
+<li>
+<p>בחלק מטרנזקציות הקריאה, מתבצע Completion Acknowledgement, שבו ה-Requester מציין שהוא קיבל את נתוני הקריאה. במהלך החזרת נתוני הקריאה ל-Requester, מועבר גם ערך <code>DBID</code>, שה-Requester ישתמש בו כדי לשלוח הודעת השלמה.</p>
+</li>
+</ul>
+<h5 id="תגובת-dbidresp">
+  תגובת <code>DBIDResp</code>
+  <a class="heading-link" href="#%d7%aa%d7%92%d7%95%d7%91%d7%aa-dbidresp">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<ul>
+<li>תגובת <code>DBIDResp</code> נשלחת כדי להודיע ל-Requester שישנם משאבים זמינים לקבלת נתוני הכתיבה (<code>WriteData</code>).</li>
+<li>בנוסף, תגובת <code>DBIDResp</code> מציינת שה-completer מספק ערבויות מסוימות לגבי סדר הטרנזקציות.</li>
+</ul>
+<h4 id="טרנזקציות-כתיבה-מיידיות">
+  טרנזקציות כתיבה מיידיות
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%9b%d7%aa%d7%99%d7%91%d7%94-%d7%9e%d7%99%d7%99%d7%93%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>טרנזקציות כתיבה מיידיות, הידועות גם כ-Non-CopyBack Write, הן סוג מיוחד של טרנזקציות כתיבה שבהן הנתונים מועברים מצומת Requester ישירות לצומת Home מבלי לקבל תחילה בעלות קוהרנטית על הנתונים. טרנזקציות אלו משמשות להעברת נתונים ישירות, לדוגמה מהצומת Home לצומת Subordinate, מבלי לעבור תהליך של קבלת בעלות קוהרנטית לפני כן. טרנזקציות אלו עשויות לדרוש ביצוע Snoop מול agent-ים אחרים במערכת כדי לשמור על עקביות הנתונים.</p>
+<h5 id="writenosnpfull">
+  <code>WriteNoSnpFull</code>
+  <a class="heading-link" href="#writenosnpfull">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>טרנזקציה זו מתבצעת כאשר יש צורך לכתוב שורת cache מלאה של נתונים מצומת Requester לאזור כתובת שלא ניתן לבצע בו snooping, או כאשר יש צורך לכתוב שורת cache מלאה של נתונים מצומת Home לצומת Subordinate. נתונים מועברים בשלמותם, ואין צורך ב-snooping במהלך הפעולה.</p>
+<h5 id="writenosnpptl">
+  <code>WriteNoSnpPtl</code>
+  <a class="heading-link" href="#writenosnpptl">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>כתיבה חלקית (Ptl - partial) לשורת cache line מתבצעת מצומת הבקשה לאזור כתובת שאינו ניתן ל-Snoop, או מצומת Home לצומת Subordinate. הכתיבה נעשית עבור בתים מסוימים ב-cache line.</p>
+<h5 id="writeuniquefull">
+  <code>WriteUniqueFull</code>
+  <a class="heading-link" href="#writeuniquefull">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>פעולה זו מתבצעת כאשר יש צורך לכתוב שורת cache מלאה לאזור כתובת ניתן ל-Snoop. במקרה זה, שורת ה-cache נכתבת לזיכרון או ל-cache ברמה הבאה, כאשר שורת ה-cache אצל ה-Requester היא במצב Invalid.</p>
+<h5 id="writeuniqueptl">
+  <code>WriteUniquePtl</code>
+  <a class="heading-link" href="#writeuniqueptl">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>פעולה זו דומה ל-<code>WriteUniqueFull</code>, אך כאן הכתיבה מתבצעת עבור חלק מהבתים בלבד של שורת ה-cache.</p>
+<h5 id="writeuniquezero">
+  <code>WriteUniqueZero</code>
+  <a class="heading-link" href="#writeuniquezero">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>כתיבה לאזור כתובת הניתן ל-Snoop, כאשר כל הבתים בשורת ה-cache נכתבים עם ערך אפס. פעולה זו אינה מעבירה נתונים אמיתיים אלא מציינת שהשורה מכילה אפסים.</p>
+<h4 id="טרנזקציות-copyback">
+  טרנזקציות CopyBack
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-copyback">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>טרנזקציות CopyBack הן סוג מיוחד של טרנזקציות כתיבה, שבהן מועברים נתונים קוהרנטיים מ-cache אחד ל-cache אחר או לזיכרון ברמה הבאה. טרנזקציות אלו מתבצעות כאשר יש צורך להחזיר נתונים מלוכלכים מ-cache לזיכרון, תוך שמירה על הקוהרנטיות של המערכת. חשוב לציין כי טרנזקציות CopyBack לא דורשות ביצוע snooping ל-agent-ים אחרים במערכת, מכיוון שהן מתמקדות בהעברת נתונים שנמצאים במצב מלוכלך.</p>
+<h5 id="writebackfull">
+  <code>WriteBackFull</code>
+  <a class="heading-link" href="#writebackfull">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>פעולה זו מתבצעת כאשר יש צורך להחזיר שורת cache מלאה של נתונים מלוכלכים לזיכרון או ל-cache ברמה הבאה. אם הנתונים מועברים באמצעות <code>CopyBackWriteData_I</code>, אז ייתכן ויש צורך לדלג על חלק מהביטים ב-cache line.</p>
+<h5 id="writebackptl">
+  <code>WriteBackPtl</code>
+  <a class="heading-link" href="#writebackptl">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>פעולה זו מיועדת להחזיר באופן חלקי שורת cache של נתונים מלוכלכים לזיכרון או ל-cache ברמה הבאה.</p>
+<h5 id="writecleanfull">
+  <code>WriteCleanFull</code>
+  <a class="heading-link" href="#writecleanfull">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בפעולה זו מוחזרים נתונים מלוכלכים לזיכרון או ל-cache ברמה הבאה, וגם צריך לשומר עותק במצב clean של שורת ה-cache המקורית. אם הטרנזקציה מתבצעת עם <code>CopyBackWriteData_I</code>, אז ייתכן ויש צורך לדלג על חלק מהביטים ב-cache line.</p>
+<h3 id="בקשות-snoop">
+  בקשות Snoop
+  <a class="heading-link" href="#%d7%91%d7%a7%d7%a9%d7%95%d7%aa-snoop">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-Interconnect יוצר בקשה מסוג Snoop, או בתגובה לבקשה מה-Requester, או בעקבות טריגר פנימי, כגון פעולה של cache או פעולת תחזוקה של מסנן snoop. כל טרנזקציית Snoop, למעט טרנזקציית SnpDVMOp, מתמקדת בנתונים המאוחסנים ב-cache של ה-Requester.</p>
+<p>הערה:
+המונח Snoopee מתייחס ל-node שנשאל או נחקר במהלך פעולת snoop, זה ה-node שמבצעים עליו את ה-snooping והוא היעד של הודעת ה-snoop (שולחים לו את ההודעה).</p>
+<h4 id="תגובת-snoop">
+  תגובת Snoop
+  <a class="heading-link" href="#%d7%aa%d7%92%d7%95%d7%91%d7%aa-snoop">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<h5 id="שדה-cache-state-2">
+  שדה Cache state
+  <a class="heading-link" href="#%d7%a9%d7%93%d7%94-cache-state-2">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>שדה זה מייצג את המצב הסופי של ה-cache line בצומת שמבצעים עליה את פעולת ה-snoop. כלומר, לאחר ביצוע פעולת ה-snoop, השדה הזה מגדיר מה יהיה המצב של ה-cache line בצומת הנבדקת.</p>
+<p>לדוגמה ב-Requester שמקבל בקשת snoop של <code>SnpMakeInvalid</code> (כלומר צריך להפוך את ה-cache line למצב invalid) וה-cache line שיש לו לפני שהוא מקבל את הבקשה נמצאת במצב SC וכשהוא מקבל את הבקשה הוא הופך את ה-cache line ל-I ומגיב עם הודעת <code>SnpResp_I</code>.</p>
+<h5 id="שדה-pass-dirty-2">
+  שדה Pass Dirty
+  <a class="heading-link" href="#%d7%a9%d7%93%d7%94-pass-dirty-2">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>שדה זה מציין שהאחריות לעדכון הזיכרון עבור הנתונים מועברת ל-Requester (שיזם את הטרנזקציה המקורית) או ל-interconnect. השדה הזה קיים רק כאשר תגובת ה-snoop כוללת נתונים, כלומר כאשר הצומת ששולחת את התגובה שולחת גם את המידע הנדרש.
+כש-Pass Dirty דולק זה מוצג על ידי <code>_PD</code> בשם התגובה.</p>
+<h4 id="טרנזקציות-snoop">
+  טרנזקציות Snoop
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-snoop">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<h5 id="snpcleanfwd--snpclean">
+  <code>SnpCleanFwd</code> &amp; <code>SnpClean</code>
+  <a class="heading-link" href="#snpcleanfwd--snpclean">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בקשה מסוג Snoop לקבלת עותק של ה-cache line במצב Clean, תוך שמירה על עותק במצב משותף. אין להשאיר את ה-cache line במצב Unique.</p>
+<h5 id="snpnotshareddirtyfwd-snpnotshareddirty">
+  <code>SnpNotSharedDirtyFwd</code> &amp;<code>SnpNotSharedDirty</code>
+  <a class="heading-link" href="#snpnotshareddirtyfwd-snpnotshareddirty">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בקשה מסוג Snoop לקבלת עותק של ה-cache line במצב SharedClean, תוך שמירה על עותק במצב Shared. אין להשאיר את ה-cache line במצב Unique.</p>
+<p>הערה:
+התגובה הזאת מעניינת כי היא נוספה ב-CHI-B כדי לאפשר תמיכה בפרוטוקול MESI שבו אסור מצב SD (זהה ב-MOESI למצב Owned שלא קיים ב-MESI) ובנוסף כדי לאפשר תמיכה נוספה גם הטרנזקציה <code>ReadNotSharedDirty</code>.</p>
+<h5 id="snpsharedfwd--snpshared">
+  <code>SnpSharedFwd</code> &amp; <code>SnpShared</code>
+  <a class="heading-link" href="#snpsharedfwd--snpshared">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בקשה מסוג Snoop לקבלת עותק של ה-cache line במצב Shared, תוך שמירה על עותק במצב Shared. אין להשאיר את ה-cache line במצב Unique.</p>
+<h5 id="snpuniquefwd-snpunique">
+  <code>SnpUniqueFwd</code>&amp; <code>SnpUnique</code>
+  <a class="heading-link" href="#snpuniquefwd-snpunique">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בקשה מסוג Snoop לקבלת עותק של ה-cache line במצב Unique, תוך ביטול עותקים שמאוחסנים ב-cache. חייב להתרחש שינוי במצב ה-cache line ל-invalid. אם יש ל-Snoopee עותק במצב מלוכלך הוא מחויב להעביר גם את המידע ל-Requester המבקש.</p>
+<h5 id="snpcleanshared">
+  <code>SnpCleanShared</code>
+  <a class="heading-link" href="#snpcleanshared">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בקשה מסוג snoop המיועדת להסיר כל עותק מלוכלך של ה-cache line בצומת ה-Snoopee. אין להשאיר את ה-cache line במצב מלוכלך.</p>
+<h5 id="snpcleaninvalid">
+  <code>SnpCleanInvalid</code>
+  <a class="heading-link" href="#snpcleaninvalid">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בקשה מסוג snoop המיועדת לבטל את תוקף ה-cache line בצומת ה-Snoopee ולהשיג כל עותק מלוכלך. בקשה זו עשויה להיווצר גם על ידי ה-Interconnect ללא בקשה מתאימה מה-Requester. חייבת להתרחש פעולה של שינוי במצב ה-cache line ל-invalid.</p>
+<h5 id="snpmakeinvalid">
+  <code>SnpMakeInvalid</code>
+  <a class="heading-link" href="#snpmakeinvalid">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בקשה מסוג snoop המיועדת לבטל את תוקף ה-cache line בצומת ה-Snoopee, ובכך לבטל כל עותק מלוכלך:</p>
+<ul>
+<li>אין החזרת נתונים עם תגובת Snoop; נתונים מלוכלכים נמחקים.</li>
+<li>חייבת להתרחש פעולה של שינוי במצב ה-cache line ל-invalid.</li>
+</ul>
+<h5 id="snpquery">
+  <code>SnpQuery</code>
+  <a class="heading-link" href="#snpquery">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h5>
+<p>בקשה מסוג Snoop שמטרתה לבדוק את מצב ה-cache line ב-Requester:</p>
+<ul>
+<li>ה-Home יכול לשלוח בקשת snoop מסוג <code>SnpQuery</code> ללא כל בקשה מתאימה מה-Requester.</li>
+<li>תגובת Snoop חייבת לכלול את המצב המדויק של ה-cache line ב-snoopee המיועד.</li>
+<li>אין להחזיר נתונים עם תגובת snoop.</li>
+<li>טרנזקציית <code>SnpQuery</code> אינה אמורה לשנות את מצב ה-cache line ב-Snoopee.</li>
+</ul>
+<h3 id="מעברי-cache-שקטים">
+  מעברי cache שקטים
+  <a class="heading-link" href="#%d7%9e%d7%a2%d7%91%d7%a8%d7%99-cache-%d7%a9%d7%a7%d7%98%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ה-cache יכול לשנות את מצבו בעקבות אירועים פנימיים, מבלי לשלוח הודעה לשאר רכיבי המערכת. במקרים מסוימים, קיימת אפשרות (אך אין חובה) להוציא טרנזקציה שמודיעה על שינוי המצב. כאשר טרנזקציה כזו מונפקת, המעבר של מצב ה-cache הופך לגלוי ל-Interconnect, ולכן אינו נחשב למעבר שקט.</p>
+<p>לדוגמה יכול להתרחש מעבר מצב cache שקט בתוך ה-RN-F, בפעולת store: ממצב UC ל-UD</p>
+<h3 id="סוגי-טרנזקציות-ומנגנונים-אחרים">
+  סוגי טרנזקציות ומנגנונים אחרים
+  <a class="heading-link" href="#%d7%a1%d7%95%d7%92%d7%99-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%95%d7%9e%d7%a0%d7%92%d7%a0%d7%95%d7%a0%d7%99%d7%9d-%d7%90%d7%97%d7%a8%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>יש עוד הרבה סוגים של טרנזקציות, אופטימיזציות ומנגנונים שקיימים ב-AMBA CHI אבל אני לא אסביר על כולם במאמר הזה, אבל אסביר בקצרה על עוד מספר מנגנונים:</p>
+<h4 id="direct-cache-transfer-dct">
+  Direct Cache Transfer (DCT)
+  <a class="heading-link" href="#direct-cache-transfer-dct">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>מנגנון Direct Cache Transfer נועד להפחית את זמן ההשהיה שנגרם עקב פעולות snoop. מנגנון זה דומה ל-Direct Memory Transfer (DMT) אך מתמקד ב-snoop-ים. ה-DCT מאפשר לנתוני ה-snoop לעקוף את צומת ה-Home ולעבור ישירות מצומת Requester מסויים אל ה-Requester המקורי שהוציא את הבקשה, מה שמאיץ את ביצועי המערכת במקרים שבהם הנתונים צריכים לחזור מ-Requester-ים שונים.</p>
+<p>מקרי שימוש שבהם מנגנון DCT מועיל כוללים מקרים של מנעולים וניהול עומסי עבודה במודל יצרן-צרכן, בהם מהירות הגישה לנתונים היא קריטית.</p>
+<p>לדוגמה, ניתן להשוות בין המסלול שהנתונים עוברים בבקשת קריאה רגילה לעומת מסלול הנתונים בעת שימוש ב-DCT:</p>
+<ul>
+<li>
+<p>ללא DCT:</p>
+<ol>
+<li>מעבד A שולח בקשת קריאה ל-Home.</li>
+<li>הבקשה מובילה ל-cache miss ב-Home.</li>
+<li>ה-Home שולח בקשת snoop למעבד B, שמחזיק את ה-cache line הרלוונטית.</li>
+<li>מעבד B מחזיר את הנתונים לצומת ה-Home.</li>
+<li>ה-Home מחזיר את הנתונים למעבד A, ה-Requester המקורי.</li>
+</ol>
+</li>
+<li>
+<p>עם DCT:</p>
+<ol>
+<li>מעבד A שולח בקשת קריאה ל-Home.</li>
+<li>הבקשה מובילה ל-cache miss ב-Home.</li>
+<li>ה-Home שולח בקשת snoop למעבד B, שמחזיק את שורת ה-cache הרלוונטית.</li>
+<li>מעבד B עוקף את ה-Home ושולח את הנתונים ישירות למעבד A, ה-Requester המקורי.</li>
+</ol>
+</li>
+</ul>
+<p>באמצעות DCT, ניתן לקצר את זמן ההשהיה במקרה של snoop hit, ולשפר את יעילות הגישה לנתונים.</p>
+<h4 id="העברת-forward-בקשות-snoop">
+  העברת (forward) בקשות Snoop
+  <a class="heading-link" href="#%d7%94%d7%a2%d7%91%d7%a8%d7%aa-forward-%d7%91%d7%a7%d7%a9%d7%95%d7%aa-snoop">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>בכדי לאפשר את ה-DCT, הוסיפה CHI-B את מנגנון בקשת Forwarding Snoop. מנגנון זה מאפשר ל-Requester, שהוא המבצע של ה-snoop, לשלוח את נתוני ה-snoop ישירות ל-Requester המקורי במקום דרך ה-Home.</p>
+<p>כמעט כל פעולות קריאה הניתנות ל-Snoop, למעט טרנזקציות אטומיות וקריאות בלעדיות, יכולות לנצל את היתרון של ה-DCT לצורך קיצור זמן ההשהיה ושיפור הביצועים.</p>
+<h2 id="הדגמת-טרנזקציות">
+  הדגמת טרנזקציות
+  <a class="heading-link" href="#%d7%94%d7%93%d7%92%d7%9e%d7%aa-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h4 id="טרנזקציית-קריאה-readnosnp-ללא-dmt-או-dct">
+  טרנזקציית קריאה ReadNoSnp ללא DMT או DCT
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%99%d7%aa-%d7%a7%d7%a8%d7%99%d7%90%d7%94-readnosnp-%d7%9c%d7%9c%d7%90-dmt-%d7%90%d7%95-dct">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>באיור B5.5 מוצגת דוגמה ל-flow של טרנזקציית <code>ReadNoSnp</code> שאינה עושה שימוש במנגנוני DMT או DCT.</p>
+<figure>
+    <img src="/posts/cache/coherence-protocol/amba-chi/Figure_B5_5_ReadNoSnp_transaction_flow.png"class="dark-image"
+    ><figcaption class="image-title">Figure B5 5 ReadNoSnp transaction flow from AMBA CHI Architecture Specification (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>במקרה זה, לטרנזקציית <code>ReadNoSnp</code> מוגדר השדה <code>ExpCompAck</code> בבקשה המקורית ולכן זה מחייב ש-Requester 0 ישלח בסוף התהליך הודעת <code>CompAck</code>. הטרנזקציה אינה גורמת ל-snooping מכיוון שהנתונים מתקבלים ישירות מהזיכרון דרך ה-Home, וזה בגלל שהבקשה מוגדרת כ-NoSnp.</p>
+<p>תהליך העבודה של טרנזקציית <code>ReadNoSnp</code> מתבצע בשלבים הבאים:</p>
+<ol>
+<li>
+<p>ה-Requester 0 מנפיק בקשת <code>ReadNoSnp</code>, כאשר השדה <code>ExpCompAck</code> מוגדר ל-1, כלומר ה-Home צריך לצפות לתגובת השלמה בסוף התהליך.</p>
+</li>
+<li>
+<p>ה-Home מקבל את הבקשה, מקצה את הבקשה ושולח את בקשת <code>ReadNoSnp</code> ל-Subordinate.</p>
+</li>
+<li>
+<p>ה-Subordinate מחזיר תגובת <code>CompData_I</code> אל ה-Home.</p>
+</li>
+<li>
+<p>ה-Home מחזיר את הנתונים שהתקבלו ל-Requester 0. (אם השדה <code>ExpCompAck</code> לא היה מוגדר בבקשה המקורית של <code>ReadNoSnp</code>, ה-Home היה יכול לבטל את הקצאת הבקשה בשלב זה).</p>
+</li>
+<li>
+<p>ה-Requester 0 מסיים את התהליך על ידי ביטול ההקצאת הבקשה, ושולח את הודעת <code>CompAck</code> ל-Home. בתשובה שמגיעה בהודעה <code>CompData_I</code> מה-Home אז Requester 0 לא יכול לשמור את הנתונים בצורה קוהרנטית (בגלל שלא נעשה snoop בתהליך הטרנזקציה) ולכן גם באיור המידע שמועבר לא צריך להישמר ב-Requester 0 בסוף כל הטרנזקציה ולכן הוא &ldquo;עובר&rdquo; ממצב invalid ל-invalid.</p>
+</li>
+<li>
+<p>ה-Home מקבל את תגובת <code>CompAck</code> מ-Requester 0 ומבטל את הקצאת הבקשה.</p>
+</li>
+</ol>
+<h3 id="טרנזקציית-קריאה-עם-תגובת-snoop-ונתונים-חלקיים-ללא-עדכון-זיכרון">
+  טרנזקציית קריאה עם תגובת snoop ונתונים חלקיים ללא עדכון זיכרון
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%99%d7%aa-%d7%a7%d7%a8%d7%99%d7%90%d7%94-%d7%a2%d7%9d-%d7%aa%d7%92%d7%95%d7%91%d7%aa-snoop-%d7%95%d7%a0%d7%aa%d7%95%d7%a0%d7%99%d7%9d-%d7%97%d7%9c%d7%a7%d7%99%d7%99%d7%9d-%d7%9c%d7%9c%d7%90-%d7%a2%d7%93%d7%9b%d7%95%d7%9f-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>דוגמה לסוג טרנזקציה כזו היא ה-<code>ReadUnique</code>.</p>
+<p>איור B5.6 מציג את זרימת הטרנזקציה, כאשר הנתונים המועברים מסומנים בהדגשה.</p>
+<figure>
+    <img src="/posts/cache/coherence-protocol/amba-chi/Figure_B5_6_ReadUnique_with_partial_data_snoop_response.png"class="dark-image"
+    ><figcaption class="image-title">Figure B5 6 ReadUnique with partial data snoop response from AMBA CHI Architecture Specification (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<ol>
+<li>
+<p>שלב הבקשה: Requester 0 שולח בקשת <code>ReadUnique</code> אל ה-Home.</p>
+</li>
+<li>
+<p>הפצת הבקשה: ה-Home שולח בקשות <code>ReadNoSnp</code> אל ה-Subordinate ובמקביל שולח בקשות <code>SnpUnique</code> אל Requester 1 ו-Requester 2, בגלל שיכול להיות שיש להם עותקים של הנתונים ב-cache שלהם.</p>
+</li>
+<li>
+<p>תגובה מ-Requester 1: ה-Requester 1, שיש לו את הנתונים במצב <code>UDP</code>, משנה את מצב ה-cache line שלו למצב <code>I</code> ושולח ל-Home תגובת <code>SnpRespDataPtl_I_PD</code>, כלומר תגובת snoop עם נתונים חלקיים ומצב של Invalid.</p>
+</li>
+<li>
+<p>תגובה מ-Requester 2: ה-Requester 2, שאין לו את הנתונים, מחזיר תגובת <code>SnpResp_I</code>, כלומר תגובת snoop פשוטה המציינת שהנתונים אינם נמצאים ב-cache שלו (או שיש לו נתונים במצב Invalid אבל זה כאילו אין לו נתונים).</p>
+</li>
+<li>
+<p>תגובה מ-Subordinate: במקביל, ה-Subordinate מחזיר תגובת <code>CompData_I</code> לבקשת <code>ReadNoSnp</code> משלב 2.</p>
+</li>
+<li>
+<p>מיזוג הנתונים: ה-Home ממזג את הנתונים שהתקבלו מ-Requester 1 (הנתונים החלקיים) יחד עם הנתונים שהתקבלו מה-Subordinate.</p>
+</li>
+<li>
+<p>שליחת הנתונים ל-Requester 0: לאחר המיזוג, ה-Home שולח את הנתונים המלאים, כעת במצב <code>CompData_UD_PD</code> , ל-Requester 0, שמשנה את מצב ה-cache line שלו מ-<code>I</code> ל-<code>UD</code>.</p>
+</li>
+<li>
+<p>השלמת הטרנזקציה: Requester 0 שולח ל-Home תגובת <code>CompAck</code>, המאשרת את קבלת הנתונים וסיום הטרנזקציה בהצלחה. ובשלב זה ה-Home יכול לבצע deallocate לבקשה. (Requester 0 מחוייב לשלוח  תגובת <code>CompAck</code> בגלל שלבקשת <code>ReadUnique</code> חייב להיות השדה <code>ExpCompAck</code> להיות דלוק).</p>
+</li>
+</ol>
+<h3 id="טרנזקציית-קריאה-עם-תגובת-snoop-עם-נתונים-חלקיים-ועדכון-זיכרון">
+  טרנזקציית קריאה עם תגובת snoop עם נתונים חלקיים ועדכון זיכרון
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%99%d7%aa-%d7%a7%d7%a8%d7%99%d7%90%d7%94-%d7%a2%d7%9d-%d7%aa%d7%92%d7%95%d7%91%d7%aa-snoop-%d7%a2%d7%9d-%d7%a0%d7%aa%d7%95%d7%a0%d7%99%d7%9d-%d7%97%d7%9c%d7%a7%d7%99%d7%99%d7%9d-%d7%95%d7%a2%d7%93%d7%9b%d7%95%d7%9f-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>דוגמה ל-flow של טרנזקציה מסוג זה היא טרנזקציית <code>ReadClean</code>.</p>
+<p>באיור B5.7 ניתן לראות את ה-flow המלא של הטרנזקציה:</p>
+<figure>
+    <img src="/posts/cache/coherence-protocol/amba-chi/Figure_B5_7_ReadClean_with_partial_data_snoop_response.png"class="dark-image"
+    ><figcaption class="image-title">Figure B5 7 ReadClean with partial data snoop response from AMBA CHI Architecture Specification (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>השלבים בטרנזקציית <code>ReadClean</code> עם תגובת Snoop עם נתונים במצב Ptl (חלקי):</p>
+<ol>
+<li>
+<p>שליחת בקשה: Requester 0 שולח בקשת <code>ReadClean</code> אל ה-Home.</p>
+</li>
+<li>
+<p>הפצת בקשות: ה-Home מפיץ בקשות <code>ReadNoSnp</code> אל ה-Subordinate וגם מפיץ בקשות <code>SnpClean</code> אל Requester 1 ו-Requester 2.</p>
+</li>
+<li>
+<p>תגובת Requester 1: ה-Requester 1 מקבל את בקשת ה-Snoop, מעביר את ה-cache line ממצב UDP למצב I, ולאחר מכן מחזיר ל-Home תגובת <code>SnpRespDataPtl_I_PD</code> הכוללת נתונים חלקיים.</p>
+</li>
+<li>
+<p>תגובת Requester 2: צומת Requester 2 מקבל את הבקשה ומחזיר ל-Home תגובת <code>SnpResp_I</code>, שמשמעותה שאין לו נתונים להחזיר (מצב Invalid).</p>
+</li>
+<li>
+<p>תגובת ה-Subordinate: במקביל, ה-Subordinate מחזיר ל-Home את התגובה <code>CompData_I</code>, הכוללת נתונים מלאים במצב Invalid.</p>
+</li>
+<li>
+<p>מיזוג נתונים: ה-Home מקבל את התגובות מה-Subordinate ומ-Requester 1, וממזג את הנתונים שהתקבלו (הנתונים המלאים מה-Subordinate אבל לא כל המידע בהם עדכני והנתונים החלקיים מ-Requester 1).</p>
+</li>
+<li>
+<p>שליחת הנתונים: ה-Home שולח <code>CompData_UC</code> ל-Requester 0, ומנפיק בקשת <code>WriteNoSnp</code> אל ה-Subordinate כדי לעדכן את הזיכרון.</p>
+</li>
+<li>
+<p>כש-Requester 0 מקבל את הנתונים מה-Home, הוא מעביר את ה-cache line שלו ממצב I למצב UC. לאחר מכן, הוא משדר תגובת <code>CompAck</code> ל-Home כדי לציין שהטרנזקציה הושלמה בהצלחה. (Requester 0 מחוייב לשלוח  תגובת <code>CompAck</code> בגלל שלבקשת <code>ReadClean</code> חייב להיות השדה <code>ExpCompAck</code> להיות דלוק).</p>
+</li>
+<li>
+<p>ה-Subordinate מנפיק <code>CompDBIDResp</code> ל-Home כתגובה לבקשה בשלב 7.</p>
+</li>
+<li>
+<p>שליחת נתונים סופיים: ה-Home שולח נתונים ל-Subordinate באמצעות <code>NCBWrData</code>. לאחר מכן, הוא מסיים את הטרנזקציה ומבצע deallocate לבקשה.</p>
+</li>
+</ol>
+<h3 id="טרנזקציית-dataless-ללא-עדכון-זיכרון">
+  טרנזקציית Dataless ללא עדכון זיכרון
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%99%d7%aa-dataless-%d7%9c%d7%9c%d7%90-%d7%a2%d7%93%d7%9b%d7%95%d7%9f-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<figure>
+    <img src="/posts/cache/coherence-protocol/amba-chi/Figure_B5_11_MakeUnique_without_memory_update.png"class="dark-image"
+    ><figcaption class="image-title">Figure B5 11 MakeUnique without memory update from AMBA CHI Architecture Specification (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>דוגמה ל-flow של טרנזקציה מסוג זה היא טרנזקציית <code>MakeUnique</code>, שבה לא מתבצע עדכון בזיכרון, אלא רק תחזוקת מצב ה-cache.</p>
+<ol>
+<li>
+<p>שליחת בקשה: Requester 0 שולח בקשה מסוג <code>MakeUnique</code> אל ה-Home.</p>
+</li>
+<li>
+<p>הפצת בקשות <code>SnpMakeInvalid</code>: ה-Home משדר בקשות <code>SnpMakeInvalid</code> ל-Requester 1 ול-Requester 2, שמטרתן לבטל את תוקף ה-cache line ב-node-ים האלה.</p>
+</li>
+<li>
+<p>כש-Requester 1 ו-Requester 2 מקבלים את הבקשה <code>SnpMakeInvalid</code>  (כל אחד בנפרד) הם משנים את המצב ה-cache line מ-UC ל-I. ולאחר מכן כל אחד מהם מחזיר ל-Home תגובות <code>SnpResp_I</code>, שמודיע שה-cache line שלהם במצב Invalid.</p>
+</li>
+<li>
+<p>לאחר קבלת 2 התגובות של Requester 1 ו-Requester 2 בשלב 3, ה-Home שולח ל-Requester 0 תגובת <code>Comp_UC</code> שמציינת שהבקשה הושלמה בהצלחה.</p>
+</li>
+<li>
+<p>כש-Requester 0 מקבל את ה-<code>Comp_UC</code> מה-Home הוא צריך לעדכן את מצב ה-cache line שיש לו מ-I ל-UD ולאחר מכן הוא מאשר את קבלת ההודעה על ידי שליחת תגובת <code>CompAck</code> ל-Home, ובכך מציין שהטרנזקציה הסתיימה בהצלחה.  (Requester 0 מחוייב לשלוח  תגובת <code>CompAck</code> בגלל שלבקשת <code>ReadClean</code> חייב להיות השדה <code>ExpCompAck</code> להיות דלוק).</p>
+</li>
+<li>
+<p>כשה-Home מקבל את ה-<code>CompAck</code> הוא יכול לסיים את הטרנזקציה והוא מבצע deallocate לבקשה.</p>
+</li>
+</ol>
+<h3 id="טרנזקציית-dataless-עם-עדכון-זיכרון">
+  טרנזקציית Dataless עם עדכון זיכרון
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%99%d7%aa-dataless-%d7%a2%d7%9d-%d7%a2%d7%93%d7%9b%d7%95%d7%9f-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>דוגמה לטרנזקציה מסוג זה היא <code>CleanUnique</code>, שבה מתבצע עדכון זיכרון אך אין העברת נתונים בטרנזקציה עצמה.</p>
+<figure>
+    <img src="/posts/cache/coherence-protocol/amba-chi/Figure_B5_12_CleanUnique_with_memory_update.png"class="dark-image"
+    ><figcaption class="image-title">Figure B5 12 CleanUnique with memory update from AMBA CHI Architecture Specification (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>השלבים בזרימת הטרנזקציה <code>CleanUnique</code> עם עדכון זיכרון כפי שמוצגים באיור B5.12:</p>
+<ol>
+<li>
+<p>שליחת בקשה: Requester 0 שולח בקשת <code>CleanUnique</code> אל ה-Home.</p>
+</li>
+<li>
+<p>שליחת בקשות <code>SnpCleanInvalid</code>: ה-Home משדר בקשות <code>SnpCleanInvalid</code> ל-Requester 1 ו-Requester 2, שמטרתן לנקות ולבטל את תוקף ה-cache line בצמתים אלו.</p>
+</li>
+<li>
+<p>לאחר שהבקשה מגיעה ל-Requester 1 הוא משנה את המצב של ה-cache line ממצב SD ל-I. ולאחר מכן הוא מחזיר ל-Home תגובת <code>SnpRespData_I_PD</code>, המכילה נתונים חלקיים במצב Invalid.</p>
+</li>
+<li>
+<p>כשהתגובה <code>SnpRespData_I_PD</code> מגיעה מ-Requester 1 אל ה-Home, ה-Home משדר בקשת <code>WriteNoSnp</code> ל-Subordinate כדי לעדכן את הזיכרון.</p>
+</li>
+<li>
+<p>תגובת Requester 2: ה-Requester 2 מחזיר ל-Home תגובת <code>SnpResp_I</code> לבקשה משלב 2.</p>
+</li>
+<li>
+<p>כשהתגובה מ-Requester 2 מגיעה אל ה-Home (וכבר בשלב זה הגיעה התגובה מ-Requester 1) אז כל התגובות שהוא חיכה להן הגיעו וה-Home משדר ל-Requester 0 תגובת <code>Comp_UC</code>, שמשמעותה שהבקשה הושלמה בהצלחה.</p>
+</li>
+<li>
+<p>בנתיים ה-Subordinate קיבל את ה-<code>WriteNoSnp</code> משלב 4 ולאחר מכן משיב ל-Home תגובת <code>CompDBIDResp</code></p>
+</li>
+<li>
+<p>כשה-Home מקבל את ה-<code>CompDBIDResp</code> מה-Subordinate הוא שולח ל-Subordinate את הנתונים הסופיים באמצעות <code>NCBWrData</code>.</p>
+</li>
+<li>
+<p>כש-Requester 0 מקבל את התגובה מ-Home הוא משנה את המצב של ה-cache line מ-SC ל-UC, ולאחר מכן הוא שולח ל-Home תגובת <code>CompAck</code>, המאשרת שהטרנזקציה הסתיימה בהצלחה. (Requester 0 מחוייב לשלוח  תגובת <code>CompAck</code> בגלל שלבקשת <code>ReadClean</code> חייב להיות השדה <code>ExpCompAck</code> להיות דלוק).</p>
+</li>
+<li>
+<p>כשה-Home מקבל את ה-<code>CompAck</code> הוא יכול לסיים את הטרנזקציה והוא מבצע deallocate לבקשה.</p>
+</li>
+</ol>
+<h3 id="טרנזקציית-כתיבה-ללא-snoop-ותגובות-נפרדות">
+  טרנזקציית כתיבה ללא snoop ותגובות נפרדות
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%99%d7%aa-%d7%9b%d7%aa%d7%99%d7%91%d7%94-%d7%9c%d7%9c%d7%90-snoop-%d7%95%d7%aa%d7%92%d7%95%d7%91%d7%95%d7%aa-%d7%a0%d7%a4%d7%a8%d7%93%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>האיור B5.15 מציג את ה-flow של טרנזקציית <code>WriteNoSnp</code>, שבה נתונים נכתבים ללא צורך בביצוע snoop.</p>
+<figure>
+    <img src="/posts/cache/coherence-protocol/amba-chi/Figure_B5_15_WriteNoSnp_with_separate_responses_from_Home_Node_to_Request_Node.png"class="dark-image"
+    ><figcaption class="image-title">Figure B5 15 WriteNoSnp with separate responses from Home Node to Request Node from AMBA CHI Architecture Specification (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>שלבים בזרימת הטרנזקציה <code>WriteNoSnp</code> כפי שמוצגים באיור B5.15:</p>
+<ol>
+<li>
+<p>הנפקת הבקשה: Requester 0 שולח בקשה לכתיבה מסוג <code>WriteNoSnp</code> אל ה-Home.</p>
+</li>
+<li>
+<p>לאחר שה-Home מקבל את הבקשה מ-Requester 0 הוא מקצה משאבים לבקשה וגם מחזיר ל-Requester 0 תגובת <code>DBIDResp</code>, ללא <code>Comp</code>.</p>
+</li>
+<li>
+<p>במקביל, ה-Home משדר בקשת <code>WriteNoSnp</code> אל ה-Subordinate.</p>
+</li>
+<li>
+<p>העברת הנתונים: Requester 0 משדר ל-Home את הנתונים הדרושים לכתיבה באמצעות <code>NCWrData</code>.</p>
+</li>
+<li>
+<p>לאחר שה-Subordinate, מקבל את בקשת הכתיבה, הוא מחזיר ל-Home את התגובה <code>CompDBIDResp</code>.</p>
+</li>
+<li>
+<p>ה-Home מקבל תגובת <code>CompDBIDResp</code> מה-Subordinate,  ולאחר מכן ה-Home משדר את הנתונים הסופיים (<code>NCBWrData</code>) ל-Subordinate כדי לעדכן את הזיכרון.</p>
+</li>
+<li>
+<p>ה-Home שולח ל-Requester 0 את תגובת ה-<code>Comp</code>, המודיעה על השלמת הטרנזקציה. למרות שבדוגמה זו ה-<code>Comp</code> נשלח לאחר קבלת תגובת <code>CompDBIDResp</code> מה-Subordinate, ה-Home רשאי לשלוח את ה-<code>Comp</code> בכל שלב לאחר שקיבל את בקשת ה-<code>WriteNoSnp</code> מ-Requester 0.</p>
+</li>
+<li>
+<p>כש-Requester 0 מקבל מה-Home את ההודעת<code>Comp</code> שהוא חיכה לה שמסמנת את סיום התהליך הוא מבצע deallocate לבקשה.</p>
+</li>
+</ol>
+<h3 id="טרנזקציית-כתיבה-עם-snoop-ותגובות-נפרדות">
+  טרנזקציית כתיבה עם snoop ותגובות נפרדות
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%99%d7%aa-%d7%9b%d7%aa%d7%99%d7%91%d7%94-%d7%a2%d7%9d-snoop-%d7%95%d7%aa%d7%92%d7%95%d7%91%d7%95%d7%aa-%d7%a0%d7%a4%d7%a8%d7%93%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>דוגמה ל-flow מסוג זה היא טרנזקציית <code>WriteUniquePtl</code>, שבה כתיבה מתבצעת עם הפעלת snoop.</p>
+<p>![](Figure_B5_16_WriteUniquePtl_with_snoop 1.png &ldquo;Figure B5 16 WriteUniquePtl with snoop 1 from AMBA CHI Architecture Specification (developer.arm.com)&rdquo;)</p>
+<p>שלבי זרימת הטרנזקציה <code>WriteUniquePtl</code> עם Snoop (איור B5.16):</p>
+<ol>
+<li>
+<p>הנפקת הבקשה: Requester 0 שולח בקשת <code>WriteUniquePtl</code> אל ה-Home.</p>
+</li>
+<li>
+<p>שליחת בקשות Snoop ותגובת <code>DBIDResp</code>: ה-Home משדר בקשות <code>SnpCleanInvalid</code> ל-Requester 1 ול-Requester 2, שמטרתן לנקות ולבטל את תוקף ה-cache line ב-node-ים האלו.</p>
+</li>
+<li>
+<p>במקביל, ה-Home שולח ל-Requester 0 תגובת <code>DBIDResp</code>, שמעידה על קבלת הבקשה.</p>
+</li>
+<li>
+<p>כש-Requester 1 מקבל את ה-<code>SnpCleanInvalid</code> הוא משיב ל-Home עם תגובת <code>SnpResp_I</code>, המציינת שה-cache line נמצא במצב Invalid.</p>
+</li>
+<li>
+<p>כש-Requester 2 מקבל את ה-<code>SnpCleanInvalid</code> מ-Home הוא משנה את מצב ה-cache line מ-UD ל-I ולאחר מכן הוא שולח ל-Home תגובת <code>SnpRespData_I_PD</code>, הכוללת את הנתונים המלוכלכים במצב Invalid.</p>
+</li>
+<li>
+<p>כש-Requester 0 מקבל את ה-<code>DBIDResp</code> מ-Home הוא משדר ל-Home את הנתונים המיועדים לכתיבה באמצעות <code>NCBWrData</code>.</p>
+</li>
+<li>
+<p>ה-Home מקבל <code>SnpRespData_I_PD</code> מ-Requester 2.</p>
+</li>
+<li>
+<p>ה-Home מקבל <code>SnpResp_I</code> מ-Requester 1 ובשלב זה הגיעו כל התגובות מבקשות ה-snoop שהוא שלח ולכן הוא לא צריך יותר לחכות והוא שולח ל-Requester 0 את תגובת ה-<code>Comp</code>.</p>
+</li>
+<li>
+<p>בנתיים ה-Home מקבל את ההודעה מ-Requester 0 עם הנתונים לכתיבה הוא ממזג את נתוני הכתיבה עם ה-cache line המלוכלכת שהתקבלה מ-Requester 2, ולאחר מכן שולח בקשת <code>WriteNoSnp</code> אל ה-Subordinate, כדי לעדכן את השורה בזיכרון.</p>
+</li>
+<li>
+<p>ה-Subordinate מחזיר ל-Home את תגובת <code>CompDBIDResp</code>.</p>
+</li>
+<li>
+<p>כש-Requester 0 מקבל מה-Home את ההודעת<code>Comp</code> שהוא חיכה לה שמסמנת את סיום התהליך הוא מבצע deallocate לבקשה.</p>
+</li>
+<li>
+<p>ה-Home שולח ל-Subordinate את הנתונים הסופיים באמצעות <code>NCBWrData</code>, ובכך מסיים את תהליך הכתיבה והוא מבצע deallocate לבקשה.</p>
+</li>
+</ol>
+<h3 id="טרנזקציית-כתיבה-copyback-לזיכרון">
+  טרנזקציית כתיבה CopyBack לזיכרון
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%99%d7%aa-%d7%9b%d7%aa%d7%99%d7%91%d7%94-copyback-%d7%9c%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>טרנזקציית <code>WriteBackFull</code> מתארת תהליך שבו נתונים נשמרים מה-cache של ה-Requester לזיכרון או ל-cache ברמה הבאה.</p>
+<figure>
+    <img src="/posts/cache/coherence-protocol/amba-chi/Figure_B5_17_WriteBackFull_transaction_flow.png"class="dark-image"
+    ><figcaption class="image-title">Figure B5 17 WriteBackFull transaction flow from AMBA CHI Architecture Specification (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>שלבים בזרימת טרנזקציית <code>WriteBackFull</code> (איור B5.17):</p>
+<ol>
+<li>
+<p>הנפקת הבקשה: Requester 0 שולח בקשת <code>WriteBackFull</code> אל ה-Home.</p>
+</li>
+<li>
+<p>כשה-Home מקבל את הבקשה הוא מחזיר ל-Requester 0 תגובת <code>CompDBIDResp</code>.</p>
+</li>
+<li>
+<p>לאחר ש-Requester 0 מקבל את התגובה מ-Home הוא משנה את מצב ה-cache line מ-UD ל-I ולאחר מכן הוא משדר ל-Home את הנתונים שיש לכתוב באמצעות <code>CBWrData_UD_PD</code>, שכוללים את הנתונים המלוכלכים מה-cache ולאחר מכן הוא מסיים את הביצוע של התהליך מבחינתו ולכן הוא מבצע deallocate לבקשה.</p>
+</li>
+<li>
+<p>כשה-Home מקבל את הנתונים מ-Requester 0, ה-Home שולח בקשת <code>WriteNoSnp</code> ל-Subordinate.</p>
+</li>
+<li>
+<p>ה-Subordinate שולח ל-Home את תגובת <code>CompDBIDResp</code>.</p>
+</li>
+<li>
+<p>ה-Home שולח את הנתונים הסופיים אל ה-Subordinate באמצעות <code>NCBWrData</code>, ובכך משלים את הכתיבה לזיכרון, ומסיים את הטרנזקציה ולכן הוא מבצע deallocate לבקשה.</p>
+</li>
+</ol>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/102407/0100/Introduction-to-CHI">https://developer.arm.com/documentation/102407/0100/Introduction-to-CHI</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/ihi0022/e/">https://developer.arm.com/documentation/ihi0022/e/</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/ihi0050/latest/">https://developer.arm.com/documentation/ihi0050/latest/</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/100236/0100/functional-description/cache-behavior-and-cache-protection/coherency-between-data-caches-with-the-moesi-protocol">https://developer.arm.com/documentation/100236/0100/functional-description/cache-behavior-and-cache-protection/coherency-between-data-caches-with-the-moesi-protocol</a>
+    </li>
+  
+    <li>
+      <a href="https://www.linkedin.com/advice/1/what-key-features-differences-amba5-chi-amba4">https://www.linkedin.com/advice/1/what-key-features-differences-amba5-chi-amba4</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/102407/0100/Transaction-flows">https://developer.arm.com/documentation/102407/0100/Transaction-flows</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/102407/0100/Other-protocol-changes-and-extensions">https://developer.arm.com/documentation/102407/0100/Other-protocol-changes-and-extensions</a>
+    </li>
+  
+    <li>
+      <a href="https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf">https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-coherence-protocol" dir="rtl">        רואה עוד ב coherence-protocol
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-coherence-protocol">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/cache/coherence-protocol/moesi/">MOESI</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

@@ -6,6 +6,469 @@
     <description>Recent content in Tags on Michael Shalitin</description>
     <generator>Hugo</generator>
     <language>he</language>
+    <lastBuildDate>Sat, 21 Dec 2024 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://smichaelshal.github.io/he/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Arm</title>
+      <link>https://smichaelshal.github.io/he/tags/arm/</link>
+      <pubDate>Sat, 21 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/arm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Cache</title>
+      <link>https://smichaelshal.github.io/he/tags/cache/</link>
+      <pubDate>Sat, 21 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/cache/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Cpu</title>
+      <link>https://smichaelshal.github.io/he/tags/cpu/</link>
+      <pubDate>Sat, 21 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/cpu/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Memory</title>
+      <link>https://smichaelshal.github.io/he/tags/memory/</link>
+      <pubDate>Sat, 21 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/memory/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Multi-Copy-Atomicity</title>
+      <link>https://smichaelshal.github.io/he/tags/multi-copy-atomicity/</link>
+      <pubDate>Sat, 21 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/multi-copy-atomicity/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Optimization-Technique</title>
+      <link>https://smichaelshal.github.io/he/tags/optimization-technique/</link>
+      <pubDate>Sat, 21 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/optimization-technique/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ordering</title>
+      <link>https://smichaelshal.github.io/he/tags/ordering/</link>
+      <pubDate>Sat, 21 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/ordering/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ppc</title>
+      <link>https://smichaelshal.github.io/he/tags/ppc/</link>
+      <pubDate>Sat, 21 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/ppc/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Store-Buffer</title>
+      <link>https://smichaelshal.github.io/he/tags/store-buffer/</link>
+      <pubDate>Sat, 21 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/store-buffer/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Barrier</title>
+      <link>https://smichaelshal.github.io/he/tags/barrier/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/barrier/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Bell</title>
+      <link>https://smichaelshal.github.io/he/tags/bell/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/bell/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Buffer</title>
+      <link>https://smichaelshal.github.io/he/tags/buffer/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/buffer/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Cat</title>
+      <link>https://smichaelshal.github.io/he/tags/cat/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/cat/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Formal</title>
+      <link>https://smichaelshal.github.io/he/tags/formal/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/formal/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Kernel</title>
+      <link>https://smichaelshal.github.io/he/tags/kernel/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/kernel/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Linux</title>
+      <link>https://smichaelshal.github.io/he/tags/linux/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/linux/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Litmus</title>
+      <link>https://smichaelshal.github.io/he/tags/litmus/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/litmus/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Lkmm</title>
+      <link>https://smichaelshal.github.io/he/tags/lkmm/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/lkmm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Lock</title>
+      <link>https://smichaelshal.github.io/he/tags/lock/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/lock/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Memory-Model</title>
+      <link>https://smichaelshal.github.io/he/tags/memory-model/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/memory-model/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Release-Acquire</title>
+      <link>https://smichaelshal.github.io/he/tags/release-acquire/</link>
+      <pubDate>Thu, 12 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/release-acquire/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Aarch64</title>
+      <link>https://smichaelshal.github.io/he/tags/aarch64/</link>
+      <pubDate>Sat, 16 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/aarch64/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Asm</title>
+      <link>https://smichaelshal.github.io/he/tags/asm/</link>
+      <pubDate>Sat, 16 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/asm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Amba</title>
+      <link>https://smichaelshal.github.io/he/tags/amba/</link>
+      <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/amba/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Amba-Ace</title>
+      <link>https://smichaelshal.github.io/he/tags/amba-ace/</link>
+      <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/amba-ace/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Coherence-Protocol</title>
+      <link>https://smichaelshal.github.io/he/tags/coherence-protocol/</link>
+      <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/coherence-protocol/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Memory-Barrier</title>
+      <link>https://smichaelshal.github.io/he/tags/memory-barrier/</link>
+      <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/memory-barrier/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Snooping</title>
+      <link>https://smichaelshal.github.io/he/tags/snooping/</link>
+      <pubDate>Sun, 03 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/snooping/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Acquire</title>
+      <link>https://smichaelshal.github.io/he/tags/acquire/</link>
+      <pubDate>Sat, 02 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/acquire/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Release</title>
+      <link>https://smichaelshal.github.io/he/tags/release/</link>
+      <pubDate>Sat, 02 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/release/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>X86</title>
+      <link>https://smichaelshal.github.io/he/tags/x86/</link>
+      <pubDate>Sat, 02 Nov 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/x86/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Docker</title>
+      <link>https://smichaelshal.github.io/he/tags/docker/</link>
+      <pubDate>Fri, 25 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/docker/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Herd7</title>
+      <link>https://smichaelshal.github.io/he/tags/herd7/</link>
+      <pubDate>Fri, 25 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/herd7/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Sc</title>
+      <link>https://smichaelshal.github.io/he/tags/sc/</link>
+      <pubDate>Sat, 19 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/sc/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Tso</title>
+      <link>https://smichaelshal.github.io/he/tags/tso/</link>
+      <pubDate>Sat, 19 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/tso/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Atomic</title>
+      <link>https://smichaelshal.github.io/he/tags/atomic/</link>
+      <pubDate>Sat, 12 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/atomic/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Early-Write-Acknowledgment</title>
+      <link>https://smichaelshal.github.io/he/tags/early-write-acknowledgment/</link>
+      <pubDate>Mon, 07 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/early-write-acknowledgment/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Amba-Chi</title>
+      <link>https://smichaelshal.github.io/he/tags/amba-chi/</link>
+      <pubDate>Sat, 05 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/amba-chi/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Amd</title>
+      <link>https://smichaelshal.github.io/he/tags/amd/</link>
+      <pubDate>Sat, 05 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/amd/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Intel</title>
+      <link>https://smichaelshal.github.io/he/tags/intel/</link>
+      <pubDate>Sat, 05 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/intel/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Rmw</title>
+      <link>https://smichaelshal.github.io/he/tags/rmw/</link>
+      <pubDate>Sat, 05 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/rmw/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Speculation</title>
+      <link>https://smichaelshal.github.io/he/tags/speculation/</link>
+      <pubDate>Sat, 05 Oct 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/speculation/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Cache-Coherence</title>
+      <link>https://smichaelshal.github.io/he/tags/cache-coherence/</link>
+      <pubDate>Sun, 22 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/cache-coherence/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Instruction</title>
+      <link>https://smichaelshal.github.io/he/tags/instruction/</link>
+      <pubDate>Mon, 16 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/instruction/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Dma</title>
+      <link>https://smichaelshal.github.io/he/tags/dma/</link>
+      <pubDate>Sun, 15 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/dma/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Gcc</title>
+      <link>https://smichaelshal.github.io/he/tags/gcc/</link>
+      <pubDate>Sat, 07 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/gcc/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Mesi</title>
+      <link>https://smichaelshal.github.io/he/tags/mesi/</link>
+      <pubDate>Sat, 07 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/mesi/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Moesi</title>
+      <link>https://smichaelshal.github.io/he/tags/moesi/</link>
+      <pubDate>Sat, 07 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/moesi/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Lock-Prefix</title>
+      <link>https://smichaelshal.github.io/he/tags/lock-prefix/</link>
+      <pubDate>Sun, 01 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/lock-prefix/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Split-Lock</title>
+      <link>https://smichaelshal.github.io/he/tags/split-lock/</link>
+      <pubDate>Sun, 01 Sep 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/split-lock/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Compiler</title>
+      <link>https://smichaelshal.github.io/he/tags/compiler/</link>
+      <pubDate>Sat, 24 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/compiler/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Data-Race</title>
+      <link>https://smichaelshal.github.io/he/tags/data-race/</link>
+      <pubDate>Sat, 24 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/data-race/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Combined</title>
+      <link>https://smichaelshal.github.io/he/tags/combined/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/combined/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Decoder</title>
+      <link>https://smichaelshal.github.io/he/tags/decoder/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/decoder/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Fetch</title>
+      <link>https://smichaelshal.github.io/he/tags/fetch/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/fetch/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Invalidate-Queue</title>
+      <link>https://smichaelshal.github.io/he/tags/invalidate-queue/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/invalidate-queue/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Line-Fill-Buffer</title>
+      <link>https://smichaelshal.github.io/he/tags/line-fill-buffer/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/line-fill-buffer/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Opcode</title>
+      <link>https://smichaelshal.github.io/he/tags/opcode/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/opcode/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Prefetch</title>
+      <link>https://smichaelshal.github.io/he/tags/prefetch/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/prefetch/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Reorder-Buffer</title>
+      <link>https://smichaelshal.github.io/he/tags/reorder-buffer/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/reorder-buffer/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Tlb</title>
+      <link>https://smichaelshal.github.io/he/tags/tlb/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/tlb/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Uops</title>
+      <link>https://smichaelshal.github.io/he/tags/uops/</link>
+      <pubDate>Sun, 18 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/uops/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Exclusive</title>
+      <link>https://smichaelshal.github.io/he/tags/exclusive/</link>
+      <pubDate>Sun, 11 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/exclusive/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Exclusive-Monitor</title>
+      <link>https://smichaelshal.github.io/he/tags/exclusive-monitor/</link>
+      <pubDate>Sun, 11 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/exclusive-monitor/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ll/Sc</title>
+      <link>https://smichaelshal.github.io/he/tags/ll/sc/</link>
+      <pubDate>Sun, 11 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/ll/sc/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Cas</title>
+      <link>https://smichaelshal.github.io/he/tags/cas/</link>
+      <pubDate>Sat, 10 Aug 2024 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/cas/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>

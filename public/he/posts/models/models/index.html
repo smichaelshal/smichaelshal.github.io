@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Models · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  מבוא
+  
+    
+    Link to heading
+  
+
+מחשבים, בהיותם אוטומטים דטרמיניסטיים, בדרך כלל יניבו התנהגות צפויה ואחידה, ולכן רוב האנשים יחשבו שגזירת התוצאה היא אחת בלבד. עבור מערכות חד-מעבדים, רוב הזמן הם יהיו נכונים בהנחה הזו. עם זאת, במערכות מרובות מעבדים, התמונה משתנה, והן יכולות להוביל למגוון רחב הרבה יותר של התנהגויות. זאת בשל שינויים עדינים בתזמון היחסי של המעבדים השונים במערכת, כמו גם השפעת האותות המועברים ביניהם, ה-cache-ים והזיכרון הראשי.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Models">
+  <meta name="twitter:description" content="מבוא Link to heading מחשבים, בהיותם אוטומטים דטרמיניסטיים, בדרך כלל יניבו התנהגות צפויה ואחידה, ולכן רוב האנשים יחשבו שגזירת התוצאה היא אחת בלבד. עבור מערכות חד-מעבדים, רוב הזמן הם יהיו נכונים בהנחה הזו. עם זאת, במערכות מרובות מעבדים, התמונה משתנה, והן יכולות להוביל למגוון רחב הרבה יותר של התנהגויות. זאת בשל שינויים עדינים בתזמון היחסי של המעבדים השונים במערכת, כמו גם השפעת האותות המועברים ביניהם, ה-cache-ים והזיכרון הראשי.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/models/models/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Models">
+  <meta property="og:description" content="מבוא Link to heading מחשבים, בהיותם אוטומטים דטרמיניסטיים, בדרך כלל יניבו התנהגות צפויה ואחידה, ולכן רוב האנשים יחשבו שגזירת התוצאה היא אחת בלבד. עבור מערכות חד-מעבדים, רוב הזמן הם יהיו נכונים בהנחה הזו. עם זאת, במערכות מרובות מעבדים, התמונה משתנה, והן יכולות להוביל למגוון רחב הרבה יותר של התנהגויות. זאת בשל שינויים עדינים בתזמון היחסי של המעבדים השונים במערכת, כמו גם השפעת האותות המועברים ביניהם, ה-cache-ים והזיכרון הראשי.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-10-19T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-10-19T00:00:00+00:00">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Memory">
+    <meta property="article:tag" content="Cache">
+    <meta property="article:tag" content="Ordering">
+    <meta property="article:tag" content="Memory-Model">
+    <meta property="article:tag" content="Formal">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/lkmm-code-examples/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/lkmm/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/dependency/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/herd7/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/base-formal/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/models/ordering/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/models/models/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/models/models/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/models/models/">
+              Models
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-10-19T00:00:00Z">
+                אוקטובר 19, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                2693 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/memory-models/">Memory-Models</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory/">Memory</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/ordering/">Ordering</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory-model/">Memory-Model</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/formal/">Formal</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/x86/">X86</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/sc/">Sc</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/tso/">Tso</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h2 id="מבוא">
+  מבוא
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%95%d7%90">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>מחשבים, בהיותם אוטומטים דטרמיניסטיים, בדרך כלל יניבו התנהגות צפויה ואחידה, ולכן רוב האנשים יחשבו שגזירת התוצאה היא אחת בלבד. עבור מערכות חד-מעבדים, רוב הזמן הם יהיו נכונים בהנחה הזו. עם זאת, במערכות מרובות מעבדים, התמונה משתנה, והן יכולות להוביל למגוון רחב הרבה יותר של התנהגויות. זאת בשל שינויים עדינים בתזמון היחסי של המעבדים השונים במערכת, כמו גם השפעת האותות המועברים ביניהם, ה-cache-ים והזיכרון הראשי.</p>
+<p>מודלים של זיכרון מנסים להביא סדר לתמונה הזו, וזאת בעיקר על ידי תיאור מדויק של אילו תוצאות אפשריות עשויות להתרחש במערכת מרובת מעבדים SMP שמריצה תוכנית מסוימת. מטרת המודל היא להבהיר את התוצאה הצפויה מהפעולות המבוצעות, ולהגביל את האפשרויות באופן שיקל על ניתוח התנהגות המערכת.</p>
+<p>מודל עקביות זיכרון, הידוע גם כמודל זיכרון, הוא מערכת כללים המתארת את האופן שבו תוכניות מרובות thread-ים צריכות להתנהג כאשר הן ניגשות לזיכרון משותף. מודל זה קובע אילו פעולות של קריאה וכתיבה בזיכרון מותרות להתרחש ובאיזה סדר, ומכתיב אילו תוצאות נחשבות חוקיות בתנאים שונים של ריבוי thread-ים.</p>
+<p>באופן כללי, מודל עקביות זיכרון מספק סט של כללים שמגדיר את סדר ביצוע הפעולות בזיכרון. כך הוא מחלק את ההרצות של התוכנית לאלה שעומדות בתנאי עקביות הזיכרון ולכאלה שאינן עומדות בהם. פעולות התואמות את כללי העקביות מוגדרות כביצועים עקביים, בעוד שביצועים שאינם עומדים בכללים האלו נחשבות כלא עקביים.</p>
+<p>מודל זיכרון מהווה סוג של חוזה בין התוכנה (המשתמש) לבין החומרה (המיישמת), אשר מגדיר את ההתנהגות הצפויה של מערכת הזיכרון. כאשר מדובר בתוכנית multithreaded המכילה רצפים של פעולות load ו-store עבור כל thread, מודל הזיכרון מציין אילו ערכים כל פעולה של load אמורה להחזיר. התנהגות מודל עקביות הזיכרון מתוארת על ידי רצף פעולות שניתן לצפות בהן, כולל stores, loads, והערכים המוחזרים, אשר מייצגים את התנהגות המערכת בהתאם למודל.</p>
+<p>למרות שמודל עקביות זיכרון עשוי לא להיות נוגע במיוחד למתכנתים ב-high level המשתמשים בספריות סנכרון, הוא חשוב מאוד למתכנתים ב-low level. מתכנתים אלו, כגון כותבי קומפיילרים שמיישמים סנכרון ברמת שפה, כותבי קרנל, או מתכנתי יישומים שמפתחים מבני נתונים lockless, זקוקים להבנה מעמיקה של מודל עקביות הזיכרון. הם צריכים לדעת אילו התנהגויות ניתנות לצפייה במודל כדי להבטיח שהתנהגות הסנכרון במערכת שהם מפתחים תהיה בהתאם לדרישותיהם.</p>
+<h3 id="מודל-האופרטיבי">
+  מודל האופרטיבי
+  <a class="heading-link" href="#%d7%9e%d7%95%d7%93%d7%9c-%d7%94%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%99%d7%91%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>המודל האופרטיבי מתמקד בתיאור ובהגדרת גבולות ההתנהגות של זיכרון רגוע, בצורה שמחקה את האופן שבו התנהגות כזו מופיעה במימושי חומרה אמיתיים, בסגנון מיקרו-ארכיטקטוני מופשט.</p>
+<p>מודל אופרטיבי, במהותו, ממדל תכונות חומרה רבות ברמה נמוכה שמביאות להשפעות ישירות על ביצוע תוכניות במקביל. תכונות אלו כוללות את טופולוגיית החומרה, את הפיזור הלא אחיד של הודעות בין המעבדים השונים, את הסידור מחדש של הודעות, את הביצוע של פקודות מחוץ לסדר ברמת המעבד, את חיזוי ה-branch-ים, את ההחלטות המקומיות בנוגע לקוהרנטיות של כתיבות שהוחלפו, ועוד. כל אחד מהם משפיע באופן משמעותי על אופן התפקוד של התוכנית במערכת מקבילית, ודורש ייצוג מדויק במודל כדי לשקף את ההתנהגות האמיתית של המערכת.</p>
+<p>ההתנהגות של זיכרון רגוע במודל נועדה לשקף את התהליכים והאופטימיזציות המתקיימים ברמת החומרה, כמו ביצוע מחוץ לסדר וביצוע ספקולטיבי, שמובילים להתנהגויות הזיכרון הלא-עקביות שנצפות בפועל. המודל גמיש – ייתכנו מימושים חומרתיים שאינם מממשים את כל ההיבטים בצורה אגרסיבית או שממשים אותם בצורה אגרסיבית יותר, כל עוד לא חושפים למתכנת התנהגויות שנוגדות את הגדרות המודל.</p>
+<p>מודלים אופרטיביים קרובים יותר למימושים החומרתיים עצמם, ולכן הם אינטואיטיביים יותר עבור ארכיטקטים ומפתחים. כך, ניתן לטעון שהמודל האופרטיבי הוא לעיתים קל יותר להדמיה כאשר רוצים לתכנן יישומים בצורה מפורטת, מכיוון שהוא משקף את הפעולות שמתבצעות במימוש החומרה.</p>
+<p>המודל לא נדרש להתאים באופן מדויק למבנה הפנימי של החומרה, כלומר הוא לא צריך לשקף את המימושים הפנימיים של המערכת. המטרה העיקרית של המודל היא לתפוס ולהסביר את ההתנהגות החיצונית של יישומים סבירים, ולא את אופן המימוש הפנימי של החומרה עצמה.</p>
+<p>עם זאת, המודל כן צריך להיות מקושר בצורה ברורה להיבטי ההפשטה של המיקרו-ארכיטקטורה. זאת אומרת, המודל צריך להיות מסוגל להסביר את ההתנהגות של המערכת בצורה שתהיה תואמת את הדוגמאות המעשיות של המימושים, כך שהתיאור התיאורטי יתאם עם התוצאות בפועל מהמערכת.</p>
+<h3 id="מודל-האקסיומטי">
+  מודל האקסיומטי
+  <a class="heading-link" href="#%d7%9e%d7%95%d7%93%d7%9c-%d7%94%d7%90%d7%a7%d7%a1%d7%99%d7%95%d7%9e%d7%98%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>באופן כללי, מודלים אקסיומטיים הם הצהרתיים, כלומר הם מתארים אילו התנהגויות מותרות מבלי לפרט כיצד המערכת מיושמת בפועל. המודלים האקסיומטיים לרוב יותר מופשטים ומגיעים לידי ביטוי בקלות רבה יותר במתמטיקה, מה שמאפשר חקירה מהירה יותר של ההתנהגויות המותרות.</p>
+<h4 id="מבוא-למודלים-אקסיומטיים">
+  מבוא למודלים אקסיומטיים
+  <a class="heading-link" href="#%d7%9e%d7%91%d7%95%d7%90-%d7%9c%d7%9e%d7%95%d7%93%d7%9c%d7%99%d7%9d-%d7%90%d7%a7%d7%a1%d7%99%d7%95%d7%9e%d7%98%d7%99%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>מודלים אקסיומטיים, המשמשים לניתוח התנהגות של תוכניות מרובות thread-ים בסביבות ריבוי ליבות, מוגדרים בשלושה שלבים עיקריים:</p>
+<ol>
+<li>
+<p>הגדרת סמנטיקה של ההוראות: בשלב זה, כל הוראה בתוכנית מתורגמת למבנים מתמטיים מוגדרים, המייצגים את התנהגותה מבחינת תהליכי בקרת זרימה.</p>
+</li>
+<li>
+<p>בניית מועמדים לביצוע: לאחר הגדרת סמנטיקת בקרת הזרימה, נוצרת קבוצת מועמדים לביצוע (candidate executions), המייצגת את כל האפשרויות בהן נתוני התוכנית יכולים לזרום בין ה-thread-ים השונים.</p>
+</li>
+<li>
+<p>אילוצי תקינות על הביצועים: בשלב האחרון, מוגדרים אילוצים המכתיבים אילו מבין המועמדים לביצוע עומדים בדרישות המודל ולכן נחשבים לתקפים, ואילו לא. כך, נשמרת עקביות בין פעולות התוכנית לבין כללי המודל האקסיומטי.</p>
+</li>
+</ol>
+<p>מועמד לביצוע הוא ייצוג מופשט של ביצוע קונקרטי של תוכנית, המתאר את ההתנהלות של התוכנית במונחים של אירועים ויחסים בין האירועים הללו. כלומר, מועמד לביצוע מתאר את סדר התרחשות האירועים בתוכנית ואת הקשרים שבין פעולות שונות בה, כגון גישות לזיכרון, קריאות וכתיבות, ומחסומים. המודל הזה מוצג באמצעות herd, שמספק את הכלים והמבנים המאפשרים לנתח את ההתנהגות של התוכנית לפי קריטריונים אלו.</p>
+<h4 id="דוגמה-תוכנית-מרובת-thread-ים">
+  דוגמה: תוכנית מרובת thread-ים
+  <a class="heading-link" href="#%d7%93%d7%95%d7%92%d7%9e%d7%94-%d7%aa%d7%95%d7%9b%d7%a0%d7%99%d7%aa-%d7%9e%d7%a8%d7%95%d7%91%d7%aa-thread-%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>נבדוק תוכנית מרובת thread-ים המתוארת באיור 1, בה משתתפים שני thread-ים, T0 ו-T1. ה-thread-ים האלו מתקשרים באמצעות שני משתנים בזיכרון המשותף, x ו-y, כאשר שניהם מתחילים בערך 0.</p>
+<figure>
+    <img src="/posts/models/models/Fig_1_A_multithreaded_program_implementing_a_message_passing_pattern_.png"class="dark-image"
+    ><figcaption class="image-title">Fig 1 A multithreaded program implementing a message passing pattern  from Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory (inria.hal.science)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<ul>
+<li>ב-T0: מתבצעת כתיבה של הערך 1 למשתנה x, ולאחר מכן כתיבה של הערך 1 למשתנה y, בהתאם לסדר התוכנית.</li>
+<li>ב-T1: מתבצעת קריאה מהמשתנה y אל הרגיסטר r1, ואחריה קריאה מהמשתנה x אל הרגיסטר r2, גם כאן בהתאם לסדר התוכנית.</li>
+</ul>
+<p>המשתנים x ו-y משותפים לשני ה-thread-ים, כך שכל שינוי בהם עשוי להיות נגיש לכל thread. לעומת זאת, הרגיסטרים, כדוגמת r1 ו-r2 ב-thread T1, הם פרטיים ל-thread המחזיק בהם ואינם נגישים ל-thread-ים אחרים.</p>
+<p>הסמנטיקה של זרימת הבקרה מתייחסת לתרגום של הוראות בתוכנית לאירועים שמייצגים פעולות, כגון גישה לזיכרון או לרגיסטרים, החלטות ב-branch-ים, או שימוש במחסומי זיכרון. התהליך הזה מאפשר הבנה של השפעת כל הוראה על המערכת ובחינת אופן השפעת זרימת ההוראות על שיתוף מידע בין תהליכים.</p>
+<p>כדי להמחיש זאת, נבחן את איור 2. הוא מציג סמנטיקה אפשרית לזרימת הבקרה של התוכנית המתוארת באיור 1. כל הוראת store (לדוגמה, הפעולה <code>x ← 1</code> ב-T0) מתורגמת לאירוע כתיבה, שמפרט את מיקום הזיכרון (x במקרה זה) ואת הערך הנכתב (במקרה זה 1), ומיוצג כ- <code>Wx=1</code>. לעומת זאת, כל הוראת load (למשל, <code>r1 ← y</code> ב-T1) מתורגמת לאירוע קריאה, שמציין את מיקום הזיכרון (y במקרה זה) ואת הערך הלא מוגדר בשלב זה (מיוצג כ- <code>Ry=?</code>), שכן הערך שייקרא תלוי באירועים שיתרחשו.</p>
+<figure>
+    <img src="/posts/models/models/Fig_2_Control-flow_semantics_for_the_message_passing_pattern_of_Figure_1_.png"class="dark-image"
+    ><figcaption class="image-title">Fig 2 Control-flow semantics for the message passing pattern of Figure 1  from Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory (inria.hal.science)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>בנוסף לאירועים הללו, אנו כוללים גם אירועי כתיבה ראשוניים <code>Wx=0</code> ו- <code>Wy=0</code>, שמייצגים את המצב ההתחלתי של המשתנים x ו-y.</p>
+<p>סמנטיקה של ההוראות כוללת גם הגדרת יחסים בין האירועים, אשר מייצגים את סדר התוכנית בתוך thread ואת התלות ביניהם (כגון תלות בכתובת, תלות בנתונים ותלות בקרה), שנובעות מגישה לזיכרון והמבוססות על חישובי ערכים ברגיסטרים.</p>
+<p>לכן, באיור 3 אנו מציגים את יחס סדר התוכנית (po), שמעלה את סדר ההוראות בתוכנית לרמת האירועים. לדוגמה, שני פעולות store ב-T0 שבאיור 1, מבוצעות בסדר התוכנית ולכן האירועים התואמים שלהם, <code>Wx=1</code> ו-<code>Wy=1</code>, מחוברים בקשר <code>po</code> באיור 2.</p>
+<p>בנקודה זו, כאשר יש לנו תוכנית כמו באיור 1 וגרפים של אירועים כמו באיור 2, כל גרף מציג קבוצת אירועים, המייצגים פעולות על זיכרון ורגיסטרים, ומספק את סדר התוכנית בין אירועים אלה, הכולל גם החלטות מסועפות ותלות שנגזרות מהן.</p>
+<p>לאחר קבלת תוכנית כמו זו המופיעה באיור 1, יש לנו גרף אירועים המוגדר על פי סמנטיקת זרימת הבקרה (כפי שמוצג באיור 2), ויחסי קריאה וקוהרנטיות המתארים את התקשורת האפשרית בין ה-thread-ים. באיור 3, לדוגמה, לא מופיע סדר קוהרנטיות מאחר ויש רק כתיבה אחת לכל מיקום בזיכרון.</p>
+<figure>
+    <img src="/posts/models/models/Fig_3_One_possible_dataflow_semantics_for_the_control-flow_semantics_given_in_Figure_2_.png"class="dark-image"
+    ><figcaption class="image-title">Fig 3 One possible dataflow semantics for the control-flow semantics given in Figure 2  from Herding Cats: Modelling, Simulation, Testing, and Data Mining for Weak Memory (inria.hal.science)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>כדאי לציין שעבור סמנטיקה מסוימת של זרימת בקרה, יכולים להתקיים מספר ביצועים אפשריים עבור סמנטיקת זרימת הנתונים. לדוגמה, אם היו מספר כתיבות עם ערך 1 עבור x בדוגמה שלנו, אז היו קיימים שני מקורות אפשריים עבור הקריאה ל-x ב-T1.</p>
+<p>מועמד לביצוע הוא אובייקט המורכב מאוסף של אירועים הכוללים את סדר התוכנית, תלות, יחסי קריאה מתוך וקוהרנטיות, כפי שניתן לראות באיור 3. עבור כל תוכנית, יכולים להתקיים מספר מועמדים לביצוע.</p>
+<p>עבור כל מועמד לביצוע, מפרט האילוצים במודל מכריע האם מועמד לביצוע זה נחשב תקף או לא. מסורתית, מפרטים אלה מתוארים במונחים של תנאים כמו איסור על מחזוריות או איסור על רפלקסיביות של שילובים מסוימים של יחסים בין האירועים שהוגדרו במועמד לביצוע. המשמעות היא שהמודל יפסול מועמד לביצוע אם הוא מכיל מחזור ביחס כלשהו שמוגדר במפרט האילוצים.</p>
+<p>המודל האקסיומטי מגדיר אילו מועמדים לביצוע של התוכנית נחשבים לתקפים. כל מועמד לביצוע מורכב מגרף אירועים של פעולות גישה לזיכרון ומחסומים, המקושרים באמצעות יחסי סדר תוכנית, תלות, קוהרנטיות ואטומיות. את המודל האקסיומטי ניתן לבטא באמצעות כלים כמו herd, שמסייעים לנתח את הביצועים האפשריים בהתאם להגדרות אלו.</p>
+<h3 id="המודל-האקסיומטי-והמודל-האופרטיבי">
+  המודל האקסיומטי והמודל האופרטיבי
+  <a class="heading-link" href="#%d7%94%d7%9e%d7%95%d7%93%d7%9c-%d7%94%d7%90%d7%a7%d7%a1%d7%99%d7%95%d7%9e%d7%98%d7%99-%d7%95%d7%94%d7%9e%d7%95%d7%93%d7%9c-%d7%94%d7%90%d7%95%d7%a4%d7%a8%d7%98%d7%99%d7%91%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ההבדל העיקרי בין שני המודלים הוא ברמת הפירוט שלהם: במודל האקסיומטי ישנו אירוע יחיד עבור כל פעולת גישה לזיכרון, ואילו במודל האופרטיבי כל הוראה מתפרקת למספר מעברים פנימיים, כמו פעולות שליפה, פענוח, קריאה וכתיבה של ערכים לרגיסטרים. לדוגמה, עבור פעולת load מתקיימים מספר שלבים, בהם השלב שבו הקריאה מסופקת (מהזיכרון או בהעברה פנימית) והשלב הסופי שבו הפעולה מסתיימת ואינה ניתנת לביצוע חוזר.</p>
+<p>בנוסף, המודל האקסיומטי מבוסס על יחסי תלות בסיסיים כגון תלות בכתובת, תלות בנתונים ותלות בקרה, שמקודדים בכלי herd. במודל האופרטיבי, לעומת זאת, תלות זו נגזרת מסמנטיקה מפורטת של הוראות ומאופן ניהול פעולות גישה לרגיסטרים עבור כל thread.</p>
+<h2 id="מודלי-זיכרון">
+  מודלי זיכרון
+  <a class="heading-link" href="#%d7%9e%d7%95%d7%93%d7%9c%d7%99-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<h3 id="sc---sequential-consistency">
+  SC - Sequential Consistency
+  <a class="heading-link" href="#sc---sequential-consistency">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>מערכת עם ריבוי מעבדים נחשבת לעקבית ברצף אם תוצאת הביצוע שלה תואמת כאילו כל הפעולות שבוצעו על ידי המעבדים השונים היו מתבצעות בסדר רציף כלשהו, כך שכל פעולה שבוצעה על ידי מעבד בודד ממוקמת ברצף זה בסדר שהוגדר על ידי התוכנית של המעבד. כלומר, כל פעולות הזיכרון והאינטרקציות ביניהן צריכות להיראות כאילו התרחשו בסדר מוגדר שמכבד את סדר הפעולות של כל מעבד בנפרד.</p>
+<p>תכונה מרכזית בהגדרה של עקביות רציפה היא שהסדר שבו התוצאות מוצגות לא חייב להיות תואם ישירות לסדר שבו הפעולות בוצעו בפועל במערכת. במקום זאת, מדובר בסדר שבו הפעולות &ldquo;נראות&rdquo; על ידי כל המעבדים במערכת, כלומר, לא בהכרח הסדר הפיזי שבוצע על ידי המעבד.</p>
+<p>שקול את המקרה בקטע התוכנית שבאיור 2.3(א). במערכת מסוימת, הפעולות מבוצעות בפועל בסדר (b1, a1, b2, a2) עם תוצאה <code>u=1</code> ו-<code>v=1</code>. למרות שהסדר שבו התרחשו הפעולות מפר את סדר התוכנית עבור שני המעבדים, הביצוע נחשב לעקבי ברצף, משום שהתוצאה הסופית תואמת את הסדר (a1, b1, a2, b2), שהוא הסדר התוכנית המתואם.</p>
+<figure>
+    <img src="/posts/models/models/Figure_2_3_Sample_programs_to_illustrate_sequential_consistency.png"class="dark-image"
+    ><figcaption class="image-title">Figure 2 3 Sample programs to illustrate sequential consistency from MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS (infolab.stanford.edu)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>מודל SC מציין כי המערכת חייבת להיראות כך שכל פעולות ה-load וה-store שביצעו ה-thread-ים לכל מיקומי הזיכרון יבוצעו בסדר גלובלי שמכבד את סדר התוכנית של כל thread. זאת אומרת, כל פעולת load תציג את הערך של ה-store האחרון שבוצע בכל הסדרים.</p>
+<p>הגדרה של קוהרנטיות המקבילה להגדרה של SC היא שמערכת קוהרנטית חייבת להיראות כך שכל ה-load וה-store של ה-thread-ים לכל מיקום בזיכרון יתבצעו בסדר גלובלי שמכבד את סדר התוכנית של כל thread.</p>
+<p>ההבחנה החשובה כאן היא בין קוהרנטיות לעקביות: קוהרנטיות מתייחסת למיקום זיכרון ספציפי, בעוד שעקביות מתייחסת לסדר הגלובלי של כל פעולות הזיכרון במערכת כולה.</p>
+<p>מודל SC חשוב משום שהוא מייצג את מה שמתכנתים רבים מצפים ממנו במערכות זיכרון משותף, והוא מספק את הבסיס להבנת מודלים חלשים יותר של עקביות זיכרון, כלומר מודלים רגועים או פחות מחמירים.</p>
+<p>ב-SC, סדר הזיכרון מכבד את סדר התוכנית של כל ליבה במערכת. לעומת זאת, מודלים של עקביות אחרים עשויים לא לאפשר לסדר פעולות הזיכרון לעקוב תמיד אחרי סדר התוכנית של כל ליבה, מה שיכול להוביל לסטיות בהתנהגות הזיכרון.</p>
+<p>סדר תוכנית הוא סדר לוגי הכולל את פעולות הזיכרון של כל ליבה, ומייצג את הסדר שבו כל ליבה מבצעת פעולות זיכרון לפי התוכנית שלה. מצד שני, סדר הזיכרון הגלובלי הוא הסדר הכולל של פעולות הזיכרון מכל הליבות במערכת.</p>
+<p>במודל SC, כתיבה למשתנה לא בהכרח חייבת להיות מיידית, אך כתיבה למשתנים על ידי מעבדים שונים חייבת להיראות באותו סדר על ידי כל המעבדים במערכת. מודל זה מתקיים אם התוצאה של ביצוע כל פעולה במערכת נראית כאילו כל פעולות הקריאה והכתיבה של כל המעבדים במערכת בוצעו בסדר רציף אחד, והפעולות של כל מעבד מופיעות בסדר שמתואם לתוכנית שלו.</p>
+<p>ב-SC, אין מושג של זמן או פעולות כתיבה אחרונות. כל המעבדים יכולים לראות את פעולות הכתיבה של שאר המעבדים במערכת, אך כל מעבד יכול רק לראות את פעולות הקריאה שהוא עצמו ביצע. על מנת לשמור על סדר ביצוע רציף בין המעבדים, כל הפעולות חייבות להיראות כמתבצעות באופן מיידי או אטומי ביחס לכל מעבד אחר במערכת.</p>
+<p>פעולות אלו נדרשות להיראות כמתבצעות בסדר רציף אבל לא צריך שזה יתבצע באופן מיידי, שכן פיזית בלתי אפשרי לשלוח מידע באופן מיידי בין כל המעבדים.</p>
+<p>במערכות שאין בהן cache או מערכות cache עם רשתות מקושרות לא מיידיות, יכול להיות פער בזמני העברת המידע בין המעבדים, מה שעלול לגרום לאי-עקביות בעקביות הרציפה. נתיבי העברת המידע איטיים עשויים לגרום לכך שמעבדים שונים יקבלו את המידע בזמן שונה, ובכך לשבור את העקביות הרציפה.</p>
+<h4 id="יכולת-ליניאריזציה">
+  יכולת ליניאריזציה
+  <a class="heading-link" href="#%d7%99%d7%9b%d7%95%d7%9c%d7%aa-%d7%9c%d7%99%d7%a0%d7%99%d7%90%d7%a8%d7%99%d7%96%d7%a6%d7%99%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>יכולת ליניאריזציה, הידועה גם כעקביות אטומית או זיכרון אטומי, מתארת מצב שבו מערכת שמירה על עקביות רציפה מוגבלת בזמן. במודל זה, לכל פעולה יש זמן התחלה וזמן סיום, והביצוע נחשב לליניארי אם כל פעולה מתבצעת בסדר שניתן לסדר אותו בצורה ליניארית. כלומר, כל פעולה מקבלת נקודת ליניאריזציה שהיא נקודה בזמן בין זמן התחלתה לזמן סיומה, כאשר כל הפעולות נשמרות בעקביות הרציפה ביחס לאותו סדר ליניארי.</p>
+<p>עם זאת, אימות עקביות רציפה באמצעות בדיקת מודל אינו נחשב לבעיה שניתן להכריע באופן כללי. זה נכון גם עבור פרוטוקולי קוהרנטיות cache במצבים סופיים, כלומר, אין דרך קלה או אוניברסלית לאמת את העקביות הרציפה של המערכת באופן אוטומטי.</p>
+<p>מודל SC נשמע אטרקטיבי משום שהוא מבטיח עקביות ברורה ופשוטה בין כל המעבדים. עם זאת, במציאות, יישום מודל SC הוא יקר מאוד מבחינה ביצועית, ולכן אף לא מעבד מיינסטרים לא מספק את המודל הזה כברירת מחדל במערכות המודרניות.</p>
+<h3 id="tso---total-store-order">
+  TSO - Total Store Order
+  <a class="heading-link" href="#tso---total-store-order">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<h4 id="רעיון-בסיסי-של-tsox86">
+  רעיון בסיסי של TSO/X86
+  <a class="heading-link" href="#%d7%a8%d7%a2%d7%99%d7%95%d7%9f-%d7%91%d7%a1%d7%99%d7%a1%d7%99-%d7%a9%d7%9c-tsox86">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ארכיטקטורת x86 וויתרה על מודל SC ועברה למודל עקביות זיכרון חלופי שנקרא TSO, שמאפשר שימוש ב-store-buffer מסוג FIFO בכל ליבה.</p>
+<p>המודל של SC דורש שכל ליבה תשמור את סדר התוכנית עבור כל ה-loads וה-stores, תוך שמירה על סדר פעולות מדויק עבור ארבעת השילובים האפשריים של פעולות עוקבות:</p>
+<ol>
+<li>Load -&gt; Load</li>
+<li>Load -&gt; Store</li>
+<li>Store -&gt; Store</li>
+<li>Store -&gt; Load</li>
+</ol>
+<p>מודל TSO שומר על שלושת האילוצים הראשונים, אך לא על האילוץ של Store -&gt; Load, מה שמפשט את המערכת. למרות שהשמטה זו לא חשובה עבור רוב התוכניות, היא מייצרת גמישות שמפחיתה את הדרישות מבחינת הסדר בין פעולות הזיכרון.</p>
+<p>בנוסף, האילוץ השלישי מציין שה-store-buffer חייב לפעול לפי סדר FIFO, (ולא למשל לאפשר התלכדות של stores), כדי לשמור על סדר פעולות ה-store-store.</p>
+<h4 id="מחסומי-זיכרון">
+  מחסומי זיכרון
+  <a class="heading-link" href="#%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99-%d7%96%d7%99%d7%9b%d7%a8%d7%95%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>במודל TSO, כל יחס בין פעולות תורם לסדר ההפצה של פעולות הזיכרון, אך יש יוצא מן הכלל עבור צמדי פעולות store-load בסדר התוכנית. במקרה זה, על סדר התוכנית להישמר באופן תקני ויש להשתמש במחסום מתאים (למשל mfence ב-x86) כדי לקבוע את הסדר בין הכתיבה לקריאה, במיוחד עבור צמדים אלה.</p>
+<h3 id="pso---processor-store-order">
+  PSO - Processor Store Order
+  <a class="heading-link" href="#pso---processor-store-order">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הרעיון של עקביות מעבד (Processor Consistency - PC) מתאר מצב שבו פעולות הכתיבה של ליבה מסוימת נצפות על ידי ליבות אחרות בסדר שבו הן בוצעו, אך לא בהכרח באותו רגע זמן – כלומר, כל ליבה עשויה להבחין בעדכונים בזמנים שונים, אך הסדר נשמר.</p>
+<p>במודלים כמו TSO ו-x86-TSO, מדובר במקרים מיוחדים של עקביות מעבד, שבהם קיימת תכונה נוספת: כל ליבה רואה את פעולות הכתיבה שהיא מבצעת מיד, כלומר כל עדכון שהיא מבצעת זמין עבורה באופן מיידי. בנוסף, כאשר ליבה אחת מבחינה בעדכון של ליבה אחרת, גם כל שאר הליבות מבחינות בו באותו הסדר, מה שמבטיח עקביות בסדר החשיפה של הכתיבה לכל הליבות האחרות.</p>
+<h3 id="מודל-relaxed">
+  מודל relaxed
+  <a class="heading-link" href="#%d7%9e%d7%95%d7%93%d7%9c-relaxed">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>העיקרון המרכזי במודלים של זיכרון רגוע הוא לגרום לאילוצים של המודל עקביות רציפה להיות יותר גמישים. זאת כדי לאפשר יותר אופטימיזציות, כמו חפיפת פעולות זיכרון וסידור מחדש שלהן, שמסייעות בשיפור ביצועי המערכת.</p>
+<p>בעוד שעקביות רציפה דורשת לשמור על האשליה שסדר התוכנית והאטומיות נשמרים עבור כל פעולות הזיכרון, מודלים של זיכרון רגוע מאפשרים במקרים מסוימים לבצע פעולות מחוץ לסדר התוכנית או בצורה לא אטומית. מידת ההרפיה הזו, כלומר עד כמה סדר התוכנית ואילוצי האטומיות נחלשים, משתנה בין המודלים השונים – כאשר כל מודל מכתיב תנאים ומגבלות אחרים על אופן ההרפיה.</p>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://lwn.net/Articles/718628/">https://lwn.net/Articles/718628/</a>
+    </li>
+  
+    <li>
+      <a href="https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf">https://pages.cs.wisc.edu/~markhill/papers/primer2020_2nd_edition.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://www.cs.tau.ac.il/~orilahav/papers/ecoop2017-arm.pdf">https://www.cs.tau.ac.il/~orilahav/papers/ecoop2017-arm.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://www.cl.cam.ac.uk/~pes20/armv8-mca/armv8-mca-draft.pdf">https://www.cl.cam.ac.uk/~pes20/armv8-mca/armv8-mca-draft.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://www.cl.cam.ac.uk/~pes20/ppc-supplemental/pldi105-sarkar.pdf">https://www.cl.cam.ac.uk/~pes20/ppc-supplemental/pldi105-sarkar.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://inria.hal.science/hal-02509910/document">https://inria.hal.science/hal-02509910/document</a>
+    </li>
+  
+    <li>
+      <a href="https://inria.hal.science/hal-01081364/document">https://inria.hal.science/hal-01081364/document</a>
+    </li>
+  
+    <li>
+      <a href="http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf">http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf</a>
+    </li>
+  
+    <li>
+      <a href="https://en.wikipedia.org/wiki/Consistency_model">https://en.wikipedia.org/wiki/Consistency_model</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-memory-models" dir="rtl">        רואה עוד ב memory-models
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-memory-models">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/models/lkmm-code-examples/">LKMM Code Examples</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/lkmm/">LKMM</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/dependency/">Dependency</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/herd7/">Herd7</a>
+            </li>
+          
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/models/base-formal/">Base Formal</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

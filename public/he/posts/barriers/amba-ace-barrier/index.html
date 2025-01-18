@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  AMBA ACE Barrier · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="
+  טרנזקציות מחסום בפרוטוקול ACE
+  
+    
+    Link to heading
+  
+
+פרוטוקול ACE תומך בטרנזקציות מחסום אשר משמשות להבטחת סדר והבחנה של טרנזקציות במערכת. המחסומים מסייעים ביצירת יחסי סדר בין פעולות, כדי להבטיח ביצועים ותאימות צפויה בין רכיבי המערכת.
+לצורך שימוש בטרנזקציות מחסום, רכיב מאסטר משתמש במאפייני דומיין השיתוף כדי להגדיר עם אילו רכיבים אחרים יש צורך לסנכרן את המחסום וכדי להקים יחסי סדר מוגדרים. הגדרת הדומיין של טרנזקציית המחסום מגדירה את מידת הפצת המחסום במערכת, ואילו מאפייני המחסום עצמם מכתיבים את יחסי הסדר הנדרשים.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AMBA ACE Barrier">
+  <meta name="twitter:description" content="טרנזקציות מחסום בפרוטוקול ACE Link to heading פרוטוקול ACE תומך בטרנזקציות מחסום אשר משמשות להבטחת סדר והבחנה של טרנזקציות במערכת. המחסומים מסייעים ביצירת יחסי סדר בין פעולות, כדי להבטיח ביצועים ותאימות צפויה בין רכיבי המערכת.
+לצורך שימוש בטרנזקציות מחסום, רכיב מאסטר משתמש במאפייני דומיין השיתוף כדי להגדיר עם אילו רכיבים אחרים יש צורך לסנכרן את המחסום וכדי להקים יחסי סדר מוגדרים. הגדרת הדומיין של טרנזקציית המחסום מגדירה את מידת הפצת המחסום במערכת, ואילו מאפייני המחסום עצמם מכתיבים את יחסי הסדר הנדרשים.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/barriers/amba-ace-barrier/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="AMBA ACE Barrier">
+  <meta property="og:description" content="טרנזקציות מחסום בפרוטוקול ACE Link to heading פרוטוקול ACE תומך בטרנזקציות מחסום אשר משמשות להבטחת סדר והבחנה של טרנזקציות במערכת. המחסומים מסייעים ביצירת יחסי סדר בין פעולות, כדי להבטיח ביצועים ותאימות צפויה בין רכיבי המערכת.
+לצורך שימוש בטרנזקציות מחסום, רכיב מאסטר משתמש במאפייני דומיין השיתוף כדי להגדיר עם אילו רכיבים אחרים יש צורך לסנכרן את המחסום וכדי להקים יחסי סדר מוגדרים. הגדרת הדומיין של טרנזקציית המחסום מגדירה את מידת הפצת המחסום במערכת, ואילו מאפייני המחסום עצמם מכתיבים את יחסי הסדר הנדרשים.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-11-03T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-11-03T00:00:00+00:00">
+    <meta property="article:tag" content="Barrier">
+    <meta property="article:tag" content="Memory">
+    <meta property="article:tag" content="Memory-Barrier">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Ordering">
+    <meta property="article:tag" content="Cache">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/barriers/acquire-release/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/barriers/mb/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/barriers/amba-ace-barrier/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/barriers/amba-ace-barrier/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/barriers/amba-ace-barrier/">
+              AMBA ACE Barrier
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-11-03T00:00:00Z">
+                נובמבר 3, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                2871 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/barriers/">Barriers</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/barrier/">Barrier</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory/">Memory</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/memory-barrier/">Memory-Barrier</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/ordering/">Ordering</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cache/">Cache</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/arm/">Arm</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba/">Amba</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/amba-ace/">Amba-Ace</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/multi-copy-atomicity/">Multi-Copy-Atomicity</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/coherence-protocol/">Coherence-Protocol</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/snooping/">Snooping</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <h3 id="טרנזקציות-מחסום-בפרוטוקול-ace">
+  טרנזקציות מחסום בפרוטוקול ACE
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%91%d7%a4%d7%a8%d7%95%d7%98%d7%95%d7%a7%d7%95%d7%9c-ace">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>פרוטוקול ACE תומך בטרנזקציות מחסום אשר משמשות להבטחת סדר והבחנה של טרנזקציות במערכת. המחסומים מסייעים ביצירת יחסי סדר בין פעולות, כדי להבטיח ביצועים ותאימות צפויה בין רכיבי המערכת.</p>
+<p>לצורך שימוש בטרנזקציות מחסום, רכיב מאסטר משתמש במאפייני דומיין השיתוף כדי להגדיר עם אילו רכיבים אחרים יש צורך לסנכרן את המחסום וכדי להקים יחסי סדר מוגדרים. הגדרת הדומיין של טרנזקציית המחסום מגדירה את מידת הפצת המחסום במערכת, ואילו מאפייני המחסום עצמם מכתיבים את יחסי הסדר הנדרשים.</p>
+<p>טרנזקציות מחסום בפרוטוקול ACE מיועדות לספק ערבויות לגבי הסדר וההבחנה של טרנזקציות במערכת. קיימים שני סוגי מחסומים עיקריים:</p>
+<ul>
+<li>
+<p><strong>מחסומי זיכרון:</strong> מחסום זיכרון נועד להבטיח שאם רכיב מאסטר אחר בדומיין יכול לצפות בטרנזקציה מסוימת לאחר המחסום, הוא גם יוכל לראות את כל הטרנזקציות שהתרחשו לפני המחסום. זה מאפשר יצירת סדר בין טרנזקציות עבור תצפית סדורה של פעולות בזיכרון.</p>
+</li>
+<li>
+<p><strong>מחסומי סנכרון:</strong> מחסום סנכרון קובע נקודה שבה כל רכיבי המאסטר בדומיין המתאים יכולים לצפות בכל הטרנזקציות שקדמו למחסום. במחסומים אלה, במיוחד בדומיין המערכת (system domain), נדרש שכל הטרנזקציות שהונפקו לפני מחסום הסנכרון יגיעו ליעדי ה-slave שלהן לפני סיום המחסום, מה שמבטיח סנכרון מלא במערכת.</p>
+</li>
+</ul>
+<p>טרנזקציית מחסום מורכבת משלב address ושלב response, אך אינה כוללת העברת נתונים בפועל. כדי להנפיק מחסום, המאסטר צריך לשדר טרנזקציה בערוץ כתובת קריאה (read address) ובערוץ כתובת כתיבה (write address). המחסום יכול לאכוף סדר בין טרנזקציות, מכיוון שהמאסטר אינו רשאי לשדר טרנזקציות קריאה או כתיבה הבאות לאחר המחסום, עד לקבלת תשובה על המחסום גם בערוצי הנתונים לקריאה וגם בערוצי התשובה לכתיבה.</p>
+<h4 id="טרנזקציות-read-barrier">
+  טרנזקציות Read Barrier
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-read-barrier">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>רכיב מאסטר מנפיק טרנזקציית מחסום קריאה בערוץ הכתובת לקריאה ותגובה מוחזרת בערוץ הנתונים לקריאה. לא מתרחשת העברת נתונים.</p>
+<p>תהליך התקדמות הטרנזקציה עבור Read barrier במאסטר היוזם מתבצע כך:</p>
+<ol>
+<li>הטרנזקציה נשלחת בערוץ ה-AR.</li>
+<li>בערוץ ה-R מתבצעת העברה יחידה, המהווה את התגובה (אין נתונים בטרנזקציה זו).</li>
+<li>המאסטר מציין את השלמת טרנזקציית ה-Read barrier על ידי איתות RACK.</li>
+</ol>
+<h4 id="טרנזקציות-write-barrier">
+  טרנזקציות Write Barrier
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-write-barrier">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>רכיב מאסטר מוציא מחסום כתיבה בערוץ הכתובת לכתיבה ותגובה מוחזרת בערוץ תגובת הכתיבה. לא מתרחשת העברת נתונים.</p>
+<p>תהליך התקדמות הטרנזקציה עבור Write barrier במאסטר היוזם מתבצע כך:</p>
+<ol>
+<li>הטרנזקציה נשלחת בערוץ ה-AW.</li>
+<li>התגובה מתקבלת בערוץ ה-B (ללא העברת נתונים).</li>
+<li>השלמת טרנזקציית ה-Write barrier מסומנת על ידי המאסטר באמצעות איתות WACK.</li>
+</ol>
+<h3 id="שימוש-במחסום-סנכרון-עם-תקשורת-איתות-פס-צדדי">
+  שימוש במחסום סנכרון עם תקשורת איתות פס צדדי
+  <a class="heading-link" href="#%d7%a9%d7%99%d7%9e%d7%95%d7%a9-%d7%91%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%a1%d7%a0%d7%9b%d7%a8%d7%95%d7%9f-%d7%a2%d7%9d-%d7%aa%d7%a7%d7%a9%d7%95%d7%a8%d7%aa-%d7%90%d7%99%d7%aa%d7%95%d7%aa-%d7%a4%d7%a1-%d7%a6%d7%93%d7%93%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>מחסום סנכרון בפרוטוקול ACE יכול להשתלב עם סוגים שונים של תקשורת איתות פס צדדי (sideband signaling) כדי להבטיח סנכרון יעיל בין רכיבי המערכת. לדוגמה, אם רכיב מאסטר כותב מערך נתונים לזיכרון, הוא עשוי להפעיל מחסום סנכרון לפני יצירת interrupt המודיעה על זמינות ערך. עם סיום מחסום הסנכרון, מובטח שהערך המעודכן ייראה על ידי כל רכיבי המאסטר בדומיין המתאים, מה שמאפשר תיאום מלא בין רכיבי המערכת לצפייה במערך המעודכן.</p>
+<h3 id="צימוד-טרנזקציות-מחסום-בערוצי-כתובת-קריאה-וכתיבה">
+  צימוד טרנזקציות מחסום בערוצי כתובת קריאה וכתיבה
+  <a class="heading-link" href="#%d7%a6%d7%99%d7%9e%d7%95%d7%93-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%91%d7%a2%d7%a8%d7%95%d7%a6%d7%99-%d7%9b%d7%aa%d7%95%d7%91%d7%aa-%d7%a7%d7%a8%d7%99%d7%90%d7%94-%d7%95%d7%9b%d7%aa%d7%99%d7%91%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>רכיב מאסטר נדרש להנפיק טרנזקציות מחסום כזוג, אחת לכל ערוץ: מחסום אחד בערוץ הכתובת לקריאה ומחסום נוסף בערוץ הכתובת לכתיבה. התוצאה היא סדר טרנזקציות מוגדר בכל ערוץ: כל טרנזקציה שנשלחה בערוץ כלשהו לפני טרנזקציית המחסום נחשבת כפעולה שהתרחשה <strong>לפני המחסום</strong>, גם אם היא ניתנת לאחר המחסום המקביל בערוץ הכתובת השני. כל טרנזקציה בערוץ נחשבת <strong>לאחר המחסום</strong> רק כאשר מתקבלות תגובות המחסום גם מערוץ הקריאה וגם מערוץ הכתיבה, מה שמבטיח תיאום וסנכרון מדויק בין הטרנזקציות במערכת.</p>
+<h3 id="איתות-טרנזקציית-מחסום">
+  איתות טרנזקציית מחסום
+  <a class="heading-link" href="#%d7%90%d7%99%d7%aa%d7%95%d7%aa-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%99%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>פרוטוקול ACE, כדי לתמוך ביישומים שונים כמו הבטחת QoS תוך שימוש בטרנזקציות מחסום, מספק שני סוגים של טרנזקציות שאינן מחסום (non-barrier):</p>
+<ul>
+<li><strong>טרנזקציות המושפעות מטרנזקציות מחסום:</strong> טרנזקציות אלו חייבות לכבד את הסדר שנוצר על ידי טרנזקציות המחסום, כלומר הן נדרשות להתבצע בסדר שבו נקבע מחסום.</li>
+<li><strong>טרנזקציות שאינן מושפעות מטרנזקציות מחסום:</strong> סוג זה של טרנזקציות אינו חייב להישמר בסדר מסוים, והוא נפוץ במיוחד עבור זרמי נתונים בזמן אמת (real-time data streams), בהם הסדר אינו קריטי בהשוואה לתזמון.</li>
+</ul>
+<p>המפרט ממליץ כי כברירת מחדל כל הטרנזקציות יושפעו מטרנזקציות מחסום, אלא אם כן הן מסווגות כלא-מושפעות, לצרכים ספציפיים כמו זרמי נתונים בזמן אמת.</p>
+<h3 id="האות-axbar">
+  האות AxBAR
+  <a class="heading-link" href="#%d7%94%d7%90%d7%95%d7%aa-axbar">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>האות <strong>AxBAR</strong> (המונח מתיחס גם למחסום בערוץ הכתובת לקריאה וגם בערוץ הכתובת לכתיבה) מיועד להבחין בין טרנזקציות מחסום וטרנזקציות רגילות, ומסייע בקביעת סדר ביצוע הטרנזקציות. במצבי עבודה רגילים, AxBAR מציין אם הטרנזקציה מחויבת להישמר בסדר שנקבע על ידי מחסומים, או שניתן להתעלם מדרישות הסדר של טרנזקציות מחסום. כך מתאפשר גמישות בניהול עומסים שונים במערכת.</p>
+<p>עבור טרנזקציות מחסום, האות AxBAR מציין אם מדובר במחסום זיכרון או מחסום סנכרון, כדי להבטיח שמירה על הסדר הרצוי בהתאם לסוג המחסום.</p>
+<h3 id="איתות-axdomain">
+  איתות AxDOMAIN
+  <a class="heading-link" href="#%d7%90%d7%99%d7%aa%d7%95%d7%aa-axdomain">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>האות <strong>AxDOMAIN</strong> משמש לקביעת רמת ההפצה של טרנזקציית מחסום, ומסווג את הדומיינים שבהם טרנזקציית המחסום תהיה בתוקף.</p>
+<ul>
+<li>
+<p>דומיין <strong>Non-shareable:</strong> במצב זה, המחסום תקף רק עבור הטרנזקציות בזרם הטרנזקציות הנוכחי של המאסטר שהפעיל אותו, ואין צורך לשמור על סדר טרנזקציות כאשר זרם הטרנזקציות משתלב עם זרמים אחרים במערכת.</p>
+</li>
+<li>
+<p>דומיין <strong>Inner Shareable:</strong> המחסום חל על כל הטרנזקציות שמבוצעות על ידי מאסטרים באותו דומיין Inner Shareable. המשמעות היא שכל מאסטר בתוך הדומיין מחויב לשמור על סדר הטרנזקציות ביחס לטרנזקציות המחסום.</p>
+</li>
+<li>
+<p>דומיין <strong>Outer Shareable:</strong> המחסום תקף לכל הטרנזקציות שמבוצעות על ידי כל המאסטרים בדומיין Outer Shareable. ברמה זו, נדרש לשמור על סדר הטרנזקציות בין כל רכיבי המאסטר באותו דומיין חיצוני, מה שמבטיח עקביות רחבה יותר בין מספר רב של מאסטרים.</p>
+</li>
+<li>
+<p>דומיין  <strong>System:</strong> המחסום חל על כלל הטרנזקציות במערכת. עבור מחסום סנכרון ברמת מערכת, טרנזקציית המחסום נחשבת מושלמת רק כאשר כל הטרנזקציות שהונפקו על ידי המאסטר לפני המחסום הגיעו לנקודת הקצה (endpoint) שלהן.</p>
+</li>
+</ul>
+<hr>
+<h3 id="איתות-תגובת-מחסום">
+  איתות תגובת מחסום
+  <a class="heading-link" href="#%d7%90%d7%99%d7%aa%d7%95%d7%aa-%d7%aa%d7%92%d7%95%d7%91%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כל טרנזקציות מחסום חייבות להשלים עם תגובה:</p>
+<ul>
+<li>
+<p>תגובות לטרנזקציות מחסום שהונפקו בערוץ הכתובת לקריאה מסומנות בערוץ נתוני הקריאה.</p>
+</li>
+<li>
+<p>תגובות לטרנזקציות מחסום שהונפקו בערוץ הכתובת לכתיבה מסומנות בערוץ תגובת הכתיבה.</p>
+</li>
+</ul>
+<p>כדי להבטיח התאמה בין תגובות המחסום לטרנזקציות שהונפקו, לכל תגובה חייב להיות מזהה AXI תואם לטרנזקציית המחסום. בתגובה לטרנזקציית מחסום, המערכת רשאית להחזיר רק תגובה מסוג <code>OKAY</code> כתוצאה תקינה; אין לקבל תגובות אחרות עבור טרנזקציות מחסום.</p>
+<figure>
+    <img src="/posts/barriers/amba-ace-barrier/Table_C8-2_Barrier_response_transaction_constraints.png"class="dark-image"
+    ><figcaption class="image-title">Table C8-2 Barrier response transaction constraints from AMBA AXI and ACE Protocol Specification (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p><strong>הערות בנוגע לאותות המוגדרים על ידי המשתמש:</strong> אותות המוגדרים על ידי משתמש, כגון AxUSER, RUSER, WUSER ו-BUSER, אינם נכללים בטרנזקציות מחסום, ולכן עליהם להיות אפסים עבור טרנזקציות מחסום, כפי שממליץ המפרט.</p>
+<h2 id="תגובות-מחסומים-וגבולות">
+  תגובות מחסומים וגבולות
+  <a class="heading-link" href="#%d7%aa%d7%92%d7%95%d7%91%d7%95%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d-%d7%95%d7%92%d7%91%d7%95%d7%9c%d7%95%d7%aa">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>כדי ש-interconnect יוכל לספק תגובה לטרנזקציית מחסום, עליו לעמוד במגבלות המיקום ביחס לגבולות הדומיין. מיקומו של ה-interconnect ביחס לגבולות והוא קובע האם עליו לשמור את סדר הטרנזקציות שנדרש במחסום ולהגיב בהתאם.</p>
+<p>מיקומו של כל interconnect במערכת ביחס לגבולות הדומיין משפיע על יכולתו לספק תגובה לטרנזקציות מחסום.</p>
+<p>מערכת יכולה לכלול שני סוגי גבולות עיקריים:</p>
+<h3 id="domain-boundary-גבול-דומיין">
+  Domain Boundary (גבול דומיין)
+  <a class="heading-link" href="#domain-boundary-%d7%92%d7%91%d7%95%d7%9c-%d7%93%d7%95%d7%9e%d7%99%d7%99%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>גבול דומיין הוא ממשק שנמצא במורד הזרם של כל רכיבי המאסטר בדומיין, המגדיר את המעבר החיצוני שלהם אל חלקים אחרים במערכת. כדי שממשק ייחשב כגבול דומיין, עליו לעמוד בתנאים הבאים:</p>
+<ul>
+<li><strong>כתובת אחידה:</strong> כל כתובת שעוברת בממשק חייבת להיות נגישה לכל המאסטרים בדומיין באותו אופן, כך שסט הכתובות המשותף יהיה זהה לכל המאסטרים.</li>
+<li><strong>מעבר אחיד:</strong> כל גישה של מאסטרים בכתובות אלה חייבת לעבור דרך הממשק.</li>
+</ul>
+<p>אם רכיב מאסטר כלשהו עובר בממשק כדי לגשת לכתובת מסוימת, אז מאסטר אחר באותו דומיין לא יכול לגשת לאותה הכתובת מבלי להשתמש באותו הממשק.</p>
+<figure>
+    <img src="/posts/barriers/amba-ace-barrier/Figure_C8-1_Domain_boundaries.png"class="dark-image"
+    ><figcaption class="image-title">Figure C8-1 Domain boundaries from AMBA AXI and ACE Protocol Specification (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<p>באיור C8-1 מודגם מבנה של גבולות דומיין במערכת, כאשר לדוגמה, הממשק ל-slave 6 משמש כגבול דומיין חיצוני, הנמצא מחוץ לטווח הגישה של מאסטרים 0, 1, ו-2. כלומר, הוא נמצא מעבר לכל רכיבי המאסטר בדומיין החיצוני שיכולים לגשת אליו.</p>
+<h3 id="bi-section-boundary-גבול-דו-קטעי">
+  Bi-section Boundary (גבול דו-קטעי)
+  <a class="heading-link" href="#bi-section-boundary-%d7%92%d7%91%d7%95%d7%9c-%d7%93%d7%95-%d7%a7%d7%98%d7%a2%d7%99">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>גבול דו-קטעי הוא ממשק הנמצא במורד הזרם של תת-קבוצה מסוימת של מאסטרים בתוך הדומיין, ולא כולל את כל רכיבי המאסטר בדומיין. התנאים לממשק שישמש כגבול דו-קטעי הם:</p>
+<ul>
+<li><strong>כתובת תואמת בתת-קבוצה:</strong> כל כתובת שעוברת דרך הממשק צריכה להיות נגישה באופן אחיד על ידי כל רכיב מאסטר בתת-קבוצה זו.</li>
+<li><strong>מעבר אחיד בתת-קבוצה:</strong> כל גישה של המאסטרים בתת-הקבוצה לכתובות אלו חייבת לעבור בממשק.</li>
+<li><strong>הגבלת גישה:</strong> מאסטרים בדומיין שאינם בתת-הקבוצה אינם יכולים לגשת לכתובות אלו דרך הממשק.</li>
+<li><strong>התאמה בין מאסטרים:</strong> כאשר מאסטר מחוץ לתת-הקבוצה ניגש לכתובת, אז כל כתובת שנגישה לו חייבת להיות נגישה גם למאסטרים שבתת-הקבוצה דרך אותו ממשק.</li>
+</ul>
+<blockquote>
+<p><strong>הערות:</strong>
+- באופן כללי, הממשק יכול להיחשב כגבול דו-קטעי אם כל התקשורת בין קבוצת מאסטרים מסוימת לשאר המאסטרים שאינם בקבוצה עוברת בממשק זה.
+- כאשר כל המאסטרים בדומיין הם חלק מהקבוצה, גבול זה הופך להיות גם גבול דומיין לכל דבר.</p>
+</blockquote>
+<p>![](Figure_C8-2 Bi-section_boundaries.png &ldquo;Figure C8-2 Bi-section boundaries from AMBA AXI and ACE Protocol Specification (developer.arm.com)&rdquo;)</p>
+<p>באיור C8-2 מודגם המיקום של גבולות ה-bi-section עבור אותה מערכת, המפריד בין קבוצות מאסטרים בתוך אותו דומיין.</p>
+<h4 id="תגובת-מחסומים-של-ה-interconnect">
+  תגובת מחסומים של ה-interconnect
+  <a class="heading-link" href="#%d7%aa%d7%92%d7%95%d7%91%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d-%d7%a9%d7%9c-%d7%94-interconnect">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-interconnect במערכת יכול לטפל בטרנזקציות מחסום בתנאים מסוימים, בהתאם לכללים הבאים:</p>
+<ul>
+<li>
+<p><strong>טרנזקציות מחסום זיכרון:</strong> ה-interconnect יכול להעניק תגובה כאשר הוא נמצא בגבול bi-section המתאים או בגבול הדומיין, או מעבר לגבול הדומיין.</p>
+</li>
+<li>
+<p><strong>טרנזקציות מחסום סנכרון לדומיינים משותפים:</strong> כאשר מדובר בדומיין שאינו משותף, דומיין שניתן לשיתוף פנימי, או דומיין שניתן לשיתוף חיצוני, ה-interconnect יכול להגיב כל עוד הוא ממוקם בגבול הדומיין המתאים או מעבר לו.</p>
+</li>
+<li>
+<p><strong>טרנזקציות מחסום סנכרון לדומיין system:</strong> במצב זה, ה-interconnect יכול לספק תגובה רק אם כל הטרנזקציות שהופעלו לפני המחסום כבר הגיעו ל-slaves המתאימים בנקודות הקצה שלהם.</p>
+</li>
+</ul>
+<h3 id="טכניקות-למתן-מענה-לטרנזקציות-מחסום">
+  טכניקות למתן מענה לטרנזקציות מחסום
+  <a class="heading-link" href="#%d7%98%d7%9b%d7%a0%d7%99%d7%a7%d7%95%d7%aa-%d7%9c%d7%9e%d7%aa%d7%9f-%d7%9e%d7%a2%d7%a0%d7%94-%d7%9c%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>כדי לוודא שכל הטרנזקציות שהונפקו לפני המחסום ניתנות לצפייה באופן עקבי על ידי כל טרנזקציה שלאחר המחסום, ה-interconnect יכול להשתמש במספר שיטות:</p>
+<h4 id="חסימת-כל-הטרנזקציות-ושליחת-מחסומים">
+  חסימת כל הטרנזקציות ושליחת מחסומים
+  <a class="heading-link" href="#%d7%97%d7%a1%d7%99%d7%9e%d7%aa-%d7%9b%d7%9c-%d7%94%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%95%d7%a9%d7%9c%d7%99%d7%97%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9e%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>במקרה זה, ה-interconnect חוסם את כל הטרנזקציות שהתקבלו לאחר טרנזקציית המחסום ומנפיק טרנזקציית מחסום במורד הזרם. החסימה מוסרת רק כאשר מתקבלות תגובות מלאות, הן בערוץ הקריאה והן בערוץ התגובה לכתיבה, עבור כל הטרנזקציות במורד הזרם.</p>
+<h4 id="חסימת-כל-הטרנזקציות-והמתנה-להשלמה">
+  חסימת כל הטרנזקציות והמתנה להשלמה
+  <a class="heading-link" href="#%d7%97%d7%a1%d7%99%d7%9e%d7%aa-%d7%9b%d7%9c-%d7%94%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%95%d7%94%d7%9e%d7%aa%d7%a0%d7%94-%d7%9c%d7%94%d7%a9%d7%9c%d7%9e%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-interconnect חוסם את כל הטרנזקציות המגיעות לאחר טרנזקציות המחסום עד שכל הטרנזקציות הקודמות למחסום מסיימות תגובה מלאה. שיטה זו דורשת שכל הטרנזקציות יקבלו תגובה מנקודות שנגישות לצפייה על ידי כל המאסטרים בדומיין המחסום.</p>
+<h4 id="בדיקת-hazard">
+  בדיקת Hazard
+  <a class="heading-link" href="#%d7%91%d7%93%d7%99%d7%a7%d7%aa-hazard">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>ה-interconnect עוצר כל טרנזקציה לאחר המחסום עד שכל הטרנזקציות הקודמות בעלות אותן כתובות, או כתובות חופפות, מקבלות תגובה.</p>
+<h3 id="דרישות-מחסום">
+  דרישות מחסום
+  <a class="heading-link" href="#%d7%93%d7%a8%d7%99%d7%a9%d7%95%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>סעיף זה מתאר את הדרישות הפורמליות הנדרשות לטרנזקציות מחסום.</p>
+<h4 id="דרישות-מאסטר">
+  דרישות מאסטר
+  <a class="heading-link" href="#%d7%93%d7%a8%d7%99%d7%a9%d7%95%d7%aa-%d7%9e%d7%90%d7%a1%d7%98%d7%a8">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>כאשר רכיב מאסטר מנפיק טרנזקציית מחסום, עליו לעמוד בכללים הבאים:</p>
+<ul>
+<li>
+<p><strong>זיווג טרנזקציות:</strong> שתי הטרנזקציות המרכיבות את זוג המחסום חייבות להיות מאופיינות על ידי אותם ערכי AxID, AxBAR, AxDOMAIN ו-AxPROT. כלומר, כל אחת מהטרנזקציות בזוג צריכה להיות תואמת מבחינת מזהים והגדרות.</p>
+</li>
+<li>
+<p><strong>התאמת רוחב אותות:</strong> אם לערכים ARID ו-AWID יש רוחב שונה, יש להרחיב את הגרסה הצרה יותר כדי שתתאים לגרסה הרחבה יותר, כך שהמידע יהיה עקבי בכל הטרנזקציות.</p>
+</li>
+<li>
+<p><strong>רצף הנפקה:</strong> צמדי מחסומים חייבים להיות מופקים באותו רצף בערוצי הקריאה והכתיבה לכתובת, מה שמבטיח שההנפקה מתבצעת בצורה מסודרת ומסונכרנת.</p>
+</li>
+<li>
+<p><strong>גמישות במחזורי הנפקה:</strong> ממשק מאסטר אינו נדרש להנפיק טרנזקציות מחסום באותו מחזור עבור ערוצי הכתובת לקריאה ולכתיבה, מה שמאפשר גמישות בהנפקת הטרנזקציות.</p>
+</li>
+<li>
+<p><strong>מחסומים Outstanding:</strong> ממשק מאסטר רשאי להנפיק מספר טרנזקציות מחסום outstanding, כלומר ניתן להוציא טרנזקציות מחסום נוספות לפני קבלת תגובות לטרנזקציות הקודמות. עם זאת, קיימת מגבלה ספציפית עבור ממשק מאסטר של ACE, אשר לא יכול להנפיק יותר מ-256 טרנזקציות מחסום בו זמנית.</p>
+<ul>
+<li><strong>הערה:</strong> חשוב לציין כי לחיצות ידיים של קריאה וכתיבה הן אירועים נפרדים ויכולות להתרחש בסדר שונה. לפיכך, מחסום נחשב ל-outstanding מהמחזור שבו המחסום הראשון (הקריאה או הכתיבה) הופך לתקף ועד למחזור שבו מתקבלות תגובות לחיצות הידיים של קריאת הכתיבה.</li>
+</ul>
+</li>
+<li>
+<p><strong>מזהי טרנזקציות שונים:</strong> טרנזקציות מחסום נדרשות להשתמש בערכי מזהה שונים מאלו המשמשים עבור טרנזקציות non-barrier. עם זאת, טרנזקציות מחסום וטרנזקציות non-barrier יכולות להשתמש באותו ערך AXI ID, בתנאי שטרנזקציה אחת הושלמה לפני הנפקת השנייה, מה שמבטיח שאין חפיפות בין טרנזקציות.</p>
+</li>
+</ul>
+<p>הערה:
+שימוש בערכי מזהה שונים עבור טרנזקציות מחסום מבטיח כי כל רכיב המעקב אחר תגובות המחסום לא יצטרך לעקוב אחרי כל התגובות הנכנסות, מה שמקל עליו להבדיל בין תגובת מחסום לתגובת טרנזקציה רגילה.</p>
+<p>בכל ערוץ כתובת, כל טרנזקציה שהונפקה לפני המחסום באותו ערוץ נחשבת לטרנזקציה &ldquo;לפני המחסום&rdquo; (pre-barrier), גם אם היא מתקבלת לאחר המחסום בערוץ הכתובת המקביל.</p>
+<p>איור C8-3 מציג טרנזקציות לפני המחסום (pre-barrier) ואחרי המחסום (post-barrier) ביחס למחסומים המונפקים בערוצי הכתובות והתגובות המתקבלות.</p>
+<figure>
+    <img src="/posts/barriers/amba-ace-barrier/Figure_C8-3_Barrier_transaction_timing.png"class="dark-image"
+    ><figcaption class="image-title">Figure C8-3 Barrier transaction timing from AMBA AXI and ACE Protocol Specification (developer.arm.com)</figcaption></figure><style>
+  .dark-image {
+    background-color: white;
+  }
+
+  .image-title {
+    width: 50%;
+    margin: auto;
+  }
+</style>
+<ul>
+<li>טרנזקציות R1, W1, W2 ו-W3 ממוקמות לפני המחסום.</li>
+<li>טרנזקציות R8 ו-W8 ממוקמות אחרי המחסום.</li>
+<li>טרנזקציות R2, R3, R4, R5, R6, R7, W4, W5, W6 ו-W7 אינן קשורות למחסום.</li>
+</ul>
+<h4 id="כללים-עבור-רכיבי-מאסטר-המנפיקים-טרנזקציות-מחסום">
+  כללים עבור רכיבי מאסטר המנפיקים טרנזקציות מחסום
+  <a class="heading-link" href="#%d7%9b%d7%9c%d7%9c%d7%99%d7%9d-%d7%a2%d7%91%d7%95%d7%a8-%d7%a8%d7%9b%d7%99%d7%91%d7%99-%d7%9e%d7%90%d7%a1%d7%98%d7%a8-%d7%94%d7%9e%d7%a0%d7%a4%d7%99%d7%a7%d7%99%d7%9d-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h4>
+<p>הכללים הבאים חלים על רכיבי מאסטר המנפיקים טרנזקציות מחסום, ומתייחסים לטרנזקציות שאינן חסומות:</p>
+<ul>
+<li>
+<p><strong>איסור הוצאת טרנזקציות לאחר המחסום:</strong> למאסטר אסור להוציא כל טרנזקציה, הן קריאה והן כתיבה, שחייבת להיות אחרי המחסום, עד שהמאסטר קיבל תשובה על המחסום הן בערוץ נתוני הקריאה והן בערוץ התגובה לכתיבה. כלומר, על המאסטר להמתין להשלמת התגובה למחסום לפני שימשיך להנפיק טרנזקציות נוספות.</p>
+</li>
+<li>
+<p><strong>הנפקת טרנזקציות בין מחסומים:</strong> מאסטר יכול להנפיק טרנזקציות בין הנפקת טרנזקציית מחסום בערוץ הכתובת לבין קבלת תגובות המחסום לקריאה ולכתיבה. עם זאת, לטרנזקציות כאלה אין ערבויות סדר ביחס למחסום. בערוץ הכתובת, טרנזקציות אלו יכולות להימצא אחרי טרנזקציית המחסום או לעקוף אותה.</p>
+</li>
+<li>
+<p><strong>חובת הנפקת מחסום כתיבה:</strong> ממשק מאסטר שהנפיק מחסום קריאה בערוץ הכתובת לקריאה חייב להנפיק את מחסום הכתיבה המתאים בערוץ הכתובת לכתיבה בזמן, אם כל שאר הטרנזקציות בערוץ הכתובת לכתיבה מתקדמות. בנוסף, למאסטר אסור לדרוש לחיצת יד או תגובה למחסום הקריאה או לכל טרנזקציית קריאה לאחר מחסום הקריאה לפני הנפקת מחסום הכתיבה המתאים.</p>
+</li>
+<li>
+<p><strong>הנפקת מחסום כתיבה:</strong> כאשר ממשק מאסטר מנפיק מחסום כתיבה בערוץ הכתובת לכתיבה, עליו להנפיק את מחסום הקריאה המתאים בערוץ הכתובת לקריאה בזמן המתאים, בתנאי שכל הטרנזקציות האחרות בערוץ הכתובת לקריאה מתקדמות. אסור לממשק המאסטר לדרוש לחיצת יד או תגובה למחסום הכתיבה או לכל טרנזקציית כתיבה נוספת לאחר מחסום הכתיבה, עד שהמחסום הקריאה המתאים הונפק.</p>
+</li>
+<li>
+<p><strong>איסור על הנפקת מחסום קריאה:</strong> אין להנפיק מחסום בערוץ הכתובת לקריאה במקרים בהם נדרשות טרנזקציות קריאה נוספות לאחריו, כמו:</p>
+<ul>
+<li>הנפקת המחסום המתאים בערוץ הכתובת לכתיבה.</li>
+<li>הנפקת טרנזקציות כתיבה שצריכות להתבצע לפני המחסום.</li>
+</ul>
+<p>לדוגמה, אין להנפיק מחסום קריאה אם לאחר הנפקת מחסום הקריאה נדרשות הליכות בטבלת תרגום להוצאת טרנזקציות כתיבה שצריכות להיות לפני מחסום הכתיבה המקביל.</p>
+</li>
+<li>
+<p><strong>דרישות לממשק ACE:</strong> בממשק ACE, אסור להנפיק מחסום בערוץ הכתובת לכתיבה אם יש להנפיק טרנזקציות כתיבה עוקבות שצריכות לשמור על סדר שיכבד את המחסום עבור אחת מהן:</p>
+<ul>
+<li>הנפקת המחסום המתאים בערוץ הכתובת לקריאה.</li>
+<li>הנפקת טרנזקציות קריאה שצריכות להתבצע לפני המחסום.</li>
+</ul>
+</li>
+<li>
+<p><strong>אפשרות להנפקת מחסומים נוספים:</strong> ממשק ACE רשאי להנפיק מחסום כתיבה, ולאחריו ניתן להנפיק כל אחת מהטרנזקציות הבאות שנדרשות להשלמת טרנזקציות סנופ עבור אותו מאסטר:</p>
+<ul>
+<li>WriteBack</li>
+<li>WriteClean</li>
+<li>WriteEvict</li>
+<li>Evict</li>
+</ul>
+</li>
+</ul>
+<p>הכללים הבאים מתייחסים לרכיבי מאסטר בממשק ACE ולאופן שבו הם מתקשרים עם מחסומים וגישה ל-cache המקומי:</p>
+<ul>
+<li>
+<p><strong>איסור על ביצוע store לאחר מחסום:</strong> רכיב מאסטר אינו רשאי לבצע פעולת store שיש לסדר אותה ביחס למחסום או ממיקום הניתן לשיתוף ב-cache המקומי שלו, עד לאחר קבלת תגובת המחסום בערוצי הקריאה ובערוצי התגובה לכתיבה. כלל זה רלוונטי גם במקרים שבהם אין דרישה להנפקת טרנזקציה, משום ששורת ה-cache נמצאת במצב ייחודי.</p>
+</li>
+<li>
+<p><strong>איסור על ביצוע load לאחר מחסום:</strong> רכיב מאסטר אינו רשאי לבצע פעולת load שיש לסדר אותה ביחס למחסום ממיקום הניתן לשיתוף ב-cache המקומי שלו, עד לאחר קבלת תגובת המחסום הן בערוצי הקריאה והן בערוצי התגובה לכתיבה. גם במקרה זה, האיסור חל אפילו כאשר אין דרישה להנפקת טרנזקציה, בשל כך ששורת ה-cache נמצאת במצב חוקי.</p>
+</li>
+<li>
+<p><strong>חובה להנפיק טרנזקציית כתיבה:</strong> רכיב מאסטר חייב להיות מסוגל להנפיק טרנזקציית כתיבה לצורך השלמת טרנזקציות סנופ, גם כאשר ערוץ כתובת הקריאה נמצא במצב stalled.</p>
+</li>
+<li>
+<p><strong>הנפקת טרנזקציית מחסום:</strong> הנפקת טרנזקציית מחסום אינה יכולה למנוע את ההנפקה וההשלמה של כל אחת מהטרנזקציות הבאות, הנדרשות עבור טרנזקציות סנופ:</p>
+<ul>
+<li>WriteBack</li>
+<li>WriteClean</li>
+<li>WriteEvict</li>
+<li>Evict</li>
+</ul>
+</li>
+</ul>
+<h3 id="דרישות-עבור-רכיבי-slave">
+  דרישות עבור רכיבי Slave
+  <a class="heading-link" href="#%d7%93%d7%a8%d7%99%d7%a9%d7%95%d7%aa-%d7%a2%d7%91%d7%95%d7%a8-%d7%a8%d7%9b%d7%99%d7%91%d7%99-slave">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הכללים הבאים חלים על רכיב slave המתמודד עם טרנזקציות מחסום:</p>
+<ul>
+<li>
+<p><strong>יכולת קבלת טרנזקציות מחסום:</strong> ממשק slave מסוג ACE חייב להיות מסוגל לקבל עד 256 טרנזקציות מחסום בערוץ הכתובת לכתיבה מבלי לחסום את ההתקדמות של טרנזקציות עוקבות. נדרש שהערוץ לכתובת הכתיבה יהיה זמין ושטרנזקציות הכתיבה יכולות להתקדם ללא הפרעות.</p>
+</li>
+<li>
+<p><strong>עיכוב ערוץ הכתובת לקריאה:</strong> כאשר מתקבלת טרנזקציית מחסום קריאה, ממשק slave מסוג ACE רשאי, אך אינו מחויב, לעכב את ערוץ הכתובת לקריאה.</p>
+</li>
+</ul>
+<h3 id="דרישות-עבור-interconnect">
+  דרישות עבור interconnect
+  <a class="heading-link" href="#%d7%93%d7%a8%d7%99%d7%a9%d7%95%d7%aa-%d7%a2%d7%91%d7%95%d7%a8-interconnect">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הכללים הבאים חלים על עיבוד טרנזקציות מחסום במערכות interconnect:</p>
+<ul>
+<li>
+<p><strong>טופולוגיית interconnect:</strong> אין לאפשר לטרנזקציות עם כתובות יעד חופפות לשתף נקודת התחלה ונקודת סיום, ולכן יש להן נתיבים שונים בתוך ה-interconnect.</p>
+</li>
+<li>
+<p><strong>מיזוג זרמים של טרנזקציות:</strong> כאשר יש למזג שני זרמים של טרנזקציות, ה-interconnect חייב להבטיח שצמדי המחסומים יונפקו על ערוצי הקריאה והכתיבה באותו רצף. אסור לשלב בין זוגות מחסומים.</p>
+</li>
+<li>
+<p><strong>עמידה בדרישות עבור מספר פורטי slave:</strong> כל רכיב interconnect שיש לו מספר פורטים של ACE צריך להיות מסוגל לעמוד בדרישות ממשק ה-slaves של ACE עבור כל הפורטים בו זמנית.</p>
+</li>
+<li>
+<p><strong>אי-עקיפת טרנזקציות מחסום:</strong> ה-interconnect לא יכול לאפשר לטרנזקציית מחסום לעקוף כל טרנזקציה אחרת המכבדת מחסומים.</p>
+</li>
+<li>
+<p><strong>שמירה על מחסום:</strong> יש לקיים מחסום על כל טרנזקציה שהרכיב המוציא את המחסום צפה בה לפני הנפקת המחסום.</p>
+</li>
+<li>
+<p><strong>תגובה למחסומים:</strong> interconnect שלא הגיב למחסום יכול לאפשר לכל טרנזקציה שאינה מחסום לעקוף מחסום זה.</p>
+</li>
+</ul>
+<p>הערה:
+מפרט זה ממליץ כי רכיבי interconnect מסוג ACE יתקעו (stall) את מחסום הקריאה עד שיתקבל מחסום הכתיבה המתאים, וכל הטרנזקציות שהתקבלו לפני מחסום הקריאה ומחסום הכתיבה עברו snooping כנדרש, וכל טרנזקציות הכתיבה שצריכות להיות לפני המחסום הונפקו בהצלחה.</p>
+<h3 id="סידור-טרנזקציות-מחסום-ומכשירים">
+  סידור טרנזקציות מחסום ומכשירים
+  <a class="heading-link" href="#%d7%a1%d7%99%d7%93%d7%95%d7%a8-%d7%98%d7%a8%d7%a0%d7%96%d7%a7%d7%a6%d7%99%d7%95%d7%aa-%d7%9e%d7%97%d7%a1%d7%95%d7%9d-%d7%95%d7%9e%d7%9b%d7%a9%d7%99%d7%a8%d7%99%d7%9d">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>טרנזקציות מחסום נועדו להבטיח סדר בין טרנזקציות שמבצע מכשיר לבין מכשירים היקפיים בודדים, ללא תלות בכתובות שבהן משתמשים בציוד ההיקפי. המשמעות היא שכל בדיקות hazard-checking שביצע ה-interconnect בעת מענה למחסום חייבות להתרחב לכל מרחב הכתובות של הציוד ההיקפי, ולא להתמקד רק בטרנזקציות חופפות. במקרה שבו ה-interconnect אינו יכול לקבוע את טווח הכתובות של ציוד היקפי מסוים, עליו להבטיח שיש סדר בין כל הגישות שיכולות להתייחס לאותו ציוד היקפי.</p>
+<h3 id="דרישות-עבור-multi-copy-atomicity-במיקומים-ניתנים-לשיתוף">
+  דרישות עבור Multi-copy atomicity במיקומים ניתנים לשיתוף
+  <a class="heading-link" href="#%d7%93%d7%a8%d7%99%d7%a9%d7%95%d7%aa-%d7%a2%d7%91%d7%95%d7%a8-multi-copy-atomicity-%d7%91%d7%9e%d7%99%d7%a7%d7%95%d7%9e%d7%99%d7%9d-%d7%a0%d7%99%d7%aa%d7%a0%d7%99%d7%9d-%d7%9c%d7%a9%d7%99%d7%aa%d7%95%d7%a3">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>ביחס למיקומים המוגדרים כ-Inner Shareable ו-Outer Shareable, נדרשת יכולת של Multi-copy atomicity. משמעות הדבר היא שתגובת סנופ לטרנזקציית כתיבה תינתן רק לאחר שכל הצופים בדומיין השיתוף המתאים עיבדו את הכתיבה. בנוסף, במחזור שבו מתקבלת תגובת הסנופ, המאסטר המתאים כבר חייב היה לראות את הכתיבה. נקודת התצפית מוגדרת לפי לחיצת היד בערוץ התגובה של הסנופ, ואילו ערוץ הנתונים של הסנופ אינו נחשב כנקודת תצפית. לפיכך, אין צורך בהנפקת מחסומים בערוץ הכתובת של הסנופ.</p>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/ihi0022/e/">https://developer.arm.com/documentation/ihi0022/e/</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-barriers" dir="rtl">        רואה עוד ב barriers
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-barriers">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+        
+          
+            <li>
+              <a href="/he/posts/barriers/acquire-release/">Acquire Release</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/barriers/mb/">mb</a>
+            </li>
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>

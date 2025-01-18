@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+  <title>
+  Line fill buffer · Michael Shalitin
+</title>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; block-all-mixed-content; default-src 'self'; child-src 'self'; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net/; form-action 'self'; frame-src 'self' https://www.youtube.com; img-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com/ https://cdn.jsdelivr.net/; script-src 'self' 'unsafe-inline' default-src 'unsafe-eval' https://www.google-analytics.com https://cdn.jsdelivr.net/ https://static.cloudflareinsights.com https://cloudflareinsights.com; connect-src 'self' https://www.google-analytics.com https://static.cloudflareinsights.com https://cloudflareinsights.com;">
+
+
+
+
+<meta name="author" content="Michael Shalitin">
+<meta name="description" content="כשהנתונים שנכתבים לכתובת באזור זיכרון Write-Back ה-stores נמצאים ב-store buffer, הם נשארים שם עד שה-store מבצע פרישה. לאחר הפרישה, הנתונים נכתבים ל-L1 Data Cache אם השורה קיימת ויש לה הרשאת כתיבה. אם לא, ה-Line Fill Buffer (LFB) מוקצה לטיפול בכתיבה במקרה של store miss. ה-LFB מקבל בסופו של דבר את העותק העדכני של שורת ה-cache, כך שניתן להתקין אותה ב-L1 Data Cache ולבצע את הכתיבה של נתוני ה-store ל-cache. פרטים נוספים לגבי מיזוג, buffering, סדרי עדיפויות ו&quot;קיצורי דרך&quot; אינם תמיד ברורים, אך אחת מהפרשנויות היא ש-LFBs פועלים כ-buffers בגודל cache, שבהם מתמזגים נתוני ה-store לפני שליחתם ל-L1 Data Cache.">
+<meta name="keywords" content="blog,developer,personal">
+
+
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Line fill buffer">
+  <meta name="twitter:description" content="כשהנתונים שנכתבים לכתובת באזור זיכרון Write-Back ה-stores נמצאים ב-store buffer, הם נשארים שם עד שה-store מבצע פרישה. לאחר הפרישה, הנתונים נכתבים ל-L1 Data Cache אם השורה קיימת ויש לה הרשאת כתיבה. אם לא, ה-Line Fill Buffer (LFB) מוקצה לטיפול בכתיבה במקרה של store miss. ה-LFB מקבל בסופו של דבר את העותק העדכני של שורת ה-cache, כך שניתן להתקין אותה ב-L1 Data Cache ולבצע את הכתיבה של נתוני ה-store ל-cache. פרטים נוספים לגבי מיזוג, buffering, סדרי עדיפויות ו&#34;קיצורי דרך&#34; אינם תמיד ברורים, אך אחת מהפרשנויות היא ש-LFBs פועלים כ-buffers בגודל cache, שבהם מתמזגים נתוני ה-store לפני שליחתם ל-L1 Data Cache.">
+
+<meta property="og:url" content="https://smichaelshal.github.io/he/posts/processor-components/line-fill-buffer/">
+  <meta property="og:site_name" content="Michael Shalitin">
+  <meta property="og:title" content="Line fill buffer">
+  <meta property="og:description" content="כשהנתונים שנכתבים לכתובת באזור זיכרון Write-Back ה-stores נמצאים ב-store buffer, הם נשארים שם עד שה-store מבצע פרישה. לאחר הפרישה, הנתונים נכתבים ל-L1 Data Cache אם השורה קיימת ויש לה הרשאת כתיבה. אם לא, ה-Line Fill Buffer (LFB) מוקצה לטיפול בכתיבה במקרה של store miss. ה-LFB מקבל בסופו של דבר את העותק העדכני של שורת ה-cache, כך שניתן להתקין אותה ב-L1 Data Cache ולבצע את הכתיבה של נתוני ה-store ל-cache. פרטים נוספים לגבי מיזוג, buffering, סדרי עדיפויות ו&#34;קיצורי דרך&#34; אינם תמיד ברורים, אך אחת מהפרשנויות היא ש-LFBs פועלים כ-buffers בגודל cache, שבהם מתמזגים נתוני ה-store לפני שליחתם ל-L1 Data Cache.">
+  <meta property="og:locale" content="he">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2024-08-18T00:00:00+00:00">
+    <meta property="article:modified_time" content="2024-08-18T00:00:00+00:00">
+    <meta property="article:tag" content="Buffer">
+    <meta property="article:tag" content="Line-Fill-Buffer">
+    <meta property="article:tag" content="Cpu">
+    <meta property="article:tag" content="Coherence-Protocol">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/store-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/combined-buffer/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/decoder/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/fetch/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/invalidate-queue/">
+      <meta property="og:see_also" content="https://smichaelshal.github.io/he/posts/processor-components/reorder-buffer/">
+
+
+
+
+<link rel="canonical" href="https://smichaelshal.github.io/he/posts/processor-components/line-fill-buffer/">
+
+
+<link rel="preload" href="/fonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.6c967191184c40e901e41977158c33a73a2cfa2d9413cf73dddd6732eeae7af4.css" integrity="sha256-bJZxkRhMQOkB5Bl3FYwzpzos&#43;i2UE89z3d1nMu6uevQ=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+  
+    
+    
+    <link rel="stylesheet" href="/css/coder-dark.min.a00e6364bacbc8266ad1cc81230774a1397198f8cfb7bcba29b7d6fcb54ce57f.css" integrity="sha256-oA5jZLrLyCZq0cyBIwd0oTlxmPjPt7y6KbfW/LVM5X8=" crossorigin="anonymous" media="screen" />
+  
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/svg+xml" href="/images/favicon.svg" sizes="any">
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+
+
+
+
+
+</head>
+
+
+
+
+
+
+<body class="preload-transitions colorscheme-dark">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa-solid fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    
+    <a class="navigation-title" href="https://smichaelshal.github.io/he/">
+      Michael Shalitin
+    </a>
+    
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa-solid fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/about/">About</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link " href="/he/posts/">Blog</a>
+            </li>
+          
+        
+        
+          
+          
+          
+            
+              
+                <li class="navigation-item menu-separator">
+                  <span>|</span>
+                </li>
+                
+              
+              <li class="navigation-item">
+                <a href="/posts/processor-components/line-fill-buffer/">🇬🇧</a>
+              </li>
+            
+          
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="https://smichaelshal.github.io/he/posts/processor-components/line-fill-buffer/">
+              Line fill buffer
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa-solid fa-calendar" aria-hidden="true"></i>
+              <time datetime="2024-08-18T00:00:00Z">
+                אוגוסט 18, 2024
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                950 מילים
+            </span>
+          </div>
+          
+          <div class="categories">
+  <i class="fa-solid fa-folder" aria-hidden="true"></i>
+    <a href="/he/categories/processor-components/">Processor-Components</a></div>
+
+          <div class="tags">
+  <i class="fa-solid fa-tag" aria-hidden="true"></i>
+    <span class="tag">
+      <a href="/he/tags/buffer/">Buffer</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/line-fill-buffer/">Line-Fill-Buffer</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/cpu/">Cpu</a>
+    </span>
+      <span class="separator">•</span>
+    <span class="tag">
+      <a href="/he/tags/coherence-protocol/">Coherence-Protocol</a>
+    </span></div>
+
+        </div>
+      </header>
+
+      <div class="post-content">
+        
+        <p>כשהנתונים שנכתבים לכתובת באזור זיכרון Write-Back ה-stores נמצאים ב-store buffer, הם נשארים שם עד שה-store מבצע פרישה. לאחר הפרישה, הנתונים נכתבים ל-L1 Data Cache אם השורה קיימת ויש לה הרשאת כתיבה. אם לא, ה-Line Fill Buffer (LFB) מוקצה לטיפול בכתיבה במקרה של store miss. ה-LFB מקבל בסופו של דבר את העותק העדכני של שורת ה-cache, כך שניתן להתקין אותה ב-L1 Data Cache ולבצע את הכתיבה של נתוני ה-store ל-cache. פרטים נוספים לגבי מיזוג, buffering, סדרי עדיפויות ו&quot;קיצורי דרך&quot; אינם תמיד ברורים, אך אחת מהפרשנויות היא ש-LFBs פועלים כ-buffers בגודל cache, שבהם מתמזגים נתוני ה-store לפני שליחתם ל-L1 Data Cache.</p>
+<p>ה-store buffer משמש למעקב אחר פעולות ה-store לפי סדרן, הן לפני שהן פורשות והן לאחר הפרישה אך לפני שהן מתחייבות ל-L1 Cache. רעיונית, ה-store buffer הוא רכיב מקומי שאינו מתחשב ב-cache miss . הוא עוסק ב&quot;הוראות&quot; store בודדות בגודלים שונים, כאשר מעבדים כמו Intel Skylake כוללים store buffer עם יותר מ-50 כניסות.</p>
+<p>הנה התהליך שבו store עובר דרך ה-store buffer ו-Line Fill Buffer:</p>
+<ol>
+<li>
+<p>הוראות store מפוענחות ומפוצלות ל-uops של store-data ו-store-address. ה-uops הללו מתוזמנים ומוקצים לערכים ב-store buffer.</p>
+</li>
+<li>
+<p>ה-uops של ה-store מבוצעים בסדר כלשהו או בו-זמנית, תלוי בתלות שלהם.</p>
+<ol>
+<li>ה-store-data uop כותב את הנתונים ל-store buffer.</li>
+<li>ה-store-address uop מבצע תרגום כתובת ומכניס את הכתובת ל-store buffer.</li>
+</ol>
+</li>
+<li>
+<p>כאשר כל ההוראות הישנות יותר יצאו מה-store buffer, ה-store יוצאת לפועל, כלומר היא כבר אינה ספקולטיבית והתוצאות שלה יכולות להיות גלויות. בשלב זה, ה-store נחשבת ל-senior store.</p>
+</li>
+<li>
+<p>ה-store ממתינה עד שהיא מגיעה לראש ה-store buffer (ה-store הוותיקה ביותר שאינה מחויבת), ואז היא מתבצעת commit לתוך ה-L1 Cache, אם שורת ה-cache המתאימה קיימת ב-L1 במצב Modified או Exclusive בפרוטוקול MESI (כלומר, הליבה היא בעלת השורה).</p>
+</li>
+<li>
+<p>אם השורה אינה קיימת במצב הנדרש (או חסרה לחלוטין, כלומר cache miss, או קיימת אך במצב שאינו בלעדי), יש לקבל אישור לשנות את השורה ואת נתוני השורה מהתת-מערכת הזיכרון: זה מקצה LFB לכל שורה, אם עדיין לא הוקצה אחד. זו בקשה לבעלות (Request for Ownership - RFO), כלומר היררכיית הזיכרון צריכה להחזיר את השורה במצב בלעדי המתאים לשינוי, במקום במצב משותף המתאים לקריאה בלבד (מה שמבטל עותקים של השורה ב-cache-ים פרטיים אחרים).</p>
+<p>ה-RFO להמרת מצב Shared ל-Exclusive עדיין צריך לחכות לתגובה כדי לוודא שכל ה-cache-ים האחרים ביטלו את העותקים שלהם. התגובה לביטול עותק לא חייבת לכלול את העותק של הנתונים, שכן ה-cache כבר מחזיק בעותק. החלק החשוב הוא השגת הבעלות לפני שינוי השורה.</p>
+</li>
+<li>
+<p>במקרה של miss, ה-LFB בסופו של דבר חוזר עם התוכן המלא של השורה, אשר נכתבת ל-L1, וה-store הממתינה יכולה כעת להתחייב.</p>
+</li>
+</ol>
+<hr>
+<p>במערכת זיכרון של ARM, קיימים שני linefill buffers כדי לאפשר טיפול בשתי שורות cache במקביל, הן לצורך cache misses והן לצורך מילוי lines מחדש. מדיניות ההקצאה במקרה של store miss מאפשרת לנתונים שמאוחסנים ב-store buffer להתמזג ישירות לתוך ה-linefill buffer יחד עם נתונים שנקראים כרגע ממערכת זיכרון חיצונית.</p>
+<h3 id="טיפול-ב-aborts">
+  טיפול ב-Aborts
+  <a class="heading-link" href="#%d7%98%d7%99%d7%a4%d7%95%d7%9c-%d7%91-aborts">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>במהלך מילוי שורת ה-cache, כל abort שמתבצע נשמר באופן נפרד, כדי למנוע הקצאה של השורה ב-cache במקרה שהשורה לא מצליחה להתממש. עבור External Aborts במהלך מילוי שורת ה-cache, מתבצע טיפול כדלקמן:</p>
+<ul>
+<li>
+<p>טיפול ב-store miss: אם מילוי השורות נגרם כתוצאה מ-store miss (כתיבה לאזור שבו השיטה היא write-back write-allocate), הכתיבה נחשבת לאובדת ו-abort לא מדויקת מדווחת לליבה.</p>
+</li>
+<li>
+<p>גישה לכתיבה לאזור write-back: אם גישת כתיבה לאזור write-back (כתיבה או קריאה שמיועדת להקצאה) פוגעת ב-linefill buffer שהופסק (abort), הכתיבה נחשבת לאובדת וה-abort לא מדויקת מדווחת לליבה.</p>
+</li>
+</ul>
+<h3 id="ניהול-מילוי-lines">
+  ניהול מילוי lines
+  <a class="heading-link" href="#%d7%a0%d7%99%d7%94%d7%95%d7%9c-%d7%9e%d7%99%d7%9c%d7%95%d7%99-lines">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>לעיתים, התחלת מילוי שורה יכולה להתעכב כדי לנצל את האפשרות למזג שורה מלאה מתוך ה-store buffer לתוך ה-linefill buffer. זהו מנגנון שמונע קריאה חיצונית מיותרת במקרים של פספוסי כתיבה, ומשפר את היעילות הכוללת של המערכת.</p>
+<h3 id="הזרמת-נתונים-והעברתן">
+  הזרמת נתונים והעברתן
+  <a class="heading-link" href="#%d7%94%d7%96%d7%a8%d7%9e%d7%aa-%d7%a0%d7%aa%d7%95%d7%a0%d7%99%d7%9d-%d7%95%d7%94%d7%a2%d7%91%d7%a8%d7%aa%d7%9f">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>הנתונים שנקלטים על ידי ה-linefill buffer מוזרמים לליבה, כך שהיא לא נדרשת להמתין להשלמת מילוי השורה לפני קבלת הנתונים. יתרה מכך, בקשות קריאה יכולות לפגוע ב-linefill buffer אם הוא מכיל את הנתונים המבוקשים שטרם התרוקנו ממנו.</p>
+<p>נראה כי ניקוז ה-linefill buffer ל-cache מתבצע במחזור שעון אחד בלבד. כל השורה מועברת ל-cache ונכתבת בזיכרון ה-RAM בו-זמנית, מה שמבטיח העברת נתונים מהירה ויעילה למערכת.</p>
+<hr>
+<p>ה-Line fill buffers הם רכיבי חומרה שנמצאים ב-cache L1D ומשמשים לאחסון בקשות זיכרון שמפספסות ב-cache, כמו גם בקשות קלט/פלט, עד לקבלת טיפול. כאשר מתקבלת בקשה ל-cache, היא מטופלת רק כאשר שורת ה-cache הנדרשת הושלמה והנתונים טוענים ב-cache L1D.</p>
+<p>כתיבה משולבת (write-combining) מתבצעת כאשר כל התנאים הנדרשים לפינוי מאגר משלב הכתיבה מתקיימים, כפי שמפורט במדריך. בקשות מסוג UC (Uncacheable) או I/O מטופלות כאשר הן נשלחות ל-cache L2, ובמקרה זה, הטיפול מתבצע בהקדם האפשרי.</p>
+<hr>
+<p>כתיבות עוקפות cache (cache-bypassing stores), כמו הפקודות <code>movnt</code> (למשל <code>movntps</code>), עוברות גם הן דרך store buffer, ולכן ניתן להתייחס אליהן כספקולטיביות בדומה לכתיבות אחרות ב-CPU עם ביצוע מחוץ לסדר (Out-of-Order Execution). עם זאת, כתיבות אלו מתחייבות ישירות ל-Line Fill Buffer (LFB), הידוע גם כ-write-combining buffer, במקום להיכנס ל-cache L1d.</p>
+<h3 id="סדר-הפעולה-של-store-address-ו-store-data">
+  סדר הפעולה של Store Address ו-Store Data
+  <a class="heading-link" href="#%d7%a1%d7%93%d7%a8-%d7%94%d7%a4%d7%a2%d7%95%d7%9c%d7%94-%d7%a9%d7%9c-store-address-%d7%95-store-data">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<ul>
+<li>
+<p>ה-Store Address ו-Store Data יכולים להתבצע בסדרים שונים, בהתאם למה שמתבצע קודם. שלב ההקצאה/שמות מחדש (allocate/rename) כותב את ה-uops מה-frontend ל-ROB (Reorder Buffer) ול-RS (Reservation Station) ב-backend. זה כולל את ההקצאה ל-buffer מתאים כמו load או store buffer בזמן ההנפקה, או מצפה עד שיבוצע.</p>
+</li>
+<li>
+<p>מכיוון שההקצאה וההתחייבות מתרחשות בסדר מסוים, זה מקל על המעקב אחרי ה-uops השונים, משום שזה מאפשר לקבוע אם ה-uops הם צעירים או מבוגרים. ה-buffer עשוי להיות מעגלי, מה שמפחית את הצורך לדאוג שהערכים הישנים והארוכים חיים יישארו בשימוש לאחר העטיפה.</p>
+</li>
+<li>
+<p>עם זאת, ייתכן שכתיבות עוקפות cache/סדר חלש יכולות להשפיע על היכולת הזו, מכיוון שהן עשויות להתחייב ל-LFB באופן שאינו תקני. בניגוד לכתיבות רגילות, כתיבות עוקפות cache מתחייבות ישירות ל-LFB להעברה מחוץ לליבה, ולא ל-cache L1d.</p>
+</li>
+</ul>
+<h3 id="טרמינולוגיה">
+  טרמינולוגיה
+  <a class="heading-link" href="#%d7%98%d7%a8%d7%9e%d7%99%d7%a0%d7%95%d7%9c%d7%95%d7%92%d7%99%d7%94">
+    <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<ul>
+<li>השתמשתי ב-&ldquo;coalescing&rdquo; (מיזוג) כדי לתאר את המיזוג של כתיבות במאגר ה-store.</li>
+<li>השתמשתי ב-&ldquo;write combining&rdquo; כדי לתאר את הכתיבות מסוג NT (Non-Temporally) שמתמזגות ב-LFB, בתקווה שהן יבצעו כתיבה בשורה מלאה מבלי להנפיק בקשות RFO (Read For Ownership).</li>
+<li>או שתיארתי אזורי זיכרון עם WC (Write Combining) שעושים את אותו הדבר.</li>
+</ul>
+
+      </div>
+
+
+      <footer>
+        
+  <h3 dir="rtl">
+    מקורות
+  </h3>
+  <ul dir="ltr">
+  
+    <li>
+      <a href="https://stackoverflow.com/questions/61129773/how-do-the-store-buffer-and-line-fill-buffer-interact-with-each-other">https://stackoverflow.com/questions/61129773/how-do-the-store-buffer-and-line-fill-buffer-interact-with-each-other</a>
+    </li>
+  
+    <li>
+      <a href="https://developer.arm.com/documentation/ddi0360/f/level-1-memory-system/about-the-level-1-data-side-memory-system/linefill-buffers">https://developer.arm.com/documentation/ddi0360/f/level-1-memory-system/about-the-level-1-data-side-memory-system/linefill-buffers</a>
+    </li>
+  
+    <li>
+      <a href="https://stackoverflow.com/questions/56187269/about-the-ridl-vulnerabilities-and-the-replaying-of-loads">https://stackoverflow.com/questions/56187269/about-the-ridl-vulnerabilities-and-the-replaying-of-loads</a>
+    </li>
+  
+
+        
+
+<section class="see-also">
+  
+    
+    
+    
+      <h3 id="רואה-עוד-ב-processor-components" dir="rtl">        רואה עוד ב processor-components
+        <a class="heading-link" href="#%d7%a8%d7%95%d7%90%d7%94-%d7%a2%d7%95%d7%93-%d7%91-processor-components">
+          <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
+          <span class="sr-only">Link to heading</span>
+        </a>
+      </h3>
+      <nav>
+        <ul>
+        
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/store-buffer/">Store buffer</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/combined-buffer/">Combined buffer</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/decoder/">Decoder</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/fetch/">Fetch</a>
+            </li>
+          
+        
+          
+            <li>
+              <a href="/he/posts/processor-components/invalidate-queue/">Invalidate queue</a>
+            </li>
+          
+        
+          
+        
+        </ul>
+      </nav>
+    
+  
+</section>
+
+
+        
+        
+        
+        
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
+    integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"
+    integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+    integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script><style>
+  .katex {
+    direction: ltr;
+    display: inline-flex;
+    flex-direction: row-reverse;
+    unicode-bidi: embed;
+  }
+</style>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2025
+     Michael Shalitin 
+    ·
+    
+    מופעל על ידי <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/" target="_blank" rel="noopener">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.6ae284be93d2d19dad1f02b0039508d9aab3180a12a06dcc71b0b0ef7825a317.js" integrity="sha256-auKEvpPS0Z2tHwKwA5UI2aqzGAoSoG3McbCw73gloxc="></script>
+  
+
+  
+
+  
+
+
+  
+
+  
+
+  
+
+  
+
+  
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js'
+        data-cf-beacon='{"token": "316bf5f2576c4cb68b54c0b2a91cb739"}'></script>
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+</html>
