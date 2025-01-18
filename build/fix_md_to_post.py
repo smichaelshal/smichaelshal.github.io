@@ -113,10 +113,14 @@ class YamlToToml:
         self.config = None
         self.title = title
 
+    def is_unknow_value(self, value: str) -> bool:
+        unknow_value = '???'
+        return value == unknow_value or value == list((unknow_value,))
+    
     def clean_unknow_fields(self) -> None:
         keys_to_delete = list()
         for key in self.config:
-            if self.config[key] == '???' or key == 'cssclasses':
+            if self.is_unknow_value(self.config[key]) or key == 'cssclasses':
                 keys_to_delete.append(key)
         
         for key in keys_to_delete:
