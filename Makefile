@@ -1,6 +1,6 @@
 # Variables
 DESTINATION = content/posts
-INPUT_DIR = /Users/michael/Documents/Linux\ Kernel\ Docs\ v2
+INPUT_DIR = "/Users/michael/Documents/Linux\ Kernel\ Docs\ v2"
 META_FILE = build/out_images.json
 SCRIPT = build/fix_md_to_post.py
 PYTHON_CMD = python3
