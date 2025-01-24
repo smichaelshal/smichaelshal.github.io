@@ -17,6 +17,7 @@ PATTERN_COMMENTS = r'%%[\s\S]*?%%'
 PATTERN_IMAGE = r'!\[\[(.+?)\]\]'
 PATTERN_OBSIDIAN_LINK = r'\[([^\]]+)\]\(obsidian://open\?vault=[^\)]+\)'
 PATTERN_IMAEG_MD = r'!\[.*?\]\(([^()]+(?:\([^()]*\)[^()]*)*)\)'
+INDEX_FILENAME = 'index'
 
 languages_map = {
     'litmus':'c',
@@ -183,9 +184,12 @@ class YamlToToml:
 def rename_file(root, filename: str) -> str:
     name, ext = os.path.splitext(filename)
 
-    new_filename = f'index.he{ext}'
+    new_filename = f'{INDEX_FILENAME}.he{ext}'
     old_path = os.path.join(root, filename)
-    new_path = os.path.join(root, os.path.join(name, new_filename))
+    if os.path.basename(root) == name:
+        new_path = os.path.join(root, new_filename)
+    else:
+        new_path = os.path.join(root, os.path.join(name, new_filename))
     
     file_path = Path(new_path)
     file_path.parent.mkdir(exist_ok=True, parents=True)
@@ -229,14 +233,14 @@ class FixMarkdown:
     @staticmethod
     def add_index_file(root: str, title: str, data: str) -> None:
         content = FixMarkdown.create_default_file(title, data)
-        with open(os.path.join(root, 'index.md'), 'w') as file:
+        with open(os.path.join(root, f'{INDEX_FILENAME}.md'), 'w') as file:
                 file.write(content)
 
     @staticmethod
     def add_directory_index_files(root: str, title: str) -> None:
         index_title = YamlToToml.warp_toml(toml.dumps(dict(title=title)))
-        FixMarkdown.add_file(root, index_title, '_index.md')
-        FixMarkdown.add_file(root, index_title, '_index.he.md')
+        FixMarkdown.add_file(root, index_title, f'_{INDEX_FILENAME}.md')
+        FixMarkdown.add_file(root, index_title, f'_{INDEX_FILENAME}.he.md')
 
 
     @staticmethod
@@ -303,7 +307,7 @@ class FixMarkdown:
         for root, _, files in os.walk(path):
             for filename in files:
                 _, ext = os.path.splitext(filename)
-                if ext != '.md' or filename.startswith('.') or filename.startswith('index') or filename.startswith('_index'):
+                if ext != '.md' or filename.startswith('.') or filename.startswith(INDEX_FILENAME) or filename.startswith(f'_{INDEX_FILENAME}'):
                     continue
                 
                 FixMarkdown.fix_file(root, filename, images_src)
