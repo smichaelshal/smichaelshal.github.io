@@ -193,7 +193,9 @@
             </span>
             <span class="reading-time">
               <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+              
                 1122 מילים
+              
             </span>
           </div>
           
@@ -341,64 +343,142 @@
 <p>במילים אחרות, ה-lock prefix מבטיח שהמעבד ינהל את סדר הביצוע של פעולות הזיכרון הקשורות להוראה האטומית, בכך שהיא מוודאת שכל פעולות הזיכרון הקודמות הושלמו קודם להחלה של פעולות הזיכרון הבאות. אפשר לחשוב על זה בתור המתנה של המעבד שמחכה שה-store buffer יתרוקן (במציאות זה הרבה יותר מורכב כי יש עוד הרבה מאוד גורמים לביצוע out-of-order).</p>
 <p>ההתנהגות הזאת יכולה להשתנות ולכן אם צריך סדר זיכרון צריך להשתמש במחסומים מתאימים כמו <code>mfence</code>.</p>
 
+        
+        
+        
+          
+        
+
+        
+
       </div>
-
-
       <footer>
         
   <h3 dir="rtl">
     מקורות
   </h3>
   <ul dir="ltr">
-  
-    <li>
-      <a href="https://docs.kernel.org/arch/x86/buslock.html">https://docs.kernel.org/arch/x86/buslock.html</a>
-    </li>
-  
-    <li>
-      <a href="https://lwn.net/Articles/806466/">https://lwn.net/Articles/806466/</a>
-    </li>
-  
-    <li>
-      <a href="https://lwn.net/Articles/911219/">https://lwn.net/Articles/911219/</a>
-    </li>
-  
-    <li>
-      <a href="https://docs.kernel.org/arch/x86/buslock.html">https://docs.kernel.org/arch/x86/buslock.html</a>
-    </li>
-  
-    <li>
-      <a href="https://pve.proxmox.com/wiki/Split_lock_detection">https://pve.proxmox.com/wiki/Split_lock_detection</a>
-    </li>
-  
-    <li>
-      <a href="https://www.kernel.org/doc/html/latest/admin-guide/sysctl/kernel.html#split-lock-mitigate-x86-only">https://www.kernel.org/doc/html/latest/admin-guide/sysctl/kernel.html#split-lock-mitigate-x86-only</a>
-    </li>
-  
-    <li>
-      <a href="https://x86.lol/generic/2023/11/07/split-lock.html">https://x86.lol/generic/2023/11/07/split-lock.html</a>
-    </li>
-  
-    <li>
-      <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-kememorybarrier">https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-kememorybarrier</a>
-    </li>
-  
-    <li>
-      <a href="https://preshing.com/20120515/memory-reordering-caught-in-the-act/">https://preshing.com/20120515/memory-reordering-caught-in-the-act/</a>
-    </li>
-  
-    <li>
-      <a href="https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf">https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf</a>
-    </li>
-  
-    <li>
-      <a href="https://c9x.me/x86/html/file_module_x86_id_159.html">https://c9x.me/x86/html/file_module_x86_id_159.html</a>
-    </li>
-  
-    <li>
-      <a href="https://cdrdv2-public.intel.com/825743/325462-sdm-vol-1-2abcd-3abcd-4.pdf">https://cdrdv2-public.intel.com/825743/325462-sdm-vol-1-2abcd-3abcd-4.pdf</a>
-    </li>
-  
+    
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+    
+      <li>
+        <a href="https://docs.kernel.org/arch/x86/buslock.html">https://docs.kernel.org/arch/x86/buslock.html</a>
+      </li>
+    
+      <li>
+        <a href="https://lwn.net/Articles/806466/">https://lwn.net/Articles/806466/</a>
+      </li>
+    
+      <li>
+        <a href="https://lwn.net/Articles/911219/">https://lwn.net/Articles/911219/</a>
+      </li>
+    
+      <li>
+        <a href="https://pve.proxmox.com/wiki/Split_lock_detection">https://pve.proxmox.com/wiki/Split_lock_detection</a>
+      </li>
+    
+      <li>
+        <a href="https://www.kernel.org/doc/html/latest/admin-guide/sysctl/kernel.html#split-lock-mitigate-x86-only">https://www.kernel.org/doc/html/latest/admin-guide/sysctl/kernel.html#split-lock-mitigate-x86-only</a>
+      </li>
+    
+      <li>
+        <a href="https://x86.lol/generic/2023/11/07/split-lock.html">https://x86.lol/generic/2023/11/07/split-lock.html</a>
+      </li>
+    
+      <li>
+        <a href="https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-kememorybarrier">https://learn.microsoft.com/en-us/windows-hardware/drivers/ddi/wdm/nf-wdm-kememorybarrier</a>
+      </li>
+    
+      <li>
+        <a href="https://preshing.com/20120515/memory-reordering-caught-in-the-act/">https://preshing.com/20120515/memory-reordering-caught-in-the-act/</a>
+      </li>
+    
+      <li>
+        <a href="https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf">https://www.amd.com/content/dam/amd/en/documents/processor-tech-docs/programmer-references/24593.pdf</a>
+      </li>
+    
+      <li>
+        <a href="https://c9x.me/x86/html/file_module_x86_id_159.html">https://c9x.me/x86/html/file_module_x86_id_159.html</a>
+      </li>
+    
+      <li>
+        <a href="https://cdrdv2-public.intel.com/825743/325462-sdm-vol-1-2abcd-3abcd-4.pdf">https://cdrdv2-public.intel.com/825743/325462-sdm-vol-1-2abcd-3abcd-4.pdf</a>
+      </li>
+    
+  </ul>
+
 
         
 

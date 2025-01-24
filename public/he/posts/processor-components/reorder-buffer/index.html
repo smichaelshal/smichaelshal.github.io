@@ -197,7 +197,9 @@
             </span>
             <span class="reading-time">
               <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+              
                 789 מילים
+              
             </span>
           </div>
           
@@ -274,48 +276,106 @@
 <p>דוגמה להתנהגות של ה-reorder buffer ניתן למצוא בשימוש בהוראת <code>MOV</code> או <code>MOVZX</code> במקרים מסוימים הן עשויות להיות הוראות אפס השהייה בכמה מיקרו-ארכיטקטורות, דבר שניתן לביצוע על ידי ה-reorder buffer (ביצוע move elimination). עם זאת, ביטול move אינו תמיד מצליח;</p>
 <p>אם לפחות אחד משני האופרנדים של הרגיסטר אינו אופרנד מרומז, ניתן להשתמש באותו אופרנד עבור שני האופרנדים. אולם, אם אחד האופרנדים נקרא וגם נכתב, לא ניתן להוסיף הוראה לשבירת תלות עבור תלות מרומזת זו. במקרה זה, לא ניתן לנתח את השהיה של שני האופרנדים בנפרד. יתרה מכך, ישנן הוראות שמתנהגות בצורה שונה אם אותו רגיסטר משמש למספר אופרנדים. לדוגמה, הוראות כמו XOR ו-SUB עם שני אופרנדים של רגיסטר, שהן ניבי אפס (zero idioms) (כגון XOR עם עצמו), תמיד יגדירו את הרגיסטר לאפס ללא תלות בתוכן הרגיסטר בפועל אם אותו רגיסטר משמש לשני האופרנדים. במיקרו-ארכיטקטורות האחרונות, הוראות אלו שוברות את התלות ברגיסטר שבו נעשה שימוש; בחלק מהמיקרו-ארכיטקטורות, הן עשויות להיות מופעלות על ידי ה-reorder buffer מבלי להשתמש בפורטי הביצוע. ישנן גם הוראות אחרות שמתנהגות אחרת בכמה מיקרו-ארכיטקטורות כאשר נעשה שימוש באותו רגיסטר, כמו הוראת SHLD.</p>
 
+        
+        
+        
+          
+        
+
+        
+
       </div>
-
-
       <footer>
         
   <h3 dir="rtl">
     מקורות
   </h3>
   <ul dir="ltr">
-  
-    <li>
-      <a href="https://en.wikipedia.org/wiki/Out-of-order_execution">https://en.wikipedia.org/wiki/Out-of-order_execution</a>
-    </li>
-  
-    <li>
-      <a href="https://uops.info/background.html">https://uops.info/background.html</a>
-    </li>
-  
-    <li>
-      <a href="https://arxiv.org/pdf/1810.04610">https://arxiv.org/pdf/1810.04610</a>
-    </li>
-  
-    <li>
-      <a href="https://arxiv.org/pdf/2310.13212">https://arxiv.org/pdf/2310.13212</a>
-    </li>
-  
-    <li>
-      <a href="https://stackoverflow.com/questions/64141366/can-a-speculatively-executed-cpu-branch-contain-opcodes-that-access-ram/64148401#64148401">https://stackoverflow.com/questions/64141366/can-a-speculatively-executed-cpu-branch-contain-opcodes-that-access-ram/64148401#64148401</a>
-    </li>
-  
-    <li>
-      <a href="https://en.wikipedia.org/wiki/Re-order_buffer">https://en.wikipedia.org/wiki/Re-order_buffer</a>
-    </li>
-  
-    <li>
-      <a href="https://stackoverflow.com/questions/37725497/how-does-memory-reordering-help-processors-and-compilers">https://stackoverflow.com/questions/37725497/how-does-memory-reordering-help-processors-and-compilers</a>
-    </li>
-  
-    <li>
-      <a href="https://en.wikipedia.org/wiki/Register_renaming">https://en.wikipedia.org/wiki/Register_renaming</a>
-    </li>
-  
+    
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+    
+      <li>
+        <a href="https://en.wikipedia.org/wiki/Out-of-order_execution">https://en.wikipedia.org/wiki/Out-of-order_execution</a>
+      </li>
+    
+      <li>
+        <a href="https://uops.info/background.html">https://uops.info/background.html</a>
+      </li>
+    
+      <li>
+        <a href="https://arxiv.org/pdf/1810.04610">https://arxiv.org/pdf/1810.04610</a>
+      </li>
+    
+      <li>
+        <a href="https://arxiv.org/pdf/2310.13212">https://arxiv.org/pdf/2310.13212</a>
+      </li>
+    
+      <li>
+        <a href="https://stackoverflow.com/questions/64141366/can-a-speculatively-executed-cpu-branch-contain-opcodes-that-access-ram/64148401#64148401">https://stackoverflow.com/questions/64141366/can-a-speculatively-executed-cpu-branch-contain-opcodes-that-access-ram/64148401#64148401</a>
+      </li>
+    
+      <li>
+        <a href="https://en.wikipedia.org/wiki/Re-order_buffer">https://en.wikipedia.org/wiki/Re-order_buffer</a>
+      </li>
+    
+      <li>
+        <a href="https://stackoverflow.com/questions/37725497/how-does-memory-reordering-help-processors-and-compilers">https://stackoverflow.com/questions/37725497/how-does-memory-reordering-help-processors-and-compilers</a>
+      </li>
+    
+      <li>
+        <a href="https://en.wikipedia.org/wiki/Register_renaming">https://en.wikipedia.org/wiki/Register_renaming</a>
+      </li>
+    
+  </ul>
+
 
         
 

@@ -245,7 +245,9 @@ ilb - idle load balancer
             </span>
             <span class="reading-time">
               <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+              
                 8743 מילים
+              
             </span>
           </div>
           
@@ -1539,44 +1541,96 @@ $$<p>ובאמת יש כאן יחס prop.</p>
 </span></span></code></pre></div><p>אם <code>r1 = 1</code> בסוף, אז ה-spin_lock() ב-P1 חייב לקרוא מה-spin_unlock() ב-P0. מכאן שה-store ל-x חייב להתפשט ל-P2 לפני שה-store ל-y עושה זאת, כך שלא ניתן לקבל את התוצאה <code>r2 = 1</code> ו-<code>r3 = 0</code>. אך אם P1 היה משתמש במשתנה נעילה שונה מ-s, הכתיבה הייתה יכולה להתפשט בסדרים שונים. (מצד שני, אם הקוד ב-P0 ו-P1 היה רץ על אותו מעבד, כמו בדוגמה הקודמת, אז הכתיבה הייתה מתפשטת לפי הסדר גם אם היו משתמשים במנעולים שונים).</p>
 <p>שתי הדרישות המיוחדות הללו לשחרור ורכישת נעילה אינן חלק מהמודל האופרטיבי, אך מפתחי הקרנל התחילו לצפות ולסמוך עליהן כי הן נכונות בכל הארכיטקטורות הנתמכות על ידי הקרנל, אם כי מסיבות שונות.</p>
 
+        
+        
+        
+          
+        
+
+        
+
       </div>
-
-
       <footer>
         
   <h3 dir="rtl">
     מקורות
   </h3>
   <ul dir="ltr">
-  
-    <li>
-      <a href="https://github.com/torvalds/linux/commit/4494dd58fbb477e54c129c1d8ef477aad433eba0">https://github.com/torvalds/linux/commit/4494dd58fbb477e54c129c1d8ef477aad433eba0</a>
-    </li>
-  
-    <li>
-      <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html</a>
-    </li>
-  
-    <li>
-      <a href="https://github.com/paulmckrcu/oota">https://github.com/paulmckrcu/oota</a>
-    </li>
-  
-    <li>
-      <a href="https://lwn.net/Articles/720550/">https://lwn.net/Articles/720550/</a>
-    </li>
-  
-    <li>
-      <a href="https://diy.inria.fr/linux/long.pdf">https://diy.inria.fr/linux/long.pdf</a>
-    </li>
-  
-    <li>
-      <a href="https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt">https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt</a>
-    </li>
-  
-    <li>
-      <a href="https://github.com/paulmckrcu/perfbook">https://github.com/paulmckrcu/perfbook</a>
-    </li>
-  
+    
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+    
+      <li>
+        <a href="https://github.com/torvalds/linux/commit/4494dd58fbb477e54c129c1d8ef477aad433eba0">https://github.com/torvalds/linux/commit/4494dd58fbb477e54c129c1d8ef477aad433eba0</a>
+      </li>
+    
+      <li>
+        <a href="https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html">https://mirrors.edge.kernel.org/pub/linux/kernel/people/paulmck/LWNLinuxMM/StrongModel.html</a>
+      </li>
+    
+      <li>
+        <a href="https://github.com/paulmckrcu/oota">https://github.com/paulmckrcu/oota</a>
+      </li>
+    
+      <li>
+        <a href="https://lwn.net/Articles/720550/">https://lwn.net/Articles/720550/</a>
+      </li>
+    
+      <li>
+        <a href="https://diy.inria.fr/linux/long.pdf">https://diy.inria.fr/linux/long.pdf</a>
+      </li>
+    
+      <li>
+        <a href="https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt">https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt</a>
+      </li>
+    
+      <li>
+        <a href="https://github.com/paulmckrcu/perfbook">https://github.com/paulmckrcu/perfbook</a>
+      </li>
+    
+  </ul>
+
 
         
 

@@ -794,6 +794,43 @@
     <loc>https://smichaelshal.github.io/he/tags/cas/</loc>
     <lastmod>2024-08-10T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/dcache/</loc>
+    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/dentry/</loc>
+    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/posts/dentry/</loc>
+    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://smichaelshal.github.io/posts/dentry/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="he"
+                href="https://smichaelshal.github.io/he/posts/dentry/"
+                />
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/file/</loc>
+    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/filesystem/</loc>
+    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/icache/</loc>
+    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/inode/</loc>
+    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/lookup/</loc>
+    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/super-block/</loc>
+    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://smichaelshal.github.io/he/about/</loc>
     <lastmod>2019-02-28T00:00:00+00:00</lastmod>
     <xhtml:link

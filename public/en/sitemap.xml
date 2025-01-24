@@ -2,6 +2,50 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://smichaelshal.github.io/posts/dentry/</loc>
+    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="he"
+                href="https://smichaelshal.github.io/he/posts/dentry/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://smichaelshal.github.io/posts/dentry/"
+                />
+  </url><url>
+    <loc>https://smichaelshal.github.io/</loc>
+    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="he"
+                href="https://smichaelshal.github.io/he/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="params"
+                href="https://smichaelshal.github.io/params/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://smichaelshal.github.io/"
+                />
+  </url><url>
+    <loc>https://smichaelshal.github.io/posts/</loc>
+    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="he"
+                href="https://smichaelshal.github.io/he/posts/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://smichaelshal.github.io/posts/"
+                />
+  </url><url>
     <loc>https://smichaelshal.github.io/posts/barriers/acquire-release/</loc>
     <lastmod>2025-01-18T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -288,24 +332,6 @@
                 href="https://smichaelshal.github.io/posts/barriers/mb/"
                 />
   </url><url>
-    <loc>https://smichaelshal.github.io/</loc>
-    <lastmod>2025-01-18T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="he"
-                href="https://smichaelshal.github.io/he/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="params"
-                href="https://smichaelshal.github.io/params/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://smichaelshal.github.io/"
-                />
-  </url><url>
     <loc>https://smichaelshal.github.io/posts/models/models/</loc>
     <lastmod>2025-01-18T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -382,19 +408,6 @@
                 rel="alternate"
                 hreflang="en"
                 href="https://smichaelshal.github.io/posts/optimization-techniques/pipeline--hazard/"
-                />
-  </url><url>
-    <loc>https://smichaelshal.github.io/posts/</loc>
-    <lastmod>2025-01-18T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="he"
-                href="https://smichaelshal.github.io/he/posts/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://smichaelshal.github.io/posts/"
                 />
   </url><url>
     <loc>https://smichaelshal.github.io/posts/optimization-techniques/register-renaming/</loc>

@@ -197,7 +197,9 @@
             </span>
             <span class="reading-time">
               <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+              
                 2041 מילים
+              
             </span>
           </div>
           
@@ -519,52 +521,116 @@
 </h3>
 <p>ה-Exclusives Reservation Granule (ERG) הוא מידת הפירוט שבה המוניטור הבלעדי עוקב אחרי גישות. גודל ה-ERG מוגדר לפי המימוש, אך בדרך כלל הוא שווה לגודל של cache line. זהו המרחק המינימלי בין כתובות שעל המוניטור להבחין ביניהן. הצבת שני mutex-ים בתוך אותו ERG עלולה לגרום ל-false sharing, כלומר, הוראת <code>STXR</code> על mutex אחד יכולה לנקות את התג הבלעדי של mutex אחר באותו ERG. מצב כזה לא ימנע מהתוכנה לפעול בצורה נכונה מבחינה ארכיטקטונית, אך הוא עשוי לפגוע ביעילותה.</p>
 
+        
+        
+        
+          
+        
+
+        
+
       </div>
-
-
       <footer>
         
   <h3 dir="rtl">
     מקורות
   </h3>
   <ul dir="ltr">
-  
-    <li>
-      <a href="https://lwn.net/Articles/256433/">https://lwn.net/Articles/256433/</a>
-    </li>
-  
-    <li>
-      <a href="https://en.wikipedia.org/wiki/Load-link/store-conditional">https://en.wikipedia.org/wiki/Load-link/store-conditional</a>
-    </li>
-  
-    <li>
-      <a href="https://homepages.inf.ed.ac.uk/s1343145/USENIX2020.pdf">https://homepages.inf.ed.ac.uk/s1343145/USENIX2020.pdf</a>
-    </li>
-  
-    <li>
-      <a href="https://arxiv.org/pdf/2207.09341.pdf">https://arxiv.org/pdf/2207.09341.pdf</a>
-    </li>
-  
-    <li>
-      <a href="https://developer.arm.com/documentation/107565/0101/Memory-system/Exclusive-accesses?lang=en">https://developer.arm.com/documentation/107565/0101/Memory-system/Exclusive-accesses?lang=en</a>
-    </li>
-  
-    <li>
-      <a href="https://developer.arm.com/documentation/ddi0487/latest/">https://developer.arm.com/documentation/ddi0487/latest/</a>
-    </li>
-  
-    <li>
-      <a href="https://developer.arm.com/documentation/den0024/a/Multi-core-processors/Multi-processing-systems/Exclusive-monitor-system-location">https://developer.arm.com/documentation/den0024/a/Multi-core-processors/Multi-processing-systems/Exclusive-monitor-system-location</a>
-    </li>
-  
-    <li>
-      <a href="https://developer.arm.com/documentation/102202/0300/Atomic-accesses">https://developer.arm.com/documentation/102202/0300/Atomic-accesses</a>
-    </li>
-  
-    <li>
-      <a href="https://krinkinmu.github.io/2024/04/20/arm-synchronization.html">https://krinkinmu.github.io/2024/04/20/arm-synchronization.html</a>
-    </li>
-  
+    
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+      
+        
+          
+        
+      
+    
+    
+      <li>
+        <a href="https://lwn.net/Articles/256433/">https://lwn.net/Articles/256433/</a>
+      </li>
+    
+      <li>
+        <a href="https://en.wikipedia.org/wiki/Load-link/store-conditional">https://en.wikipedia.org/wiki/Load-link/store-conditional</a>
+      </li>
+    
+      <li>
+        <a href="https://homepages.inf.ed.ac.uk/s1343145/USENIX2020.pdf">https://homepages.inf.ed.ac.uk/s1343145/USENIX2020.pdf</a>
+      </li>
+    
+      <li>
+        <a href="https://arxiv.org/pdf/2207.09341.pdf">https://arxiv.org/pdf/2207.09341.pdf</a>
+      </li>
+    
+      <li>
+        <a href="https://developer.arm.com/documentation/107565/0101/Memory-system/Exclusive-accesses?lang=en">https://developer.arm.com/documentation/107565/0101/Memory-system/Exclusive-accesses?lang=en</a>
+      </li>
+    
+      <li>
+        <a href="https://developer.arm.com/documentation/ddi0487/latest/">https://developer.arm.com/documentation/ddi0487/latest/</a>
+      </li>
+    
+      <li>
+        <a href="https://developer.arm.com/documentation/den0024/a/Multi-core-processors/Multi-processing-systems/Exclusive-monitor-system-location">https://developer.arm.com/documentation/den0024/a/Multi-core-processors/Multi-processing-systems/Exclusive-monitor-system-location</a>
+      </li>
+    
+      <li>
+        <a href="https://developer.arm.com/documentation/102202/0300/Atomic-accesses">https://developer.arm.com/documentation/102202/0300/Atomic-accesses</a>
+      </li>
+    
+      <li>
+        <a href="https://krinkinmu.github.io/2024/04/20/arm-synchronization.html">https://krinkinmu.github.io/2024/04/20/arm-synchronization.html</a>
+      </li>
+    
+  </ul>
+
 
         
 

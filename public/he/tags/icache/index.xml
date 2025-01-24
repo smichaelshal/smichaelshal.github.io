@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Icache on Michael Shalitin</title>
+    <link>https://smichaelshal.github.io/he/tags/icache/</link>
+    <description>Recent content in Icache on Michael Shalitin</description>
+    <generator>Hugo</generator>
+    <language>he</language>
+    <lastBuildDate>Tue, 12 Dec 2023 00:00:00 +0000</lastBuildDate>
+    <atom:link href="https://smichaelshal.github.io/he/tags/icache/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Dentry</title>
+      <link>https://smichaelshal.github.io/he/posts/dentry/</link>
+      <pubDate>Tue, 12 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/dentry/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

@@ -204,5 +204,12 @@
       <guid>https://smichaelshal.github.io/he/posts/processor-components/reorder-buffer/</guid>
       <description>&lt;h2 id=&#34;מבוא&#34;&gt;&#xA;  מבוא&#xA;  &lt;a class=&#34;heading-link&#34; href=&#34;#%d7%9e%d7%91%d7%95%d7%90&#34;&gt;&#xA;    &lt;i class=&#34;fa-solid fa-link&#34; aria-hidden=&#34;true&#34; title=&#34;Link to heading&#34;&gt;&lt;/i&gt;&#xA;    &lt;span class=&#34;sr-only&#34;&gt;Link to heading&lt;/span&gt;&#xA;  &lt;/a&gt;&#xA;&lt;/h2&gt;&#xA;&lt;p&gt;ה-reorder buffer הוא יחידת חומרה המשמשת באופן נרחב יחד עם אלגוריתם Tomasulo לתמיכה בביצוע פקודות לא מסודרות וספקולטיביות. הוא מבטיח שההוראות יתבצעו בסדר המתואם.&lt;/p&gt;&#xA;&lt;p&gt;ה-buffer מיושם כמערך מעגלי, המיועד לספק תור לסדר הוראות שנמצאות בעיבוד לפי FIFO. הוא מאפשר רישום של תוצאות מול ההוראות כאשר הן מסתיימות, גם אם הן בוצעו מחוץ לסדר.&lt;/p&gt;&#xA;&lt;p&gt;מעבדי x86 מודרניים מבצעים loads ספקולטיביות מוקדמות לפני טעינות אחרות, ולעיתים עלולים &amp;ldquo;להשמיד&amp;rdquo; ספקולציה שגויה של סדר הזיכרון אם הם מזהים שהעותק שלהם של שורת ה-cache לא נשאר תקף מאז שה-load התבצעה בפועל, בהתאם להתרות הארכיטקטוניות. במקרה כזה, הם משליכים את תוכן ה-reorder buffer כדי לחזור למצב עקבי ולהתחיל מחדש את הביצוע. זה קורה בדרך כלל כאשר ליבה אחרת משנה את שורת ה-cache, אך עשוי להתרחש גם אם load חזה בטעות שלא תדרוש טעינה מחדש של store. (כמובן, מעבדי x86 אמיתיים יכולים לסדר מחדש בחופשיות טעינות לפני stores.)&lt;/p&gt;</description>
     </item>
+    <item>
+      <title>Dentry</title>
+      <link>https://smichaelshal.github.io/he/posts/dentry/</link>
+      <pubDate>Tue, 12 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/posts/dentry/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>

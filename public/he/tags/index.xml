@@ -470,5 +470,61 @@
       <guid>https://smichaelshal.github.io/he/tags/cas/</guid>
       <description></description>
     </item>
+    <item>
+      <title>Dcache</title>
+      <link>https://smichaelshal.github.io/he/tags/dcache/</link>
+      <pubDate>Tue, 12 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/dcache/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Dentry</title>
+      <link>https://smichaelshal.github.io/he/tags/dentry/</link>
+      <pubDate>Tue, 12 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/dentry/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>File</title>
+      <link>https://smichaelshal.github.io/he/tags/file/</link>
+      <pubDate>Tue, 12 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/file/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Filesystem</title>
+      <link>https://smichaelshal.github.io/he/tags/filesystem/</link>
+      <pubDate>Tue, 12 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/filesystem/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Icache</title>
+      <link>https://smichaelshal.github.io/he/tags/icache/</link>
+      <pubDate>Tue, 12 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/icache/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Inode</title>
+      <link>https://smichaelshal.github.io/he/tags/inode/</link>
+      <pubDate>Tue, 12 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/inode/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Lookup</title>
+      <link>https://smichaelshal.github.io/he/tags/lookup/</link>
+      <pubDate>Tue, 12 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/lookup/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Super-Block</title>
+      <link>https://smichaelshal.github.io/he/tags/super-block/</link>
+      <pubDate>Tue, 12 Dec 2023 00:00:00 +0000</pubDate>
+      <guid>https://smichaelshal.github.io/he/tags/super-block/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>
