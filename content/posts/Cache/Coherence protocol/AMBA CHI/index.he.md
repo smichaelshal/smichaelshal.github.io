@@ -826,7 +826,7 @@ title = "AMBA CHI"
 
 דוגמה ל-flow מסוג זה היא טרנזקציית `WriteUniquePtl`, שבה כתיבה מתבצעת עם הפעלת snoop.
 
-![](Figure_B5_16_WriteUniquePtl_with_snoop 1.png "Figure B5 16 WriteUniquePtl with snoop 1 from AMBA CHI Architecture Specification (developer.arm.com)")
+![](Figure_B5_16_WriteUniquePtl_with_snoop_1.png "Figure B5 16 WriteUniquePtl with snoop 1 from AMBA CHI Architecture Specification (developer.arm.com)")
 
 
 שלבי זרימת הטרנזקציה `WriteUniquePtl` עם Snoop (איור B5.16):
