@@ -1,7 +1,7 @@
 +++
 authors = [ "Michael Shalitin",]
 math = true
-date = "2025-01-18"
+date = "2025-03-01"
 tags = []
 categories = []
 series = []

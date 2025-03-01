@@ -143,12 +143,10 @@ let data = carry-dep ; data
 
 
 ## הקובץ `linux-kernel.cat`
-    
 
 ### Basic relations
 
 #### Release Acquire
-
 ```ocaml {linenos=inline}
 (* Release Acquire *)
 let acq-po = [Acquire] ; po ; [M]
@@ -175,7 +173,7 @@ let po-unlock-lock-po = po ; [UL] ; (po|rf) ; [LKR] ; po
 
 
 #### Fences
- 
+
 ```ocaml {linenos=inline}
 let R4rmb = R \ Noreturn (* Reads for which rmb works *)
 let rmb = [R4rmb] ; fencerel(Rmb) ; [R4rmb]
@@ -240,7 +238,6 @@ let barrier = fencerel(Barrier | Rmb | Wmb | Mb | Sync-rcu |
 היחס`barrier` מכיל את כל הקשרים של המחסומים.
 
 ### Fundamental coherence ordering
- 
 
 #### Sequential Consistency Per Variable
 
@@ -390,7 +387,7 @@ let ppo = to-r | to-w | (fence & int) | (po-unlock-lock-po & int)
 ה-`po-unlock-lock-po & int` מקשר בין גישה של שחרור נעילה לחלק של הקריאה של נעילה באותו thread.
 
 #### Propagation: Ordering from release operations and strong fences
-   
+
 
 ```ocaml {linenos=inline}
 let A-cumul(r) = (rfe ; [Marked])? ; r
@@ -407,7 +404,6 @@ let prop = [Marked] ; (overwrite & ext)? ; cumul-fence* ;
 
 
 ##### rmw-sequence
--complete/redo
 היחס `rmw-sequence` כמו השם שלו מקשר בין רצפי rmw, שרצף `rmw` הוא סדרת עדכונים אטומיים שבה כל עדכון קורא מהעדכון הקודם לו. כאשר אנו מייצגים את הרצפים האלו באמצעות אירועים, זה מתואר כך:
 
 $$
@@ -496,11 +492,10 @@ $$
 
 
 
- X \to_{\text{po}} \text{Rel}_{F} \\ \\ 
+
  
 ##### Prop
--complete/redo
-https://diy.inria.fr/linux/long.pdf
+
 
 היחס `prop` מייצג את רעיון הטרנזיטיביות. הוא יוצר קשר בין אירועים, שעשויים להתרחש ב-thread-ים שונים.
 
@@ -730,7 +725,6 @@ $$
 
 
 #### Happens Before: Ordering from the passage of time
--complete/redo
 
 ```ocaml {linenos=inline}
 let hb = [Marked] ; (ppo | rfe | ((prop \ id) & int)) ; [Marked]
@@ -764,9 +758,8 @@ acyclic hb as happens-before
 
 
 ### Write and fence propagation ordering
--complete/redo
 
- 
+
 #### Propagation
 
 ```ocaml {linenos=inline}
@@ -823,13 +816,12 @@ P1()
 
 
 
----
+
 
 
 ### גישה רגילה ו-data races
--complete/redo
 
-https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt
+
 
 במונחים טכניים, הקומפיילר מניח שבזמן ביצוע התוכנית, לא יתרחשו מירוצי נתונים (data races). מירוץ נתונים מוגדר כאשר מתקיימים התנאים הבאים:
 
@@ -1140,11 +1132,10 @@ P1()
 
 
 ## Locking
--complete/redo
 
 
 
-https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/recipes.txt
+
 
 
 הנעילה היא פשוטה וברורה, לפחות אם לא מתעמקים בה יותר מדי. הכלל הבסיסי הוא די פשוט: כל מעבד שרכש נעילה עבור מנעול מסוים, רואה את **כל השינויים** שנעשו או נראו על ידי מעבד אחר לפני שהוא שיחרר את אותו מנעול.

@@ -215,6 +215,14 @@
         "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
         "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
     },
+    "Figure_2_10_Program_segments_before_and_after_register_allocation_A_B.png" : {
+        "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
+        "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
+    },
+    "Figure_2_10_Program_segments_before_and_after_register_allocation_C_D.png" : {
+        "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
+        "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
+    },
     "Figure_5_39_Effect_of_register_allocation.png" : {
         "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
         "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
@@ -222,5 +230,9 @@
     "Figure_5_40_Example_to_illustrate_the_termination_condition.png": {
         "url": "http://infolab.stanford.edu/pub/cstr/reports/csl/tr/95/685/CSL-TR-95-685.pdf",
         "desc": "MEMORY CONSISTENCY MODELS FOR SHARED-MEMORY MULTIPROCESSORS"
+    },
+    "Figure_C_5_Caches_With_Store_Buffers.png" : {
+        "url": "https://www.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html",
+        "desc": "Caches With Store Buffers"
     }
 }
