@@ -316,7 +316,7 @@
 <p>באופן כללי, dentries ממלאות תפקיד מכריע בתשתית מערכת הקבצים של קרנל, מה שמאפשר ניהול יעיל של קבצים ותיקיות ומספק את הבסיס לפעולות מערכת קבצים מבוססות נתיבים.</p>
 <p>ה-dentry הוא אובייקט שמייצג קשר בין inode לבין תיקייה , והוא מקשר ביניהם על ידי השם של הקובץ. ה-dentry משמש לגישה לכל קובץ בזמן תהליך החיפוש (lookup) של קובץ היעד.</p>
 <p>בזמן lookup כל רכיב ב-path צריך שיהיה לו dentry משלו והוא משמש לחיפוש של המשך הרכיבים ב-path.
-למשל בחיפוש של <code>tmp/hello/</code> יווצרו 3 dentries חדשות: root, tmp, hello. (הכוונה של root היא תקיית השורש של כל המערכת קבצים).</p>
+למשל בחיפוש של <code>/tmp/hello</code> יווצרו 3 dentries חדשות: root, tmp, hello. (הכוונה של root היא תקיית השורש של כל המערכת קבצים).</p>
 <p>אפשר לראות עליו פרטים עליו בקובץ <code>proc/slabinfo/</code>:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="ln">1</span><span class="cl">sudo grep <span class="s2">&#34;dentry&#34;</span> /proc/slabinfo
 </span></span></code></pre></div><h3 id="negative-dentry">

@@ -2,21 +2,21 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://smichaelshal.github.io/posts/dentry/</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <loc>https://smichaelshal.github.io/posts/models/lkmm/</loc>
+    <lastmod>2025-03-01T00:00:00+00:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="he"
-                href="https://smichaelshal.github.io/he/posts/dentry/"
+                href="https://smichaelshal.github.io/he/posts/models/lkmm/"
                 />
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
-                href="https://smichaelshal.github.io/posts/dentry/"
+                href="https://smichaelshal.github.io/posts/models/lkmm/"
                 />
   </url><url>
     <loc>https://smichaelshal.github.io/</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <lastmod>2025-03-01T00:00:00+00:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="he"
@@ -34,7 +34,7 @@
                 />
   </url><url>
     <loc>https://smichaelshal.github.io/posts/</loc>
-    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <lastmod>2025-03-01T00:00:00+00:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="he"
@@ -44,6 +44,19 @@
                 rel="alternate"
                 hreflang="en"
                 href="https://smichaelshal.github.io/posts/"
+                />
+  </url><url>
+    <loc>https://smichaelshal.github.io/posts/dentry/</loc>
+    <lastmod>2025-01-24T00:00:00+00:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="he"
+                href="https://smichaelshal.github.io/he/posts/dentry/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://smichaelshal.github.io/posts/dentry/"
                 />
   </url><url>
     <loc>https://smichaelshal.github.io/posts/barriers/acquire-release/</loc>
@@ -291,19 +304,6 @@
                 rel="alternate"
                 hreflang="en"
                 href="https://smichaelshal.github.io/posts/processor-components/line-fill-buffer/"
-                />
-  </url><url>
-    <loc>https://smichaelshal.github.io/posts/models/lkmm/</loc>
-    <lastmod>2025-01-18T00:00:00+00:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="he"
-                href="https://smichaelshal.github.io/he/posts/models/lkmm/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://smichaelshal.github.io/posts/models/lkmm/"
                 />
   </url><url>
     <loc>https://smichaelshal.github.io/posts/models/lkmm-code-examples/</loc>

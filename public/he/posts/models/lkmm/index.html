@@ -246,7 +246,7 @@ ilb - idle load balancer
             <span class="reading-time">
               <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
               
-                8743 מילים
+                8729 מילים
               
             </span>
           </div>
@@ -656,9 +656,9 @@ $$<h3 id="instruction-execution-ordering">
 <p><strong>תלות addr:</strong> בכל הארכיטקטורות הנתמכות על ידי לינוקס, כאשר קיימת תלות בכתובת בין הוראות loads, המעבד מבצע את הטעינות לפי סדר התוכנית. כאשר כתובת ה-load השני תלויה בתוצאת ה-load הראשון, המעבד אינו מסוגל לשלוח בקשה לתת-מערכת הזיכרון לטעון ערך מהמיקום של ה-load השני לפני שהוא מחשב את הכתובת ממנה יש לטעון.</p>
 </li>
 </ul>
-<h5 id="heading">
+<h5 id="">
   
-  <a class="heading-link" href="#heading">
+  <a class="heading-link" href="#">
     <i class="fa-solid fa-link" aria-hidden="true" title="Link to heading"></i>
     <span class="sr-only">Link to heading</span>
   </a>
@@ -730,8 +730,7 @@ $$<h3 id="instruction-execution-ordering">
     <span class="sr-only">Link to heading</span>
   </a>
 </h5>
-<p>-complete/redo
-היחס <code>rmw-sequence</code> כמו השם שלו מקשר בין רצפי rmw, שרצף <code>rmw</code> הוא סדרת עדכונים אטומיים שבה כל עדכון קורא מהעדכון הקודם לו. כאשר אנו מייצגים את הרצפים האלו באמצעות אירועים, זה מתואר כך:</p>
+<p>היחס <code>rmw-sequence</code> כמו השם שלו מקשר בין רצפי rmw, שרצף <code>rmw</code> הוא סדרת עדכונים אטומיים שבה כל עדכון קורא מהעדכון הקודם לו. כאשר אנו מייצגים את הרצפים האלו באמצעות אירועים, זה מתואר כך:</p>
 $$
 W_{Z_{0}} \to_{\textrm{rf}} R_{Y_{1}} \to_{\textrm{rmw}} W_{Z_{1}} \to_{\textrm{rf}} ...\to_{\textrm{rf}} R_{Y_{n}} \to_{\textrm{rmw}} W_{Z_{n}}
 $$<p>במשמעות זו:</p>
@@ -804,7 +803,6 @@ $$<p>מכיוון ש-X נמצא ב-post-set, המחסום מתפשט למעבד 
 <p>עבור מחסומי B-cumulative, התכונה שה-post-set סגורה תחת hb היא קריטית. במקרים שבהם ההוראות הן על מעבדים שונים, קשר hb לא מסתכם רק בכך ש-X מתבצעת לפני Y.
 כדי שתהיה סגירות hb בין מעבדים שונים, יש צורך שמחסום B-cumulative שהתפשט למעבד של X לפני ביצועו יתפשט גם למעבד של Y לפני ביצועו. קשר זה נובע ממנגנון סיבתי בין המעבדים, כמו כתיבה במעבד של X לאחר ביצועו שנקראת במעבד של Y לפני ביצועו.</p>
 <p>הסיבה לכך שהחלק הבין-מעבדי היחיד בהגדרת hb הוא <code>rfe</code> היא משום שהוא מייצג את המנגנון שמבטיח את הקשר הסיבתי הדרוש בין המעבדים.</p>
-<p>X \to_{\text{po}} \text{Rel}_{F} \ \</p>
 <h5 id="prop">
   Prop
   <a class="heading-link" href="#prop">
@@ -812,8 +810,6 @@ $$<p>מכיוון ש-X נמצא ב-post-set, המחסום מתפשט למעבד 
     <span class="sr-only">Link to heading</span>
   </a>
 </h5>
-<p>-complete/redo
-<a href="https://diy.inria.fr/linux/long.pdf"  class="external-link" target="_blank" rel="noopener">https://diy.inria.fr/linux/long.pdf</a></p>
 <p>היחס <code>prop</code> מייצג את רעיון הטרנזיטיביות. הוא יוצר קשר בין אירועים, שעשויים להתרחש ב-thread-ים שונים.</p>
 <p>היחס <code>prop</code> מרחיב את מושג ההצטברות, הוא מבטיח שההבטחות שסופקו על ידי <code>cumul-fence</code> בתוך thread מסוים T יתפשטו ל-thread-ים אחרים הניגשים לאותם משתנים כמו ש-T ניגש.</p>
 <p>במילים פשוטות, <code>prop</code> יוצר קשרים מעבר ל-thread הבודד שבו אירועי הסדר התרחשו, ומחיל את ההשפעות של הסדר הזה על thread-ים נוספים שמשתפים גישה למשתנים משותפים.</p>
@@ -1004,7 +1000,6 @@ $$<p>ובאמת יש כאן יחס prop.</p>
     <span class="sr-only">Link to heading</span>
   </a>
 </h4>
-<p>-complete/redo</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ocaml" data-lang="ocaml"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">let</span> <span class="n">hb</span> <span class="o">=</span> <span class="o">[</span><span class="nc">Marked</span><span class="o">]</span> <span class="o">;</span> <span class="o">(</span><span class="n">ppo</span> <span class="o">|</span> <span class="n">rfe</span> <span class="o">|</span> <span class="o">((</span><span class="n">prop</span> <span class="err">\</span> <span class="n">id</span><span class="o">)</span> <span class="o">&amp;</span> <span class="kt">int</span><span class="o">))</span> <span class="o">;</span> <span class="o">[</span><span class="nc">Marked</span><span class="o">]</span>
 </span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">acyclic</span> <span class="n">hb</span> <span class="k">as</span> <span class="n">happens</span><span class="o">-</span><span class="n">before</span>
 </span></span></code></pre></div><p>היחס <code>hb</code> (או happens-before) הוא יחס שנותן סדר על פני זמן, כלומר הוא נותן יחס של זמן בין אירועים.</p>
@@ -1031,7 +1026,6 @@ $$<p>ובאמת יש כאן יחס prop.</p>
     <span class="sr-only">Link to heading</span>
   </a>
 </h3>
-<p>-complete/redo</p>
 <h4 id="propagation">
   Propagation
   <a class="heading-link" href="#propagation">
@@ -1073,7 +1067,6 @@ $$<p>ובאמת יש כאן יחס prop.</p>
 <p>באופן דומה, אם הערך של <code>r1</code> הוא 0 בסוף, ישנו קשר <code>pb</code> בין הקריאה של P1 לפעולת הקריאה של P0.</p>
 <p>מצב זה מוביל לכך שאם גם <code>r0</code> וגם <code>r1</code> היו שווים ל-0, היה נוצר מחזור בגרף <code>pb</code>, דבר שאינו אפשרי כי הוראה לא יכולה להתרחש לפני עצמה.</p>
 <p>לכן, הוספת מחסומי <code>smp_mb()</code> לתבנית SB מבטיחה למנוע את התוצאה שבה <code>r0 = 0</code> ו-<code>r1 = 0</code>.</p>
-<hr>
 <h3 id="גישה-רגילה-ו-data-races">
   גישה רגילה ו-data races
   <a class="heading-link" href="#%d7%92%d7%99%d7%a9%d7%94-%d7%a8%d7%92%d7%99%d7%9c%d7%94-%d7%95-data-races">
@@ -1081,8 +1074,6 @@ $$<p>ובאמת יש כאן יחס prop.</p>
     <span class="sr-only">Link to heading</span>
   </a>
 </h3>
-<p>-complete/redo</p>
-<p><a href="https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt"  class="external-link" target="_blank" rel="noopener">https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/explanation.txt</a></p>
 <p>במונחים טכניים, הקומפיילר מניח שבזמן ביצוע התוכנית, לא יתרחשו מירוצי נתונים (data races). מירוץ נתונים מוגדר כאשר מתקיימים התנאים הבאים:</p>
 <ol>
 <li>ישנן שתי גישות לאותו מיקום בזיכרון.</li>
@@ -1354,8 +1345,6 @@ $$<p>ובאמת יש כאן יחס prop.</p>
     <span class="sr-only">Link to heading</span>
   </a>
 </h2>
-<p>-complete/redo</p>
-<p><a href="https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/recipes.txt"  class="external-link" target="_blank" rel="noopener">https://github.com/torvalds/linux/blob/master/tools/memory-model/Documentation/recipes.txt</a></p>
 <p>הנעילה היא פשוטה וברורה, לפחות אם לא מתעמקים בה יותר מדי. הכלל הבסיסי הוא די פשוט: כל מעבד שרכש נעילה עבור מנעול מסוים, רואה את <strong>כל השינויים</strong> שנעשו או נראו על ידי מעבד אחר לפני שהוא שיחרר את אותו מנעול.</p>
 <p>שים לב שזו הצהרה חזקה יותר מ-&ldquo;כל מעבד המחזיק מנעול מסוים רואה את כל השינויים שנעשו על ידי מעבד אחר <strong>בזמן שהוא מחזיק את המנעול</strong>.&rdquo;</p>
 <p>לדוגמה:</p>

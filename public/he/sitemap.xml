@@ -155,10 +155,10 @@
     <loc>https://smichaelshal.github.io/he/tags/memory-model/</loc>
     <lastmod>2024-12-12T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/series/memory-models/</loc>
+    <loc>https://smichaelshal.github.io/he/categories/memory-models/</loc>
     <lastmod>2024-12-12T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/categories/memory-models/</loc>
+    <loc>https://smichaelshal.github.io/he/series/memory-models/</loc>
     <lastmod>2024-12-12T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/tags/release-acquire/</loc>
@@ -233,10 +233,10 @@
     <loc>https://smichaelshal.github.io/he/tags/amba-ace/</loc>
     <lastmod>2024-11-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/series/barriers/</loc>
+    <loc>https://smichaelshal.github.io/he/categories/barriers/</loc>
     <lastmod>2024-11-03T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/categories/barriers/</loc>
+    <loc>https://smichaelshal.github.io/he/series/barriers/</loc>
     <lastmod>2024-11-03T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/tags/coherence-protocol/</loc>
@@ -273,9 +273,6 @@
     <loc>https://smichaelshal.github.io/he/tags/docker/</loc>
     <lastmod>2024-10-25T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/tags/herd7/</loc>
-    <lastmod>2024-10-25T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://smichaelshal.github.io/he/posts/models/herd7/</loc>
     <lastmod>2024-10-25T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -288,6 +285,9 @@
                 hreflang="he"
                 href="https://smichaelshal.github.io/he/posts/models/herd7/"
                 />
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/herd7/</loc>
+    <lastmod>2024-10-25T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/posts/models/models/</loc>
     <lastmod>2024-10-19T00:00:00+00:00</lastmod>
@@ -350,10 +350,10 @@
                 href="https://smichaelshal.github.io/he/posts/barriers/mb/"
                 />
   </url><url>
-    <loc>https://smichaelshal.github.io/he/series/arm/</loc>
+    <loc>https://smichaelshal.github.io/he/categories/arm/</loc>
     <lastmod>2024-10-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/categories/arm/</loc>
+    <loc>https://smichaelshal.github.io/he/series/arm/</loc>
     <lastmod>2024-10-07T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/posts/arm/early-write-acknowledgment/</loc>
@@ -394,22 +394,19 @@
     <loc>https://smichaelshal.github.io/he/tags/intel/</loc>
     <lastmod>2024-10-05T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/series/optimization-techniques/</loc>
-    <lastmod>2024-10-05T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://smichaelshal.github.io/he/categories/optimization-techniques/</loc>
     <lastmod>2024-10-05T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/series/processor-components/</loc>
+    <loc>https://smichaelshal.github.io/he/series/optimization-techniques/</loc>
     <lastmod>2024-10-05T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/categories/processor-components/</loc>
     <lastmod>2024-10-05T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/tags/rmw/</loc>
+    <loc>https://smichaelshal.github.io/he/series/processor-components/</loc>
     <lastmod>2024-10-05T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/tags/speculation/</loc>
+    <loc>https://smichaelshal.github.io/he/tags/rmw/</loc>
     <lastmod>2024-10-05T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/posts/optimization-techniques/speculation/</loc>
@@ -424,6 +421,9 @@
                 hreflang="he"
                 href="https://smichaelshal.github.io/he/posts/optimization-techniques/speculation/"
                 />
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/speculation/</loc>
+    <lastmod>2024-10-05T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/posts/processor-components/store-buffer/</loc>
     <lastmod>2024-10-05T00:00:00+00:00</lastmod>
@@ -451,10 +451,10 @@
                 href="https://smichaelshal.github.io/he/posts/optimization-techniques/register-renaming/"
                 />
   </url><url>
-    <loc>https://smichaelshal.github.io/he/series/cache/</loc>
+    <loc>https://smichaelshal.github.io/he/categories/cache/</loc>
     <lastmod>2024-09-22T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/categories/cache/</loc>
+    <loc>https://smichaelshal.github.io/he/series/cache/</loc>
     <lastmod>2024-09-22T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/tags/cache-coherence/</loc>
@@ -557,10 +557,10 @@
                 href="https://smichaelshal.github.io/he/posts/cache/cache/"
                 />
   </url><url>
-    <loc>https://smichaelshal.github.io/he/series/coherence-protocol/</loc>
+    <loc>https://smichaelshal.github.io/he/categories/coherence-protocol/</loc>
     <lastmod>2024-09-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/categories/coherence-protocol/</loc>
+    <loc>https://smichaelshal.github.io/he/series/coherence-protocol/</loc>
     <lastmod>2024-09-07T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/tags/gcc/</loc>
@@ -572,10 +572,10 @@
     <loc>https://smichaelshal.github.io/he/tags/moesi/</loc>
     <lastmod>2024-09-07T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/series/atomic/</loc>
+    <loc>https://smichaelshal.github.io/he/categories/atomic/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/categories/atomic/</loc>
+    <loc>https://smichaelshal.github.io/he/series/atomic/</loc>
     <lastmod>2024-09-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/tags/lock-prefix/</loc>
@@ -597,13 +597,13 @@
                 href="https://smichaelshal.github.io/he/posts/atomic/x86-lock/"
                 />
   </url><url>
-    <loc>https://smichaelshal.github.io/he/tags/compiler/</loc>
+    <loc>https://smichaelshal.github.io/he/categories/compiler/</loc>
     <lastmod>2024-08-24T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/series/compiler/</loc>
     <lastmod>2024-08-24T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/categories/compiler/</loc>
+    <loc>https://smichaelshal.github.io/he/tags/compiler/</loc>
     <lastmod>2024-08-24T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/tags/data-race/</loc>
@@ -638,9 +638,6 @@
                 href="https://smichaelshal.github.io/he/posts/processor-components/combined-buffer/"
                 />
   </url><url>
-    <loc>https://smichaelshal.github.io/he/tags/decoder/</loc>
-    <lastmod>2024-08-18T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://smichaelshal.github.io/he/posts/processor-components/decoder/</loc>
     <lastmod>2024-08-18T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -654,7 +651,7 @@
                 href="https://smichaelshal.github.io/he/posts/processor-components/decoder/"
                 />
   </url><url>
-    <loc>https://smichaelshal.github.io/he/tags/fetch/</loc>
+    <loc>https://smichaelshal.github.io/he/tags/decoder/</loc>
     <lastmod>2024-08-18T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/posts/processor-components/fetch/</loc>
@@ -669,6 +666,9 @@
                 hreflang="he"
                 href="https://smichaelshal.github.io/he/posts/processor-components/fetch/"
                 />
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/fetch/</loc>
+    <lastmod>2024-08-18T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/posts/processor-components/invalidate-queue/</loc>
     <lastmod>2024-08-18T00:00:00+00:00</lastmod>
@@ -740,9 +740,6 @@
     <loc>https://smichaelshal.github.io/he/tags/tlb/</loc>
     <lastmod>2024-08-18T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/tags/uops/</loc>
-    <lastmod>2024-08-18T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://smichaelshal.github.io/he/posts/processor-components/uops/</loc>
     <lastmod>2024-08-18T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -756,8 +753,8 @@
                 href="https://smichaelshal.github.io/he/posts/processor-components/uops/"
                 />
   </url><url>
-    <loc>https://smichaelshal.github.io/he/tags/exclusive/</loc>
-    <lastmod>2024-08-11T00:00:00+00:00</lastmod>
+    <loc>https://smichaelshal.github.io/he/tags/uops/</loc>
+    <lastmod>2024-08-18T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/posts/atomic/exclusive/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
@@ -771,6 +768,9 @@
                 hreflang="he"
                 href="https://smichaelshal.github.io/he/posts/atomic/exclusive/"
                 />
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/exclusive/</loc>
+    <lastmod>2024-08-11T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/tags/exclusive-monitor/</loc>
     <lastmod>2024-08-11T00:00:00+00:00</lastmod>
@@ -797,9 +797,6 @@
     <loc>https://smichaelshal.github.io/he/tags/dcache/</loc>
     <lastmod>2023-12-12T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://smichaelshal.github.io/he/tags/dentry/</loc>
-    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>https://smichaelshal.github.io/he/posts/dentry/</loc>
     <lastmod>2023-12-12T00:00:00+00:00</lastmod>
     <xhtml:link
@@ -812,6 +809,9 @@
                 hreflang="he"
                 href="https://smichaelshal.github.io/he/posts/dentry/"
                 />
+  </url><url>
+    <loc>https://smichaelshal.github.io/he/tags/dentry/</loc>
+    <lastmod>2023-12-12T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://smichaelshal.github.io/he/tags/file/</loc>
     <lastmod>2023-12-12T00:00:00+00:00</lastmod>
