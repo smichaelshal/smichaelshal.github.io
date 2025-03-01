@@ -12,7 +12,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 from typing import Dict, List, Union
 
-PATTERN_TAGS = r'(?<!\S)#[\w/]+'
+PATTERN_TAGS = r'(?<!\S)#[\w/-]+(?:\s|$)'
 PATTERN_COMMENTS = r'%%[\s\S]*?%%'
 PATTERN_IMAGE = r'!\[\[(.+?)\]\]'
 PATTERN_OBSIDIAN_LINK = r'\[([^\]]+)\]\(obsidian://open\?vault=[^\)]+\)'
