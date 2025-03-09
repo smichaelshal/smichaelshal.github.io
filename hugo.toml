@@ -54,7 +54,7 @@ title = "Michael Shalitin"
 [languages.he.params]
 reading_speed = 300
 author = "Michael Shalitin"
-info = "Kernel developer"
+info = ["אני שמח שאתם כאן 🥳.<br/>",  "אני אנסה לפרסם דברים שמעניינים אותי, בעיקר דברים בהקשרי טכנולוגיה, קרנל, מעבדים, low-level, רשתות ופיתוח ומחקר בכללי..<br/>",  "אם כל אלה מעניינים אותכם אתם מוזמנים לבדוק את [הפוסטים שכבר כתבתי](posts/)."]
 description = "Kernel developer"
 
 [[languages.he.menu.main]]
@@ -75,7 +75,7 @@ author = "Michael Shalitin"
 # license = '<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA-4.0</a>'
 description = "Michael Shalitin personal website"
 keywords = "blog,developer,personal"
-info = ["Kernel developer"]
+info = ["I'm glad you're here 🥳.<br/>",  "I'll try to post things that interest me, mainly things related to technology, kernels, processors, low-level, networks, and development and research in general..<br/>",  "If all of this interests you, you're welcome to check out the [posts I've already written](posts/)."]
 dateFormat = "January 2, 2006"
 since = 2025
 # Git Commit in Footer, uncomment the line below to enable it
